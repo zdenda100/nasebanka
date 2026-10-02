@@ -1,0 +1,83 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function admin() { return signedIn() && request.auth.token.email == 'zdenek.buchta@nasebanka.example'; }
+    function deputy() { return signedIn() && get(/databases/$(database)/documents/accounts/$(request.auth.uid)).data.role == 'zastupce'; }
+    match /accounts/{u} {
+      allow read: if signedIn();
+      allow create: if (request.resource.data.get('card','klasik') != 'casino_ace' || (admin() && request.auth.uid == u)) && (admin() || (signedIn() && request.auth.uid == u && request.resource.data.role == 'zakaznik')); 
+      allow update: if (request.resource.data.get('card','klasik') != 'casino_ace' || (admin() && request.auth.uid == u) || (resource.data.role == 'majitel' && request.resource.data.card == resource.data.card)) && (admin()
+        || (signedIn() && request.auth.uid == u && request.resource.data.role == resource.data.role)
+        || (deputy() && resource.data.role != 'majitel' && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['bal','tx']))
+        || (signedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['bal','tx']) && request.resource.data.bal > resource.data.bal)
+        || (deputy() && u != request.auth.uid && resource.data.role != 'majitel' && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['casinoChips','casinoTx']) && request.resource.data.casinoChips is int && request.resource.data.casinoChips >= 0)
+        || (signedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['casinoChips','casinoTx']) && request.resource.data.casinoChips is int && request.resource.data.casinoChips > resource.data.get('casinoChips',0))); 
+      allow delete: if admin() || (deputy() && resource.data.role == 'zakaznik');
+    }
+    match /requests/{u} {
+      allow read: if signedIn();
+      allow write: if signedIn() && request.auth.uid == u;
+    }
+    match /messages/{m} {
+      allow read: if signedIn() && (resource.data.from == request.auth.uid || resource.data.to == request.auth.uid);
+      allow create: if signedIn() && request.resource.data.from == request.auth.uid;
+      allow update: if signedIn() && resource.data.to == request.auth.uid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','read']);
+    }
+    match /announcements/{a} {
+      allow read: if signedIn();
+      allow create, delete: if admin();
+    }
+    match /logins/{name} {
+      allow get: if true;
+      allow create: if signedIn() && request.resource.data.keys().hasOnly(['email','uid']) && request.resource.data.uid == request.auth.uid && request.resource.data.email == request.auth.token.email;
+      allow delete: if admin() || (signedIn() && resource.data.uid == request.auth.uid);
+    }
+    match /lottery/{day} {
+      allow read: if signedIn();
+      function paidForTicket() {
+        return getAfter(/databases/$(database)/documents/accounts/$(request.auth.uid)).data.bal == get(/databases/$(database)/documents/accounts/$(request.auth.uid)).data.bal - 20;
+      }
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['closesAt','status','tickets'])
+        && request.resource.data.status == 'open'
+        && request.resource.data.closesAt > request.time.toMillis()
+        && request.resource.data.tickets == [request.auth.uid]
+        && paidForTicket();
+      allow update: if signedIn() && resource.data.status == 'open' && (
+        (request.time.toMillis() < resource.data.closesAt
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['tickets'])
+          && request.resource.data.tickets == resource.data.tickets.concat([request.auth.uid])
+          && request.resource.data.tickets.size() <= 300 && paidForTicket())
+        || (request.time.toMillis() >= resource.data.closesAt
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','winner','winnerName','prize','drawnAt'])
+          && request.resource.data.status == 'drawn'
+          && request.resource.data.winner in resource.data.tickets
+          && request.resource.data.prize == resource.data.tickets.size() * 40)
+      );
+    }
+    match /casinoRounds/{day} {
+      allow read: if signedIn();
+      function paidForTicket() {
+        return getAfter(/databases/$(database)/documents/accounts/$(request.auth.uid)).data.casinoChips == get(/databases/$(database)/documents/accounts/$(request.auth.uid)).data.casinoChips - 2;
+      }
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['closesAt','status','tickets'])
+        && request.resource.data.status == 'open'
+        && request.resource.data.closesAt > request.time.toMillis()
+        && request.resource.data.tickets == [request.auth.uid]
+        && paidForTicket();
+      allow update: if signedIn() && resource.data.status == 'open' && (
+        (request.time.toMillis() < resource.data.closesAt
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['tickets'])
+          && request.resource.data.tickets == resource.data.tickets.concat([request.auth.uid])
+          && request.resource.data.tickets.size() <= 300 && paidForTicket())
+        || (request.time.toMillis() >= resource.data.closesAt
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','winner','winnerName','prize','drawnAt'])
+          && request.resource.data.status == 'drawn'
+          && request.resource.data.winner in resource.data.tickets
+          && request.resource.data.prize == resource.data.tickets.size() * 4)
+      );
+    }
+  }
+}
