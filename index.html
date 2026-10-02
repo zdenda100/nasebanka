@@ -211,9 +211,14 @@ textarea{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--
   </section>
 
   <section id="loan" class="hidden">
-    <div class="card"><h2>Půjčky</h2><p>Půjč si od banky až <b>1 000 Kč</b>. Vrátíš o 10 % víc. Najednou můžeš mít jen jednu půjčku.</p>
+    <div class="card"><h2>Půjčky</h2><p>Půjč si od banky až <b>100 000 Kč</b>. Vrátíš o 10 % víc. Najednou můžeš mít jen jednu půjčku.</p>
       <small>Dluh k zaplacení</small><div class="big" style="font-size:1.8rem" id="lvdebt">0,00 Kč</div>
-      <label for="lamt">Kolik si chceš půjčit (Kč)</label><input id="lamt" type="number" min="1" placeholder="500">
+      <label for="lamt">Kolik si chceš půjčit (Kč)</label><input id="lamt" type="number" min="1" max="100000" step="0.01" placeholder="10000">
+      <label for="lautoamount">Automatická splátka (Kč)</label><input id="lautoamount" type="number" min="0.01" step="0.01" placeholder="1000">
+      <label for="lautodate">Datum první splátky (ve 20:00 českého času)</label><input id="lautodate" type="date">
+      <label for="lautofreq">Jak často splácet</label><select id="lautofreq"><option value="monthly">Každý měsíc</option><option value="weekly">Každý týden</option><option value="daily">Každý den</option></select>
+      <p style="margin-top:12px"><button class="btn ghost" id="lschedule">Uložit plán ke stávající půjčce</button></p>
+      <p id="lplanstatus"></p><small>Splátky se zpracují, když máš banku otevřenou ty nebo majitel. Zmeškané splátky se doženou z dostupných peněz; při nedostatku peněz čekají. Poslední splátka bude nejvýše zbývající dluh.</small>
       <p style="margin-top:12px"><button class="btn" id="ltake">Půjčit si</button></p>
       <label for="lpay">Splátka (Kč)</label><input id="lpay" type="number" min="1" placeholder="100">
       <div class="row2"><button class="btn ghost" id="lrepay">Splatit část</button><button class="btn ghost" id="lall">Splatit vše</button></div>
@@ -221,7 +226,7 @@ textarea{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--
   </section>
 
   <section id="rr" class="hidden">
-    <div class="card"><h2>Kasino · Točící automat</h2><p>Jen fiktivní peníze. Tři stejné symboly: výplata ×5, právě dva stejné: ×2. Sázka se odečte před výplatou. Prohraná sázka patří majiteli, výplaty vznikají nově.</p>
+    <div class="card"><h2>Kasino · Točící automat</h2><p>Jen fiktivní peníze. Tři stejné symboly: 🍒 ×3, 🍋 ×5, ⭐ ×8, 🔔 ×10, 🍇 ×15, 💎 ×20. Právě dva stejné symboly: ×2. Sázka se odečte před výplatou. Prohraná sázka patří majiteli, výplaty vznikají nově.</p>
     <small>Zůstatek na hlavním účtu</small><div class="big" style="font-size:1.8rem" id="rrbal"></div>
     <div id="reels" aria-live="polite" style="font-size:2.6rem;letter-spacing:.15em;margin:18px 0;text-align:center;background:var(--bg);border-radius:12px;padding:18px">🍒 🍋 ⭐</div>
     <label for="rramt">Sázka (Kč)</label><input id="rramt" type="number" min="1" step="1" placeholder="50">
@@ -464,6 +469,7 @@ function tab(t){
 $("tabs").onclick=function(e){var b=e.target.closest("button");if(b)tab(b.getAttribute("data-t"))};
 function startCommon(){
   startLottery();
+  startLoanPayments();
   $("tppl").classList.toggle("hidden",!(isAdmin||myRole==="zastupce"));
   $("annnew").classList.toggle("hidden",!isAdmin);
   unsubs.push(db.doc("accounts/"+uid).onSnapshot(function(sn){myDoc=sn.exists?sn.data():{};badges();renderLoan();renderRR()}));
@@ -560,28 +566,73 @@ $("spsave").onclick=async function(){
   try{var u=auth.currentUser;await reauthenticateWithCredential(u,EmailAuthProvider.credential(u.email,op));await updatePassword(u,np);$("sop").value="";$("snp").value="";m.className="msg ok";m.textContent="Heslo změněno."}
   catch(x){m.textContent=(x.code==="auth/invalid-credential"||x.code==="auth/wrong-password")?"Staré heslo není správně.":aerr(x.code)}
 };
-var LOAN_MAX=1000,LOAN_FEE=0.1,REDS=[1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36],RRC={red:"#c62828",black:"#222",green:"#1b7a4b"},RRN={red:"červená",black:"černá",green:"zelená"},rrHist=[],spinning=false;
+var LOAN_MAX=100000,LOAN_FEE=0.1,REDS=[1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36],RRC={red:"#c62828",black:"#222",green:"#1b7a4b"},RRN={red:"červená",black:"černá",green:"zelená"},rrHist=[],spinning=false;
 function errt(x){return "Nepovedlo se: "+((x&&(x.code||x.message))||"")}
-function renderLoan(){$("lvdebt").textContent=kc(myDoc.loan||0)}
+function renderLoan(){$("lvdebt").textContent=kc(myDoc.loan||0);var p=myDoc.loanPlan;$('lplanstatus').textContent=!(myDoc.loan>0)?'Nemáš žádný dluh.':p?'Plán: '+kc(p.amount)+' · '+({daily:'denně',weekly:'týdně',monthly:'měsíčně'}[p.frequency])+' · další splátka '+p.nextDate+' ve 20:00.':'U této půjčky ještě není nastavený plán splácení.';}
 function renderRR(){$("rrbal").textContent=kc(myDoc.bal||0)}
 async function myAcct(){return (await db.doc("accounts/"+uid).get()).data()}
+function dueTime(date){return roundAt(Date.parse(date+'T12:00:00Z')).closesAt}
+function readLoanPlan(){
+  var amount=Number($('lautoamount').value),date=$('lautodate').value,frequency=$('lautofreq').value;
+  if(!Number.isFinite(amount)||amount<=0||amount>110000||r2(amount)!==amount)throw Error('Zadej automatickou splátku od 0,01 do 110 000 Kč.');
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(Date.parse(date+'T12:00:00Z'))||dueTime(date)<=Date.now())throw Error('Vyber datum první splátky, jehož 20:00 ještě nenastalo.');
+  if(!['daily','weekly','monthly'].includes(frequency))throw Error('Vyber četnost splácení.');
+  return {amount,frequency,nextDate:date,anchorDay:Number(date.slice(8))};
+}
+function nextLoanDate(plan){
+  var d=new Date(plan.nextDate+'T12:00:00Z');
+  if(plan.frequency==='monthly'){
+    d.setUTCDate(1);d.setUTCMonth(d.getUTCMonth()+1);
+    var last=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,0)).getUTCDate();d.setUTCDate(Math.min(plan.anchorDay,last));
+  }else d.setUTCDate(d.getUTCDate()+(plan.frequency==='weekly'?7:1));
+  return d.toISOString().slice(0,10);
+}
+function loanPaymentDue(me,time,own){
+  var p=me.loanPlan;if(!p||!(me.loan>0)||!Number.isFinite(p.amount)||p.amount<=0||!['daily','weekly','monthly'].includes(p.frequency)||!(p.anchorDay>=1&&p.anchorDay<=31)||!/^\d{4}-\d{2}-\d{2}$/.test(p.nextDate))return null;
+  p={...p};var debt=r2(me.loan),balance=r2(me.bal),total=0,count=0;
+  while(debt>0&&dueTime(p.nextDate)<=time&&count<3660){
+    var installment=Math.min(p.amount,debt);if(balance<installment)break;
+    total=r2(total+installment);debt=r2(debt-installment);if(!own)balance=r2(balance-installment);count++;
+    p.nextDate=nextLoanDate(p);
+  }
+  return count?{total,count,debt,balance,plan:debt>0?p:null}:null;
+}
+$('lschedule').onclick=async function(){var m=$('lmsg');m.className='msg err';this.disabled=true;
+  try{var plan=readLoanPlan(),id=uid;await runTransaction(fdb,async tr=>{var ref=fdoc(fdb,'accounts',id),sn=await tr.get(ref);if(!sn.exists()||!(sn.data().loan>0))throw Error('Nejdřív si vezmi půjčku.');tr.update(ref,{loanPlan:plan})});m.className='msg ok';m.textContent='Plán splácení uložen.';
+  }catch(e){m.textContent=errt(e)}finally{this.disabled=false}
+};
+var payingLoans=false;
+async function payDueLoans(){
+  if(payingLoans||!uid)return;var owner=accts.find(x=>x.role==='majitel');if(!owner)return;
+  var activeUid=uid,ids=(isAdmin?accts:accts.filter(x=>x.id===activeUid)).filter(x=>x.loan>0&&x.loanPlan&&dueTime(x.loanPlan.nextDate)<=Date.now()).map(x=>x.id);
+  if(!ids.length)return;payingLoans=true;
+  try{for(var id of ids){if(uid!==activeUid)break;await runTransaction(fdb,async tr=>{
+    var ref=fdoc(fdb,'accounts',id),sn=await tr.get(ref);if(!sn.exists())return;
+    var me=sn.data(),payment=loanPaymentDue(me,Date.now(),id===owner.id);if(!payment)return;
+    var or=fdoc(fdb,'accounts',owner.id),os=id===owner.id?sn:await tr.get(or);if(!os.exists())throw Error('Účet majitele neexistuje.');
+    tr.update(ref,{bal:payment.balance,loan:payment.debt,loanPlan:payment.plan,tx:txlog(me,'Automatická splátka půjčky ('+payment.count+'×)'+(id===owner.id?' · příjem majitele':''),id===owner.id?0:-payment.total)});
+    if(id!==owner.id)tr.update(or,{bal:r2(os.data().bal+payment.total),tx:txlog(os.data(),'Automatická splátka od '+me.name,payment.total)});
+  })}}catch(e){$('lmsg').className='msg err';$('lmsg').textContent=errt(e)}finally{payingLoans=false}
+}
+function startLoanPayments(){var timer=setInterval(payDueLoans,15000);unsubs.push(()=>clearInterval(timer));}
+
 function amount(v){return Number.isSafeInteger(v)&&v>0&&v<=1000000000}
 function ownerId(){var o=accts.find(x=>x.role==='majitel');if(!o)throw Error('Účet majitele ještě není načtený. Zkus to za chvíli.');return o.id}
 function txlog(o,t,v){return [{t:t,d:now(),a:v}].concat(o.tx||[]).slice(0,30)}
 async function loanChange(mode){
   var m=$('lmsg');m.className='msg err';
   ['ltake','lrepay','lall'].forEach(x=>$(x).disabled=true);
-  try{var entered=Number($(mode==='take'?'lamt':'lpay').value),oid=mode==='take'?null:ownerId();
+  try{var entered=Number($(mode==='take'?'lamt':'lpay').value),oid=mode==='take'?null:ownerId(),plan=mode==='take'?readLoanPlan():null;
     var paid=await runTransaction(fdb,async tr=>{
       var ref=fdoc(fdb,'accounts',uid),sn=await tr.get(ref),me=sn.data(),debt=me.loan||0,v=mode==='all'?debt:entered;
       if(!Number.isFinite(v)||v<=0||r2(v)!==v)throw Error('Zadej kladnou částku, nejvýše na dvě desetinná místa.');
       if(mode==='take'){
-        if(v>LOAN_MAX)throw Error('Maximum půjčky je 1 000 Kč.');if(debt>0)throw Error('Nejdřív splať stávající půjčku.');
-        tr.update(ref,{bal:r2(me.bal+v),loan:r2(v*1.1),loanAt:Date.now(),tx:txlog(me,'Půjčka od banky',v)});
+        if(v>LOAN_MAX)throw Error('Maximum půjčky je 100 000 Kč.');if(debt>0)throw Error('Nejdřív splať stávající půjčku.');
+        tr.update(ref,{bal:r2(me.bal+v),loan:r2(v*1.1),loanPlan:plan,loanAt:Date.now(),tx:txlog(me,'Půjčka od banky',v)});
       }else{
         if(debt<=0)throw Error('Nemáš žádnou půjčku.');v=Math.min(v,debt);if(v>me.bal)throw Error('Na účtu není dost peněz.');
         var or=fdoc(fdb,'accounts',oid),os=oid===uid?sn:await tr.get(or);if(!os.exists())throw Error('Účet majitele neexistuje.');
-        tr.update(ref,{bal:r2(me.bal-(oid===uid?0:v)),loan:r2(debt-v),tx:txlog(me,oid===uid?'Splátka vlastní půjčky (příjem majitele)':'Splátka půjčky',oid===uid?0:-v)});
+        tr.update(ref,{bal:r2(me.bal-(oid===uid?0:v)),loan:r2(debt-v),loanPlan:debt===v?null:(me.loanPlan||null),tx:txlog(me,oid===uid?'Splátka vlastní půjčky (příjem majitele)':'Splátka půjčky',oid===uid?0:-v)});
         if(oid!==uid)tr.update(or,{bal:r2(os.data().bal+v),tx:txlog(os.data(),'Splátka půjčky od '+me.name,v)});
       }return v;
     });m.className='msg ok';m.textContent=(mode==='take'?'Půjčeno: ':'Splaceno: ')+kc(paid);$('lamt').value='';$('lpay').value='';
@@ -590,12 +641,13 @@ async function loanChange(mode){
 $('ltake').onclick=()=>loanChange('take');$('lrepay').onclick=()=>loanChange('part');$('lall').onclick=()=>loanChange('all');
 function randomBelow(n){var x,limit=4294967296-4294967296%n;do{x=crypto.getRandomValues(new Uint32Array(1))[0]}while(x>=limit);return x%n}
 const symbols=['🍒','🍋','⭐','🔔','🍇','💎'];
+const triplePayouts=[3,5,8,10,15,20];
 $('slotspin').onclick=async function(){
   if(spinning)return;var bet=Number($('rramt').value),m=$('rrmsg');m.className='msg err';
   if(!amount(bet)){m.textContent='Zadej sázku v celých korunách (1 až 1 000 000 000).';return}
   spinning=true;this.disabled=true;var timer;
-  try{var oid=ownerId(),roll=[randomBelow(6),randomBelow(6),randomBelow(6)],count=new Set(roll).size,mult=count===1?5:count===2?2:0,net=bet*(mult-1);
-    timer=setInterval(()=>{$('reels').textContent=Array.from({length:3},()=>symbols[randomBelow(6)]).join(' ')},90);
+  try{var oid=ownerId(),roll=[randomBelow(symbols.length),randomBelow(symbols.length),randomBelow(symbols.length)],count=new Set(roll).size,mult=count===1?triplePayouts[roll[0]]:count===2?2:0,net=bet*(mult-1);
+    timer=setInterval(()=>{$('reels').textContent=Array.from({length:3},()=>symbols[randomBelow(symbols.length)]).join(' ')},90);
     await runTransaction(fdb,async tr=>{
       var ref=fdoc(fdb,'accounts',uid),sn=await tr.get(ref),me=sn.data(),or=fdoc(fdb,'accounts',oid),os=oid===uid?sn:await tr.get(or);
       if(!os.exists())throw Error('Účet majitele neexistuje.');if(bet>me.bal)throw Error('Na účtu není dost peněz.');
