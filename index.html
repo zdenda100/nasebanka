@@ -234,6 +234,9 @@ textarea{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--
     <label for="rramt">Sázka (1 až 100 žetonů)</label><input id="rramt" type="number" min="1" max="100" step="1" value="1"><small>1 žeton = 10 Kč · doporučený začátek: 1–5 žetonů</small><p style="margin-top:12px"><button class="btn" id="slotspin">Roztočit automat</button></p><div id="rrmsg" class="msg" role="status"></div></div>
     <div class="card"><h2>Večerní loterie</h2><p>Losování každý den ve <b>20:00 českého času</b>. Los stojí <b>2 žetony (20 Kč)</b>. Jeden výherní los získá dvojnásobek žetonů vložených do kola.</p><p>Losování se dokončí při prvním otevření přihlášené banky po 20:00. Nevýherní losy připadnou majiteli.</p><p id="legacyLottery"></p>
     <div id="lotinfo">Načítání loterie…</div><p style="margin-top:12px"><button class="btn" id="lotbuy" disabled>Koupit los za 2 žetony</button></p><div id="lotmsg" class="msg" role="status"></div><div id="lotresults"></div></div>
+    <div class="card"><h2>Stírací los · Zlatá šance</h2><p>Jeden los stojí <b>3 žetony</b>. Setři los a najdi výplatu až <b>60 žetonů</b>. Výplata 3 žetony vrací cenu losu; vyšší částky už znamenají zisk. Nevýherné losy jdou majiteli a výhry se nově připíšou hráči.</p>
+    <div id="scratchticket" hidden><div style="position:relative;max-width:480px;margin:18px auto;border:2px solid #c6a762;border-radius:16px;overflow:hidden;background:linear-gradient(135deg,#082f24,#185640);color:#f6dfa0;aspect-ratio:3/1;display:grid;place-items:center"><strong id="scratchprize" style="font-size:clamp(16px,5vw,30px)"></strong><canvas id="scratchcover" width="600" height="200" aria-label="Stírací plocha losu" style="position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair"></canvas></div><p id="scratchcaption"></p><button class="btn ghost" id="scratchreveal">Odkrýt celý los</button></div>
+    <p><button class="btn" id="scratchbuy">Koupit los · 3 žetony</button></p><div id="scratchmsg" class="msg" role="status"></div><details><summary>Možné výplaty a šance</summary><p>Bez výhry: 60 % · 3 žetony: 20 % · 6 žetonů: 12 % · 12 žetonů: 6 % · 30 žetonů: 1,5 % · 60 žetonů: 0,5 %. Částky zahrnují cenu losu. Los zůstává uložený i po obnovení stránky.</p></details></div>
     <div class="card"><h2>Pohyby žetonů</h2><div id="chiptx"></div></div>
   </section>
 
@@ -258,7 +261,7 @@ textarea{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--
       <div id="qres" class="msg" role="status"></div><div id="qpay"></div></div>
   </section>
 
-  <footer>NašeBanka je fiktivní banka – školní projekt. Žádné skutečné peníze ani údaje. Verze 2.8</footer>
+  <footer>NašeBanka je fiktivní banka – školní projekt. Žádné skutečné peníze ani údaje. Verze 2.9</footer>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
@@ -668,6 +671,50 @@ async function changeUserChips(add){var m=$('chipadminmsg'),id=$('chipadminwho')
 }
 $('chipadminadd').onclick=()=>changeUserChips(true);$('chipadminsub').onclick=()=>changeUserChips(false);
 
+function scratchPrize(n){return n<600?0:n<800?3:n<920?6:n<980?12:n<995?30:60}
+var scratchBusy=false,scratchCanvasKey='',scratchPointer=null;
+async function purchaseScratch(id,previous,ticket){
+  return runTransaction(fdb,async tr=>{var ref=fdoc(fdb,'accounts',id),sn=await tr.get(ref);if(!sn.exists())throw Error('Účet neexistuje.');var o=sn.data(),last=o.scratchLast;
+    if(last&&(!last.claimed||last.id!==previous))return last;
+    if(chipBalance(o)<3)throw Error('Na stírací los potřebuješ 3 žetony.');
+    tr.update(ref,{casinoChips:chipBalance(o)-3,casinoTx:chipLog(o,'Nákup stíracího losu',-3),scratchLast:ticket});return ticket;
+  });
+}
+async function settleScratch(id,ticketId,oid){
+  return runTransaction(fdb,async tr=>{var ref=fdoc(fdb,'accounts',id),sn=await tr.get(ref);if(!sn.exists())throw Error('Účet neexistuje.');var o=sn.data(),t=o.scratchLast;
+    if(!t||t.id!==ticketId||t.claimed)return;
+    var or=fdoc(fdb,'accounts',oid),os=t.prize===0?(oid===id?sn:await tr.get(or)):null;
+    if(os&&!os.exists())throw Error('Účet majitele neexistuje.');
+    var amount=t.prize+(t.prize===0&&oid===id?3:0);
+    tr.update(ref,{scratchLast:{...t,claimed:true},casinoChips:chipBalance(o)+amount,casinoTx:chipLog(o,t.prize?'Stírací los: výplata':oid===id?'Stírací los: prohra · příjem majitele':'Stírací los: bez výhry',amount)});
+    if(t.prize===0&&oid!==id)tr.update(or,{casinoChips:chipBalance(os.data())+3,casinoTx:chipLog(os.data(),'Stírací los: prohra hráče '+o.name,3)});
+  });
+}
+function renderScratch(){
+  var t=myDoc.scratchLast,active=t&&!t.claimed;
+  $('scratchbuy').disabled=scratchBusy||!!active;$('scratchbuy').textContent=t?'Koupit další los · 3 žetony':'Koupit los · 3 žetony';
+  $('scratchreveal').disabled=scratchBusy||!active;$('scratchticket').hidden=!t;
+  if(!t){scratchCanvasKey='';return}
+  $('scratchprize').textContent=t.prize?chips(t.prize):'Tentokrát bez výhry';
+  $('scratchcaption').textContent=t.claimed?(t.prize?'Výplata připsána na tvůj žetonový účet.':'Los je vyhodnocený.'):'Setři plochu nebo použij tlačítko pod losem.';
+  var canvas=$('scratchcover');canvas.hidden=!!t.claimed;
+  if(active&&scratchCanvasKey!==uid+':'+t.id){scratchCanvasKey=uid+':'+t.id;var c=canvas.getContext('2d');c.globalCompositeOperation='source-over';var g=c.createLinearGradient(0,0,600,200);g.addColorStop(0,'#d9dfdb');g.addColorStop(.5,'#8caaa0');g.addColorStop(1,'#d9dfdb');c.fillStyle=g;c.fillRect(0,0,600,200);c.fillStyle='#214b3b';c.textAlign='center';c.font='bold 30px sans-serif';c.fillText('✦ SETŘI A VYHRAJ ✦',300,110);}
+}
+async function revealScratch(){if(scratchBusy||!myDoc.scratchLast||myDoc.scratchLast.claimed)return;var id=uid,t=myDoc.scratchLast;scratchBusy=true;renderScratch();
+  try{await settleScratch(id,t.id,ownerId());$('scratchmsg').className='msg ok';$('scratchmsg').textContent='Los byl vyhodnocen.'}
+  catch(e){$('scratchmsg').className='msg err';$('scratchmsg').textContent=errt(e)}finally{scratchBusy=false;renderScratch()}
+}
+$('scratchbuy').onclick=async()=>{if(scratchBusy)return;var id=uid,previous=myDoc.scratchLast?.id||null,ticket={id:crypto.randomUUID(),prize:scratchPrize(randomBelow(1000)),claimed:false,at:Date.now()};scratchBusy=true;renderScratch();
+  try{await purchaseScratch(id,previous,ticket);$('scratchmsg').className='msg ok';$('scratchmsg').textContent='Los je připravený ke setření.'}
+  catch(e){$('scratchmsg').className='msg err';$('scratchmsg').textContent=errt(e)}finally{scratchBusy=false;renderScratch()}
+};
+$('scratchreveal').onclick=revealScratch;
+function scratchAt(e){var canvas=$('scratchcover'),b=canvas.getBoundingClientRect(),x=(e.clientX-b.left)*600/b.width,y=(e.clientY-b.top)*200/b.height,c=canvas.getContext('2d');c.globalCompositeOperation='destination-out';c.lineWidth=46;c.lineCap='round';c.beginPath();c.moveTo(scratchPointer.x,scratchPointer.y);c.lineTo(x,y);c.stroke();c.beginPath();c.arc(x,y,23,0,Math.PI*2);c.fill();scratchPointer.x=x;scratchPointer.y=y;}
+$('scratchcover').onpointerdown=e=>{if(scratchBusy||!myDoc.scratchLast||myDoc.scratchLast.claimed)return;var b=e.currentTarget.getBoundingClientRect();scratchPointer={id:e.pointerId,x:(e.clientX-b.left)*600/b.width,y:(e.clientY-b.top)*200/b.height};e.currentTarget.setPointerCapture(e.pointerId);scratchAt(e)};
+$('scratchcover').onpointermove=e=>{if(scratchPointer&&scratchPointer.id===e.pointerId)scratchAt(e)};
+$('scratchcover').onpointerup=e=>{if(!scratchPointer||scratchPointer.id!==e.pointerId)return;scratchPointer=null;var data=e.currentTarget.getContext('2d').getImageData(0,0,600,200).data,clear=0,total=0;for(var i=3;i<data.length;i+=64){total++;if(data[i]<128)clear++}if(clear/total>=.4)revealScratch()};
+$('scratchcover').onpointercancel=()=>{scratchPointer=null};
+
 const CHIP_RATE=10;
 function chipBalance(o){return Number.isSafeInteger(o.casinoChips)&&o.casinoChips>=0?o.casinoChips:0}
 function chips(n){return n.toLocaleString('cs-CZ')+' ž.'}
@@ -688,6 +735,7 @@ async function exchangeChips(buy){var m=$('cxmsg'),n=Number($('cxamount').value)
 $('cxbuy').onclick=()=>exchangeChips(true);$('cxsell').onclick=()=>exchangeChips(false);
 $('cxamount').oninput=()=>{$('cxquote').textContent=Number.isSafeInteger(Number($('cxamount').value))&&Number($('cxamount').value)>0?kc(Number($('cxamount').value)*CHIP_RATE):'Zadej počet celých žetonů.'};
 function renderCasino(){
+  renderScratch();
   renderChipAdmin();
   $('rrbal').textContent=chips(chipBalance(myDoc));$('cxcash').textContent=kc(myDoc.bal||0);$('cxvalue').textContent='Hodnota žetonů: '+kc(chipBalance(myDoc)*CHIP_RATE);
   $('chiptx').innerHTML=(myDoc.casinoTx||[]).map(x=>'<div class="tx"><div><b>'+esc(x.t)+'</b><small>'+esc(x.d)+'</small></div><span class="'+(x.a<0?'neg':'pos')+'">'+(x.a>0?'+':'')+chips(x.a)+'</span></div>').join('')||'<p class="empty">Zatím žádné pohyby žetonů.</p>';
