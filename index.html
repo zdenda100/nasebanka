@@ -910,32 +910,62 @@ async function enter(user,typed,isNew){
   db.doc("requests/"+uid).set({name:nm,type:isNew?"register":"login",at:Date.now()}).catch(function(){});
   myName=nm;enterMember(nm);startCommon();tab("acc");
 }
-$("doreg").onclick=async function(){
-  var n=$("rn").value.trim(),pw=$("rp").value,e=$("rerr");e.textContent="";
-  if(!n||!pw){e.textContent="Vyplň jméno i heslo.";return}
-  if(!mail(n)){e.textContent="Jméno musí obsahovat písmena nebo čísla.";return}
-  manualAuth=true;
-  try{
-    const { data, error } = await supabase.auth.signUp({ email: mail(n), password: pw });
-    if (error) throw error;
-    await db.doc("logins/"+slug(n)).set({email:mail(n),uid:data.user.id});
-    await enter(data.user,n,true);$("rp").value="";
-  }catch(x){e.textContent=aerr(x.message)}finally{manualAuth=false}
+$("doreg").onclick = async function() {
+  var n = $("rn").value.trim(), pw = $("rp").value, e = $("rerr"); 
+  e.textContent = "";
+  
+  if(!n || !pw) { e.textContent = "Vyplň jméno i heslo."; return; }
+  if(!mail(n)) { e.textContent = "Jméno musí obsahovat písmena nebo čísla."; return; }
+  
+  manualAuth = true;
+  try {
+    // Vytvoříme jedinečné ID pro nového uživatele v Appwrite
+    const userId = ID.unique();
+    // Zaregistrujeme ho (využíváme funkci e-mailu přes naši funkci mail(n))
+    await account.create(userId, mail(n), pw, n);
+    // Hned ho po registraci přihlásíme, aby nemusel točit formulář znovu
+    await account.createEmailPasswordSession(mail(n), pw);
+    // Pustíme ho dovnitř aplikace
+    await enter({ id: userId, email: mail(n) }, n, true);
+    $("rp").value = "";
+  } catch(x) {
+    e.textContent = aerr(x.message);
+  } finally {
+    manualAuth = false;
+  }
 };
-$("go").onclick=async function(){
-  var n=$("u").value.trim(),pw=$("p").value,e=$("lerr");e.textContent="";
-  if(!mail(n)||!pw){e.textContent="Nesprávné jméno nebo heslo.";return}
-  manualAuth=true;
-  try{
-    var em=await emailFor(n);
-    const { data, error } = await supabase.auth.signInWithPassword({ email: em, password: pw });
-    if (error) throw error;
-    await enter(data.user, n, false);$("p").value=""
-  }catch(x){e.textContent=aerr(x.message)}finally{manualAuth=false}
+$("go").onclick = async function() {
+  var n = $("u").value.trim(), pw = $("p").value, e = $("lerr"); 
+  e.textContent = "";
+  
+  if(!mail(n) || !pw) { e.textContent = "Nesprávné jméno nebo heslo."; return; }
+  
+  manualAuth = true;
+  try {
+    // Zjistíme e-mail podle zadaného jména
+    var em = await emailFor(n);
+    // Přihlásíme uživatele do Appwrite
+    await account.createEmailPasswordSession(em, pw);
+    // Stáhneme si info o aktuálně přihlášeném uživateli
+    var user = await account.get();
+    await enter(user, n, false);
+    $("p").value = "";
+  } catch(x) {
+    e.textContent = aerr(x.message);
+  } finally {
+    manualAuth = false;
+  }
 };
 function clearSession(){stopScan();uid=null;loadTheme();stop();reqs=[];apps={};msgsIn=[];msgsOut=[];anns=[];myDoc={};accts=[];myRole="zakaznik";["team","ann","qr","set","loan","rr","ppl","design","activity","invest"].forEach(function(x){$(x).classList.add("hidden")});$("reqcard").classList.add("hidden");$("p").value="";show("login")}
-$("logout").onclick=async()=>{try{await supabase.auth.signOut();clearSession()}catch(e){alert("Odhlášení se nezdařilo. Zkus to znovu.")}};
-
+$("logout").onclick = async () => {
+  try {
+    // Řekneme Appwrite, ať zruší aktivní přihlášení
+    await account.deleteSession('current');
+    clearSession();
+  } catch(e) {
+    alert("Odhlášení se nezdařilo. Zkus to znovu.");
+  }
+};
 function startAdmin(){
   if(!db)return;isAdmin=true;if(uid)S.people[0].uid=uid;
   unsubs.push(db.collection("accounts").onSnapshot(function(sn){
