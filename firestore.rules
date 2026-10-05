@@ -4,6 +4,7 @@ service cloud.firestore {
     function signedIn() { return request.auth != null; }
     function admin() { return signedIn() && request.auth.token.email == 'zdenek.buchta@nasebanka.example'; }
     function deputy() { return signedIn() && get(/databases/$(database)/documents/accounts/$(request.auth.uid)).data.role == 'zastupce'; }
+    function role(r) { return signedIn() && get(/databases/$(database)/documents/accounts/$(request.auth.uid)).data.role == r; }
     match /accounts/{u} {
       allow read: if signedIn();
       allow create: if (request.resource.data.get('card','klasik') != 'casino_ace' || (admin() && request.auth.uid == u)) && (admin() || (signedIn() && request.auth.uid == u && request.resource.data.role == 'zakaznik')); 
@@ -16,8 +17,28 @@ service cloud.firestore {
       allow delete: if admin() || (deputy() && resource.data.role == 'zakaznik');
     }
     match /requests/{u} {
-      allow read: if signedIn();
+      allow read: if admin() || role('vyvojar');
       allow write: if signedIn() && request.auth.uid == u;
+    }
+    match /cardDesigns/{id} {
+      allow read: if signedIn();
+      function validDesign() {
+        let d = request.resource.data;
+        return d.keys().hasAll(['name','image','dark','recipients','createdBy','updatedAt'])
+          && d.keys().hasOnly(['name','image','dark','recipients','createdBy','updatedAt'])
+          && d.name is string && d.name.size() > 0 && d.name.size() <= 60
+          && d.image is string && d.image.size() <= 450000
+          && d.image.matches('data:image/jpeg;base64,[A-Za-z0-9+/=]+')
+          && d.dark is bool && d.recipients is list && d.recipients.size() > 0 && d.recipients.size() <= 200
+          && d.createdBy is string && d.updatedAt is number;
+      }
+      allow create: if (admin() || role('grafik')) && request.resource.data.createdBy == request.auth.uid && validDesign();
+      allow update: if (admin() || (role('grafik') && resource.data.createdBy == request.auth.uid))
+        && request.resource.data.createdBy == resource.data.createdBy && validDesign();
+      allow delete: if admin();
+    }
+    match /appConfig/{id} {
+      allow read, write: if admin();
     }
     match /messages/{m} {
       allow read: if signedIn() && (resource.data.from == request.auth.uid || resource.data.to == request.auth.uid);
