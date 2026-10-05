@@ -68,6 +68,7 @@ textarea{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--
 .pcard>*{position:relative;z-index:1}
 .pcard>svg.art{position:absolute;z-index:0;right:0;top:0;width:78%;height:100%}
 .pcard .bot span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%}
+.market-item{display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);margin-bottom:6px;cursor:pointer}.market-item[aria-pressed="true"]{border-color:var(--brand);box-shadow:inset 3px 0 var(--brand)}.market-item>span:last-child{text-align:right;flex-shrink:0}.market-item small{font-size:.75rem}.market-item b{overflow-wrap:anywhere}button:disabled{opacity:.5;cursor:not-allowed}
 </style>
 </head>
 <body>
@@ -76,7 +77,7 @@ textarea{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--
     <div class="logo"><i>N</i>NašeBanka</div>
     <button class="btn ghost hidden" id="logout">Odhlásit se</button>
   </header>
-  <nav id="tabs" class="tabs hidden"><button data-t="acc" class="on">Účet</button><button data-t="team">Tým</button><button data-t="ann">Oznámení<span class="nb hidden" id="nba"></span></button><button data-t="qr">QR</button><button data-t="loan">Půjčky</button><button data-t="rr">Kasino</button><button data-t="set">Nastavení</button><button data-t="ppl" id="tppl" class="hidden">Lidé</button><button data-t="design" id="tdesign" class="hidden">Design karet</button><button data-t="activity" id="tactivity" class="hidden">Přihlášení</button></nav>
+  <nav id="tabs" class="tabs hidden"><button data-t="acc" class="on">Účet</button><button data-t="team">Tým</button><button data-t="ann">Oznámení<span class="nb hidden" id="nba"></span></button><button data-t="qr">QR</button><button data-t="loan">Půjčky</button><button data-t="rr">Kasino</button><button data-t="invest">Investice</button><button data-t="set">Nastavení</button><button data-t="ppl" id="tppl" class="hidden">Lidé</button><button data-t="design" id="tdesign" class="hidden">Design karet</button><button data-t="activity" id="tactivity" class="hidden">Přihlášení</button></nav>
 
   <section id="login" class="card">
     <h1>Přihlášení</h1>
@@ -240,6 +241,13 @@ textarea{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--
     <div class="card"><h2>Pohyby žetonů</h2><div id="chiptx"></div></div>
   </section>
 
+  <section id="invest" class="hidden">
+    <div class="card hero"><h2>Investice · herní burza</h2><div class="big" id="investvalue">0,00 Kč</div><p>Hodnota tvého portfolia</p></div>
+    <div class="card"><h2>Obchoduj za fiktivní Kč</h2><p>Všechny ceny a grafy jsou simulované. Známé značky nejsou napojené na skutečnou burzu a nenakupuješ skutečné akcie. Vymyšlené firmy mění kurz každé <b>3 sekundy</b>, známé značky každých <b>30 sekund</b>. Obchodovat můžeš hned.</p><div class="grid"><div><small>Volné Kč na účtu</small><b id="investcash"></b></div><div><small>Nerealizovaný zisk / ztráta</small><b id="investgain"></b></div></div></div>
+    <div class="card"><h2>Vyber investici</h2><label for="investcategory">Kategorie</label><select id="investcategory"><option value="all">Všechny investice</option><option value="tech">Technologie · známé značky</option><option value="banks">Banky · známé značky</option><option value="oil">Ropa a energetika</option><option value="fiction">Vymyšlené firmy · rychlé kurzy</option></select><div id="investmarket" style="max-height:370px;overflow:auto;margin-top:14px"></div></div>
+    <div class="card"><h2 id="investname">Apple</h2><div id="investprice" class="big"></div><small id="investclock"></small><div id="investchart"></div><p id="investowned"></p><label for="investqty">Počet kusů</label><input id="investqty" type="number" min="1" max="100000" step="1" value="1"><p id="investquote" style="margin-top:10px"></p><div class="row2"><button class="btn" id="investbuy">Koupit</button><button class="btn ghost" id="investsell">Prodat</button></div><div id="investmsg" class="msg" role="status"></div></div>
+    <div class="card"><h2>Moje portfolio</h2><div id="investportfolio"></div></div><div class="card"><h2>Poslední obchody</h2><div id="investhistory"></div></div>
+  </section>
   <section id="activity" class="hidden"><div class="card"><h2>Přihlášení a registrace</h2><p>Poslední aktivita každého uživatele.</p><div id="activitylist"></div></div></section>
   <section id="design" class="hidden"><div class="card"><h2>Studio karet</h2><p>Nahraj vlastní pozadí karty. Jméno a číslo doplní banka. Obrázek se ořízne na poměr karty; v náhledu zkontroluj čitelnost.</p><label for="designselect">Design</label><select id="designselect"><option value="">Nový design</option></select><label for="designname">Název karty</label><input id="designname" maxlength="60"><label for="designfile">Obrázek pozadí (PNG, JPG, WebP do 10 MB)</label><input id="designfile" type="file" accept="image/png,image/jpeg,image/webp"><label><input id="designdark" type="checkbox" style="width:auto"> Tmavý text na světlém pozadí</label><div class="cardwrap"><div id="designpreview" class="pcard" style="background:linear-gradient(135deg,#0f4c45,#0a2925)"><div class="top"><span>NašeBanka</span><div class="chip"></div></div><div class="num">9000 1234 5678 0000</div><div class="bot"><span>Ukázkové jméno</span><span>12/29</span></div></div></div><fieldset style="border:1px solid var(--line);border-radius:12px;padding:14px"><legend>Komu kartu zpřístupnit</legend><div id="designrecipients" style="max-height:300px;overflow:auto"></div></fieldset><p><button class="btn" id="designsave">Uložit a přidělit kartu</button></p><p>Karta se příjemcům zobrazí ve výběru karet zdarma. Grafik upravuje své návrhy, majitel všechny.</p><div id="designmsg" class="msg" role="status"></div></div></section>
   <dialog id="resetdialog" style="background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:16px;max-width:420px"><h2>Nové heslo</h2><p id="resetname"></p><label for="resetpassword">Nové heslo (alespoň 6 znaků)</label><input id="resetpassword" type="password" autocomplete="new-password"><p>Původní heslo se nezobrazuje. Nové heslo se neukládá do historie banky.</p><div class="row2"><button class="btn" id="resetsave">Nastavit nové heslo</button><button class="btn ghost" id="resetcancel">Zrušit</button></div><div class="msg err" id="resetmsg" role="alert"></div></dialog>
@@ -264,7 +272,7 @@ textarea{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--
       <div id="qres" class="msg" role="status"></div><div id="qpay"></div></div>
   </section>
 
-  <footer>NašeBanka je fiktivní banka – školní projekt. Žádné skutečné peníze ani údaje. Verze 3.0.1</footer>
+  <footer>NašeBanka je fiktivní banka – školní projekt. Žádné skutečné peníze ani údaje. Verze 3.1</footer>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
@@ -473,22 +481,24 @@ $("dlist").addEventListener("click",async function(e){
 });
 function tab(t){
   curTab=t;
-  ["team","ann","qr","set","loan","rr","ppl","design","activity"].forEach(function(x){$(x).classList.toggle("hidden",x!==t)});
+  ["team","ann","qr","set","loan","rr","ppl","design","activity","invest"].forEach(function(x){$(x).classList.toggle("hidden",x!==t)});
   (isAdmin?$("app"):$("member")).classList.toggle("hidden",t!=="acc");
   document.querySelectorAll("#tabs button").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-t")===t)});
   $("admin").classList.toggle("hidden",!isAdmin);
   $("deputy").classList.toggle("hidden",isAdmin||myRole!=="zastupce");
+  if(t==="invest")renderInvestments();
   if(t!=="qr")stopScan();
   if(t==="ann")markAnn();if(t==="qr")drawQR();
 }
 $("tabs").onclick=function(e){var b=e.target.closest("button");if(b)tab(b.getAttribute("data-t"))};
 function startCommon(){
+  startInvestments();
   startDesigns();
   startChips();
   startLoanPayments();
   $("tppl").classList.toggle("hidden",!(isAdmin||myRole==="zastupce"));
   $("annnew").classList.toggle("hidden",!isAdmin);
-  unsubs.push(db.doc("accounts/"+uid).onSnapshot(function(sn){myDoc=sn.exists?sn.data():{};myRole=myDoc.role||"zakaznik";syncRoleTools();badges();renderLoan();renderRR();refreshCustomGallery()}));
+  unsubs.push(db.doc("accounts/"+uid).onSnapshot(function(sn){myDoc=sn.exists?sn.data():{};myRole=myDoc.role||"zakaznik";syncRoleTools();badges();renderLoan();renderRR();refreshCustomGallery();renderInvestments()}));
   unsubs.push(db.collection("announcements").onSnapshot(function(sn){anns=mapd(sn);renderAnn();badges();if(curTab==="ann")markAnn()}));
   unsubs.push(db.collection("accounts").onSnapshot(function(sn){accts=mapd(sn);renderTeam();renderDesignEditor()}));
 }
@@ -501,7 +511,7 @@ function renderTeam(){
   renderChipAdmin();
   var ord={majitel:0,zastupce:1,vyvojar:2,grafik:3,zakaznik:4};
   $("tlist").innerHTML=accts.slice().sort(function(a,b){var x=ord[a.role],y=ord[b.role];return (x===undefined?2:x)-(y===undefined?2:y)||String(a.name).localeCompare(b.name)}).map(function(x){
-    return '<div class="prow"><div class="pn"><b>'+esc(x.name)+'</b><small>'+lbl(x.role)+'</small></div>'+(x.role==="majitel"||x.role==="zastupce"?'<span class="badge">'+lbl(x.role)+'</span>':'')+'</div>'}).join("")||'<p class="empty">Zatím nikdo.</p>';
+    return '<div class="prow"><div class="pn"><b>'+esc(x.name)+'</b><small>'+lbl(x.role)+'</small></div>'+(["majitel","zastupce","grafik","vyvojar"].includes(x.role)?'<span class="badge">'+lbl(x.role)+'</span>':'')+'</div>'}).join("")||'<p class="empty">Zatím nikdo.</p>';
 }
 function renderAnn(){
   $("annl").innerHTML=anns.slice().sort(function(a,b){return b.at-a.at}).map(function(x){return '<div class="tx"><div><b>'+esc(x.text)+'</b><small>'+esc(x.by||"")+' · '+new Date(x.at).toLocaleString("cs-CZ")+'</small></div></div>'}).join("")||'<p class="empty">Zatím žádná oznámení.</p>';
@@ -850,7 +860,7 @@ $("go").onclick=async function(){
   if(!mail(n)||!pw){e.textContent="Nesprávné jméno nebo heslo.";return}
   manualAuth=true;try{await persistenceReady;var em=await emailFor(n);var c=await signInWithEmailAndPassword(auth,em,pw);await enter(c.user,n,false);$("p").value=""}catch(x){e.textContent=aerr(x.code)}finally{manualAuth=false}
 };
-function clearSession(){stopScan();uid=null;stop();reqs=[];apps={};msgsIn=[];msgsOut=[];anns=[];myDoc={};accts=[];myRole="zakaznik";["team","ann","qr","set","loan","rr","ppl","design","activity"].forEach(function(x){$(x).classList.add("hidden")});$("reqcard").classList.add("hidden");$("p").value="";show("login")}
+function clearSession(){stopScan();uid=null;stop();reqs=[];apps={};msgsIn=[];msgsOut=[];anns=[];myDoc={};accts=[];myRole="zakaznik";["team","ann","qr","set","loan","rr","ppl","design","activity","invest"].forEach(function(x){$(x).classList.add("hidden")});$("reqcard").classList.add("hidden");$("p").value="";show("login")}
 $("logout").onclick=async()=>{try{await signOut(auth);clearSession()}catch(e){alert("Odhlášení se nezdařilo. Zkus to znovu.")}};
 function startAdmin(){
   if(!db)return;isAdmin=true;if(uid)S.people[0].uid=uid;
@@ -970,6 +980,53 @@ $('resetdialog').addEventListener('close',()=>{$('resetpassword').value='';reset
 $('resetsave').onclick=async()=>{if(!isAdmin||!resetEnabled||!resetTarget)return;var password=$('resetpassword').value;$('resetmsg').textContent='';if(password.length<6){$('resetmsg').textContent='Nové heslo musí mít alespoň 6 znaků.';return}$('resetsave').disabled=true;
   try{var {getFunctions,httpsCallable}=await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js');await httpsCallable(getFunctions(fbApp,'europe-west1'),'resetAccountPassword')({uid:resetTarget,password});$('resetdialog').close();amsg('Nové heslo bylo nastaveno.',true)}catch(e){$('resetmsg').textContent='Heslo se nepodařilo změnit. '+errt(e)}finally{$('resetpassword').value='';$('resetsave').disabled=false}
 };
+
+// This market is a game: brand names identify simulations, never live securities.
+var INVEST_ASSETS=[
+ ['apple','Apple','AAPL','tech',180],['microsoft','Microsoft','MSFT','tech',160],['nvidia','NVIDIA','NVDA','tech',95],['alphabet','Alphabet / Google','GOOGL','tech',125],['amazon','Amazon','AMZN','tech',120],['meta','Meta','META','tech',140],['samsung','Samsung','SAMS','tech',80],['tsmc','TSMC','TSM','tech',90],['amd','AMD','AMD','tech',65],['intel','Intel','INTC','tech',35],['asml','ASML','ASML','tech',240],['sap','SAP','SAP','tech',130],
+ ['jpmorgan','JPMorgan Chase','JPM','banks',110],['bofa','Bank of America','BAC','banks',45],['citi','Citigroup','C','banks',55],['hsbc','HSBC','HSBC','banks',60],['barclays','Barclays','BARC','banks',32],['deutsche','Deutsche Bank','DB','banks',38],['bnp','BNP Paribas','BNP','banks',72],['ubs','UBS','UBS','banks',75],['moneta','MONETA Money Bank','MONET','banks',25],['kb','Komerční banka','KOMB','banks',85],['erste','Erste Group','ERST','banks',90],
+ ['shell','Shell','SHEL','oil',60],['bp','BP','BP','oil',40],['exxon','ExxonMobil','XOM','oil',90],['chevron','Chevron','CVX','oil',95],['total','TotalEnergies','TTE','oil',70],['brent','Ropa Brent · herní kontrakt','BRENT','oil',75],
+ ['novabyte','NovaByte Labs','NOVA','fiction',35],['quantumfox','Quantum Fox','QFOX','fiction',60],['cloudpanda','Cloud Panda','PANDA','fiction',25],['neonrobotics','Neon Robotics','NEON','fiction',90],['pixelrocket','Pixel Rocket','PXLR','fiction',18],['orbitcola','Orbit Cola','COLA','fiction',12],['sunvolt','SunVolt Energy','SUNV','fiction',50],['turbotaco','Turbo Taco','TACO','fiction',15],['moonforge','MoonForge Industries','MOON','fiction',75],['velvetbank','Velvet Bank','VBNK','fiction',40],['crystalcargo','Crystal Cargo','CRYS','fiction',22],['bytebloom','ByteBloom AI','BLOOM','fiction',110]
+].map(([id,name,symbol,category,base])=>({id,name,symbol,category,base,interval:category==='fiction'?3000:30000}));
+var investSelected='apple',investBusy=false,investShownAt=0;
+function investAsset(id){return INVEST_ASSETS.find(a=>a.id===id)}
+function investPrice(asset,time){var tick=Math.floor(time/asset.interval),seed=0;for(var c of asset.id)seed=(seed*31+c.charCodeAt(0))>>>0;var noise=Math.sin(tick*.618+seed)*Math.sin(tick*.173+seed/7),wave=Math.sin(tick/28+seed);return r2(Math.max(1,asset.base*(1+(asset.category==='fiction'?.22:.045)*noise+.08*wave)))}
+function investSettlement(account,asset,quantity,buy,price){
+  if(!Number.isSafeInteger(quantity)||quantity<1||quantity>100000)throw Error('Zadej 1 až 100 000 celých kusů.');
+  if(!asset||!Number.isFinite(price)||price<=0)throw Error('Kurz není dostupný.');
+  var positions={...(account.investPositions||{})},old=positions[asset.id]||{qty:0,cost:0},total=r2(quantity*price);
+  if(buy&&account.bal<total)throw Error('Na účtu nemáš dost Kč.');
+  if(!buy&&old.qty<quantity)throw Error('Tolik kusů nevlastníš.');
+  var qty=old.qty+(buy?quantity:-quantity),cost=buy?r2(old.cost+total):r2(old.cost*(qty/old.qty));
+  if(qty)positions[asset.id]={qty,cost};else delete positions[asset.id];
+  return {bal:r2(account.bal+(buy?-total:total)),investPositions:positions,total,profit:buy?0:r2(total-old.cost*quantity/old.qty)};
+}
+function buildInvestMarket(){
+  var category=$('investcategory').value||'all',list=INVEST_ASSETS.filter(a=>category==='all'||a.category===category);
+  $('investmarket').innerHTML=list.map(a=>'<button class="market-item" data-asset="'+a.id+'" aria-pressed="'+(a.id===investSelected)+'"><span><b>'+esc(a.name)+'</b><small>'+a.symbol+' · '+(a.category==='fiction'?'vymyšlená firma':a.id==='brent'?'simulovaná komodita':'známá značka · simulace')+'</small></span><span><strong id="ip_'+a.id+'"></strong><small id="ic_'+a.id+'"></small></span></button>').join('');renderInvestments();
+}
+function renderInvestments(){
+  if(!uid)return;var time=Date.now(),a=investAsset(investSelected),price=investPrice(a,time),positions=myDoc.investPositions||{},total=0,cost=0;
+  for(var item of INVEST_ASSETS){var p=investPrice(item,time),previous=investPrice(item,time-item.interval),change=(p/previous-1)*100,el=$('ip_'+item.id),cl=$('ic_'+item.id);if(el){el.textContent=kc(p);cl.textContent=(change>=0?'+':'')+change.toFixed(2).replace('.',',')+' % za krok';cl.className=change>=0?'pos':'neg'}var holding=positions[item.id];if(holding){total+=holding.qty*p;cost+=holding.cost}}
+  $('investcash').textContent=kc(myDoc.bal||0);$('investvalue').textContent=kc(r2(total));$('investgain').textContent=(total-cost>=0?'+':'')+kc(r2(total-cost));$('investgain').className=total-cost>=0?'pos':'neg';
+  $('investname').textContent=a.name+' · '+a.symbol;$('investprice').textContent=kc(price);$('investclock').textContent='Další herní kurz za '+Math.ceil((a.interval-time%a.interval)/1000)+' s · nákup i prodej ihned';
+  $('investowned').textContent='Vlastníš '+(positions[a.id]?.qty||0).toLocaleString('cs-CZ')+' ks';
+  var n=Number($('investqty').value),valid=Number.isSafeInteger(n)&&n>=1&&n<=100000;$('investquote').textContent=valid?'Celkem '+kc(r2(n*price))+' · bez poplatku':'Zadej počet celých kusů.';
+  $('investbuy').disabled=investBusy||!valid;$('investsell').disabled=investBusy||!valid||(positions[a.id]?.qty||0)<n;
+  var values=Array.from({length:24},(_,i)=>investPrice(a,time-(23-i)*a.interval)),min=Math.min(...values)*.99,max=Math.max(...values)*1.01;
+  $('investchart').innerHTML='<svg viewBox="0 0 600 100" role="img" aria-label="Vývoj herní ceny za posledních 24 kroků" style="width:100%;height:100px"><polyline fill="none" stroke="var(--brand)" stroke-width="3" points="'+values.map((v,i)=>(i*600/23).toFixed(1)+','+(95-(v-min)/(max-min)*90).toFixed(1)).join(' ')+'"/></svg>';
+  $('investportfolio').innerHTML=INVEST_ASSETS.filter(x=>positions[x.id]?.qty>0).map(x=>{var h=positions[x.id],value=r2(h.qty*investPrice(x,time)),gain=r2(value-h.cost);return '<div class="tx"><div><b>'+esc(x.name)+'</b><small>'+h.qty+' ks · vloženo '+kc(h.cost)+'</small></div><div><b>'+kc(value)+'</b><small class="'+(gain>=0?'pos':'neg')+'">'+(gain>=0?'+':'')+kc(gain)+'</small></div></div>'}).join('')||'<p class="empty">Zatím žádné investice. Vyber firmu a kup první kus.</p>';
+  $('investhistory').innerHTML=(myDoc.investTx||[]).slice(0,12).map(t=>'<div class="tx"><div><b>'+esc(t.text)+'</b><small>'+esc(t.date)+'</small></div><span class="'+(t.cash<0?'neg':'pos')+'">'+(t.cash>0?'+':'')+kc(t.cash)+'</span></div>').join('')||'<p class="empty">Zatím žádné obchody.</p>';
+  investShownAt=time;
+}
+async function tradeInvestment(buy){
+  if(investBusy||!uid)return;var id=uid,a=investAsset(investSelected),n=Number($('investqty').value),quotedAt=investShownAt,price=investPrice(a,quotedAt),m=$('investmsg');investBusy=true;renderInvestments();m.className='msg err';
+  try{var result=await runTransaction(fdb,async tr=>{if(Date.now()-quotedAt>30000)throw Error('Kurz vypršel. Zkus obchod znovu.');var ref=fdoc(fdb,'accounts',id),sn=await tr.get(ref);if(!sn.exists())throw Error('Účet neexistuje.');var o=sn.data(),s=investSettlement(o,a,n,buy,price),cash=buy?-s.total:s.total,text=(buy?'Nákup: ':'Prodej: ')+a.name+' · '+n+' ks za '+kc(price);tr.update(ref,{bal:s.bal,investPositions:s.investPositions,tx:txlog(o,text,cash),investTx:[{text,date:now(),cash}].concat(o.investTx||[]).slice(0,50)});return s});m.className='msg ok';m.textContent=(buy?'Nakoupeno ':'Prodáno ')+n+' ks '+a.name+' za '+kc(result.total)+(buy?'':'. Zisk/ztráta tohoto prodeje: '+kc(result.profit))+'.';}
+  catch(e){m.textContent=errt(e)}finally{investBusy=false;renderInvestments()}
+}
+$('investbuy').onclick=()=>tradeInvestment(true);$('investsell').onclick=()=>tradeInvestment(false);$('investqty').oninput=renderInvestments;$('investcategory').onchange=buildInvestMarket;
+$('investmarket').onclick=e=>{var button=e.target.closest('[data-asset]');if(!button)return;investSelected=button.dataset.asset;document.querySelectorAll('#investmarket [data-asset]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.asset===investSelected)));$('investmsg').textContent='';renderInvestments()};
+function startInvestments(){buildInvestMarket();var timer=setInterval(()=>{if(curTab==='invest')renderInvestments()},1000);unsubs.push(()=>{clearInterval(timer);$('investmsg').textContent='';$('investportfolio').innerHTML='';$('investhistory').innerHTML=''})}
 
 var manualAuth=false;
 var persistenceReady=setPersistence(auth,browserLocalPersistence);
