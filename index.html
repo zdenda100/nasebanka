@@ -1109,8 +1109,77 @@ function loadTheme(){themeChoice={mode:'system',hue:166};try{var t=JSON.parse(lo
 function saveTheme(){applyTheme();try{if(uid)localStorage.setItem('nb-theme-'+uid,JSON.stringify(themeChoice));$('thememsg').textContent='Vzhled uložen v tomto prohlížeči.'}catch(e){$('thememsg').textContent='Vzhled je změněný, ale prohlížeč jej nedovolil uložit.'}}
 $('thememode').onchange=()=>{themeChoice.mode=$('thememode').value;saveTheme()};$('themehue').oninput=()=>{themeChoice.hue=Number($('themehue').value);saveTheme()};$('themereset').onclick=()=>{themeChoice={mode:'system',hue:166};saveTheme()};themeMedia.addEventListener('change',applyTheme);
 
-var manualAuth=false;
-supabase.auth.onAuthStateChange(async (event, session) => {
+import { Client, Account, TablesDB, ID } from 'https://cdn.jsdelivr.net/npm/appwrite@16.0.0/+esm';
+
+const client = new Client()
+    .setEndpoint('https://cloud.appwrite.io/v1')
+    .setProject('6ac40885000a71a3f668'); // Sem dej ID projektu z Appwrite
+
+const account = new Account(client);
+const tablesDB = new TablesDB(client);
+const DATABASE_ID = '6ac409150020b5c7d266'; // Sem dej ID tvé TablesDB databáze
+
+// Adaptér pro Appwrite TablesDB namísto Firebase/Supabase
+const dbAdapter = {
+  doc: function(path) {
+    const parts = path.split('/');
+    const table = parts[0];
+    const id = parts[1];
+    return {
+      get: async function() {
+        try {
+          const row = await tablesDB.getRow(DATABASE_ID, table, id);
+          return { id: id, exists: true, data: function() { return row; } };
+        } catch(e) {
+          return { id: id, exists: false, data: function() { return {}; } };
+        }
+      },
+      set: async function(d) {
+        try {
+          await tablesDB.updateRow(DATABASE_ID, table, id, d);
+        } catch(e) {
+          await tablesDB.createRow(DATABASE_ID, table, id, d);
+        }
+      },
+      update: async function(d) {
+        await tablesDB.updateRow(DATABASE_ID, table, id, d);
+      },
+      delete: async function() {
+        await tablesDB.deleteRow(DATABASE_ID, table, id);
+      },
+      onSnapshot: function(cb) {
+        this.get().then(cb);
+        // Appwrite real-time se dá doplnit později, prozatím jednorázové načtení
+        return function() {};
+      }
+    };
+  },
+  collection: function(path) {
+    return {
+      onSnapshot: function(cb) {
+        tablesDB.listRows(DATABASE_ID, path).then(res => {
+          cb({ docs: (res.rows || []).map(d => ({ id: d.$id, exists: true, data: function() { return d; } })) });
+        });
+        return function() {};
+      }
+    };
+  },
+  add: async function(path, d) {
+    await tablesDB.createRow(DATABASE_ID, path, ID.unique(), d);
+  }
+};
+const db = dbAdapter;
+const fdb = null;
+
+// Automatické přihlášení přes Appwrite Session
+account.get().then(async (user) => {
+  uid = user.$id;
+  var ex = await db.doc("accounts/" + uid).get();
+  var nm = ex.exists ? ex.data().name : user.email.split('@')[0];
+  await enter(user, nm, false);
+}).catch(() => {
+  clearSession();
+});
   if(manualAuth) return;
   if(!session){ clearSession(); return; }
   if(uid===session.user.id) return;
