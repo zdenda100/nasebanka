@@ -264,7 +264,7 @@ textarea{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--
       <div id="qres" class="msg" role="status"></div><div id="qpay"></div></div>
   </section>
 
-  <footer>NašeBanka je fiktivní banka – školní projekt. Žádné skutečné peníze ani údaje. Verze 3.0</footer>
+  <footer>NašeBanka je fiktivní banka – školní projekt. Žádné skutečné peníze ani údaje. Verze 3.0.1</footer>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
@@ -488,7 +488,7 @@ function startCommon(){
   startLoanPayments();
   $("tppl").classList.toggle("hidden",!(isAdmin||myRole==="zastupce"));
   $("annnew").classList.toggle("hidden",!isAdmin);
-  unsubs.push(db.doc("accounts/"+uid).onSnapshot(function(sn){myDoc=sn.exists?sn.data():{};myRole=myDoc.role||"zakaznik";syncRoleTools();badges();renderLoan();renderRR()}));
+  unsubs.push(db.doc("accounts/"+uid).onSnapshot(function(sn){myDoc=sn.exists?sn.data():{};myRole=myDoc.role||"zakaznik";syncRoleTools();badges();renderLoan();renderRR();refreshCustomGallery()}));
   unsubs.push(db.collection("announcements").onSnapshot(function(sn){anns=mapd(sn);renderAnn();badges();if(curTab==="ann")markAnn()}));
   unsubs.push(db.collection("accounts").onSnapshot(function(sn){accts=mapd(sn);renderTeam();renderDesignEditor()}));
 }
