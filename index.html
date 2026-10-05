@@ -198,9 +198,8 @@ textarea{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--
         </div>
       </div>
     </section>
-
-    
   </main>
+
   <section id="set" class="hidden">
     <div class="card"><h2>Vzhled banky</h2><p>Vyber si svou barvu ze spektra. Nastavení se pamatuje pro tvůj účet v tomto prohlížeči.</p><label for="thememode">Režim</label><select id="thememode"><option value="system">Podle zařízení</option><option value="light">Světlý</option><option value="dark">Tmavý</option></select><label for="themehue">Barva motivu · <output id="themevalue">166°</output></label><input id="themehue" type="range" min="0" max="360" value="166" style="padding:0;height:30px;accent-color:var(--brand);background:linear-gradient(to right,red,#ff0,#0f0,#0ff,#00f,#f0f,red)"><p style="margin-top:16px"><button class="btn" id="themereset">Výchozí vzhled</button></p><div id="thememsg" class="msg" role="status"></div></div>
     <div class="card"><h2>Změna jména</h2><p>Nové jméno se zobrazí všem a použiješ ho i při přihlášení.</p>
@@ -256,8 +255,6 @@ textarea{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--
 
   <section id="team" class="hidden"><div class="card"><h2>Tým</h2><p>Lidé v bance. Seznam se načítá při přihlášení.</p><button class="btn ghost sm" id="refreshpeople">Obnovit seznam</button><div id="directorymsg" class="msg" role="status"></div><div id="tlist"></div></div></section>
 
-  
-
   <section id="ann" class="hidden">
     <div class="card hidden" id="annnew"><h2>Nové oznámení</h2><textarea id="annt" placeholder="Co je nového?"></textarea><p style="margin-top:12px"><button class="btn" id="annsend">Poslat všem</button></p><div id="annmsg" class="msg"></div></div>
     <div class="card"><h2>Oznámení</h2><div id="annl"></div></div>
@@ -273,32 +270,101 @@ textarea{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--
       <div id="qres" class="msg" role="status"></div><div id="qpay"></div></div>
   </section>
 
-  <footer>NašeBanka je fiktivní banka – školní projekt. Žádné skutečné peníze ani údaje. Verze 3.2</footer>
+  <footer>NašeBanka je fiktivní banka – školní projekt. Žádné skutečné peníze ani údaje. Verze 3.2 (Supabase Edition)</footer>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
 <script type="module">
-import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,EmailAuthProvider,reauthenticateWithCredential,updatePassword,onAuthStateChanged,setPersistence,browserLocalPersistence} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {runTransaction,getFirestore,doc as fdoc,getDoc,getDocs,setDoc,updateDoc,deleteDoc,addDoc,query,where,onSnapshot as fsnap,collection as fcol} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-const CFG={apiKey:"AIzaSyCnPWMK6Wpsc0HcMDINp4PMAFqR66UCqC4",authDomain:"nasebanka-bd9b3.firebaseapp.com",projectId:"nasebanka-bd9b3",storageBucket:"nasebanka-bd9b3.firebasestorage.app",messagingSenderId:"164586585177",appId:"1:164586585177:web:4bfcc69af9d16ce99d0548"};
-const fbApp=initializeApp(CFG);
-const auth=getAuth(fbApp),fdb=getFirestore(fbApp);
-const ADMIN="zdenek.buchta@nasebanka.example";
-function wrap(x){return{id:x.id,exists:x.exists(),data:function(){return x.data()}}}
-const dbAdapter={
-  doc:function(p){var r=fdoc(fdb,p);return{
-    get:async function(){return wrap(await getDoc(r))},
-    set:function(d){return setDoc(r,d,{merge:true})},
-    update:function(d){return updateDoc(r,d)},
-    delete:function(){return deleteDoc(r)},
-    onSnapshot:function(cb,er){return fsnap(r,function(x){cb(wrap(x))},er)}}},
-  collection:function(p){var c=fcol(fdb,p);return{
-    onSnapshot:function(cb,er){return fsnap(c,function(x){cb({docs:x.docs.map(wrap)})},er)}}}
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+const supabaseUrl = 'https://ugamttnoyxbbhbigoryu.supabase.co';
+const supabaseKey = 'sb_publishable_E_mSifLr47IlfaYBPigv9A_GTBvaS6T';
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+const dbAdapter = {
+  doc: function(path) {
+    const parts = path.split('/');
+    const table = parts[0];
+    const id = parts[1];
+    return {
+      get: async function() {
+        const { data, error } = await supabase.from(table).select('*').eq('id', id).single();
+        return { id: id, exists: !!data, data: function() { return data || {}; } };
+      },
+      set: async function(d) {
+        await supabase.from(table).upsert(Object.assign({ id: id }, d));
+      },
+      update: async function(d) {
+        await supabase.from(table).update(d).eq('id', id);
+      },
+      delete: async function() {
+        await supabase.from(table).delete().eq('id', id);
+      },
+      onSnapshot: function(cb, er) {
+        const channel = supabase.channel('public:' + table + ':' + id)
+          .on('postgres_changes', { event: '*', schema: 'public', table: table, filter: 'id=eq.' + id }, payload => {
+             cb({ id: id, exists: true, data: function() { return payload.new; } });
+          }).subscribe();
+        this.get().then(cb).catch(er);
+        return function() { supabase.removeChannel(channel); };
+      }
+    };
+  },
+  collection: function(path) {
+    return {
+      onSnapshot: function(cb, er) {
+        supabase.from(path).select('*').then(({ data, error }) => {
+          if (error) { if (er) er(error); return; }
+          cb({ docs: (data || []).map(d => ({ id: d.id, exists: true, data: function() { return d; } })) });
+        });
+        const channel = supabase.channel('public:' + path)
+          .on('postgres_changes', { event: '*', schema: 'public', table: path }, payload => {
+             supabase.from(path).select('*').then(({ data }) => {
+                cb({ docs: (data || []).map(d => ({ id: d.id, exists: true, data: function() { return d; } })) });
+             });
+          }).subscribe();
+        return function() { supabase.removeChannel(channel); };
+      }
+    };
+  },
+  add: async function(path, d) {
+    await supabase.from(path).insert(d);
+  },
+  where: function(p, f, v) {
+    return {
+      onSnapshot: function(cb, er) {
+        supabase.from(p).select('*').eq(f, v).then(({ data, error }) => {
+          if (error) { if (er) er(error); return; }
+          cb({ docs: (data || []).map(d => ({ id: d.id, exists: true, data: function() { return d; } })) });
+        });
+        return function() {};
+      }
+    };
+  }
 };
-dbAdapter.add=function(p,d){return addDoc(fcol(fdb,p),d)};
-dbAdapter.where=function(p,f,v){var q=query(fcol(fdb,p),where(f,"==",v));return{onSnapshot:function(cb,er){return fsnap(q,function(x){cb({docs:x.docs.map(wrap)})},er)}}};
+const db = dbAdapter;
+const fdb = null;
+const auth = { currentUser: null };
+
+async function runTransaction(fdb_instance, callback) {
+  const tr = {
+    get: async (ref) => await ref.get(),
+    set: async (ref, data) => await ref.set(data),
+    update: async (ref, data) => await ref.update(data)
+  };
+  return await callback(tr);
+}
+async function getDocs(queryObj) {
+  const { data, error } = await supabase.from(queryObj.table).select('*');
+  if (error) throw error;
+  return { docs: (data || []).map(d => ({ id: d.id, exists: true, data: function() { return d; } })) };
+}
+function fdoc(fdb_instance, table, id) { return dbAdapter.doc(table + '/' + id); }
+function fcol(fdb_instance, table) { return { table }; }
+function doc(fdb_instance, path) { return dbAdapter.doc(path); }
+function setDoc(ref, data) { return ref.set(data); }
+
 var $=function(i){return document.getElementById(i)};
 function fresh(){return{nid:2,people:[{id:1,name:"Zdeněk Buchta",bal:500,tx:[]}]}}
 var S;
@@ -389,7 +455,7 @@ function render(){
   if(db&&isAdmin)S.people.forEach(function(p){if(!p.uid)return;var j=JSON.stringify([p.name,p.bal,p.tx,p.role,p.sav,p.savAt,p.card]);if(sent[p.uid]!==j){sent[p.uid]=j;db.doc("accounts/"+p.uid).set({name:p.name,bal:p.bal,role:p.id===1?"majitel":(p.role||"zakaznik"),sav:p.sav||0,savAt:p.savAt||lastMon(),card:p.card||"klasik",tx:p.tx.slice(0,30)}).catch(function(x){var m=$("reqmsg");m.className="msg err";m.textContent="Účet se nepodařilo uložit: "+((x&&(x.code||x.message))||"")})}});
 }
 function amsg(t,ok){var m=$("amsg");m.className="msg "+(ok?"ok":"err");m.textContent=t}
-var watchD=false,db=dbAdapter,uid=null,unsubs=[],isAdmin=false,sent={},reqs=[],apps={},lastN=0;
+var watchD=false,uid=null,unsubs=[],isAdmin=false,sent={},reqs=[],apps={},lastN=0;
 async function sha(t){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0")}).join("")}
 function show(id){["login","reg","wait","member","app"].forEach(function(x){$(x).classList.toggle("hidden",x!==id)});$("logout").classList.toggle("hidden",id==="login"||id==="reg");$("tabs").classList.toggle("hidden",!(id==="member"||id==="app"))}
 function noDb(el){el.textContent="Tohle funguje jen pro lidi přihlášené na claude.ai, kteří mají k této stránce přístup od správce."}
@@ -427,7 +493,6 @@ function enterMember(name){
     $("mtxs").innerHTML=(d.tx&&d.tx.length)?d.tx.map(function(x){return '<div class="tx"><div><b>'+esc(x.t)+'</b><small>'+esc(x.d)+'</small></div><span class="'+(x.a<0?"neg":"pos")+'">'+(x.a>0?"+":"")+kc(x.a)+'</span></div>'}).join(""):'<p class="empty">Zatím žádné pohyby.</p>';
     renderOthers();
   }));
-
 }
 $("dlist").onclick=async function(e){
   var b=e.target.closest("button[data-d]");if(!b)return;
@@ -464,17 +529,13 @@ var myName="",myDoc={},msgsIn=[],msgsOut=[],anns=[],curTab="acc",stream=null,sca
 function mapd(sn){return sn.docs.map(function(d){var o=d.data();o.id=d.id;return o})}
 function nameOf(id){var a=accts.filter(function(x){return x.id===id})[0];return a?a.name:"?"}
 async function createPerson(name,pw){
-  var app2=initializeApp(CFG,"sec"+Date.now()),a2=getAuth(app2),f2=getFirestore(app2);
-  var c=await createUserWithEmailAndPassword(a2,mail(name),pw);
-  await setDoc(fdoc(f2,"accounts/"+c.user.uid),{name:name,bal:500,role:"zakaznik",sav:0,savAt:lastMon(),tx:[]});
-  await setDoc(fdoc(f2,"logins/"+slug(name)),{email:mail(name),uid:c.user.uid}).catch(function(){});
-  await signOut(a2);
+  throw new Error("Tato funkce je v Supabase zakázaná. Nový člověk se musí zaregistrovat sám z hlavní stránky.");
 }
 $("dadd").onclick=async function(){
   var m=$("dmsg"),n=$("dn").value.trim(),pw=$("dp").value;m.className="msg err";
   if(!n||!pw){m.textContent="Zadej jméno i heslo.";return}
   if(!mail(n)){m.textContent="Jméno musí obsahovat písmena nebo čísla.";return}
-  try{await createPerson(n,pw);$("dn").value="";$("dp").value="";m.className="msg ok";m.textContent=n+" přidán(a) s 500 Kč."}catch(x){m.textContent=aerr(x.code)}
+  try{await createPerson(n,pw);$("dn").value="";$("dp").value="";m.className="msg ok";m.textContent=n+" přidán(a) s 500 Kč."}catch(x){m.textContent=aerr(x.message)}
 };
 $("dlist").addEventListener("click",async function(e){
   var b=e.target.closest("button[data-x]");if(!b)return;var m=$("dmsg");
@@ -571,12 +632,14 @@ function slug(n){
 }
 function mail(n){var k=slug(n);return k?k+"@nasebanka.example":""}
 async function emailFor(n){try{var l=await db.doc("logins/"+slug(n)).get();if(l.exists)return l.data().email}catch(e){}return mail(n)}
-function aerr(c){
-  if(c==="auth/email-already-in-use")return "Tohle jméno už je zaregistrované.";
-  if(c==="auth/weak-password")return "Heslo musí mít aspoň 6 znaků.";
-  if(c==="auth/too-many-requests")return "Příliš mnoho pokusů, zkus to za chvíli.";
-  if(c==="auth/invalid-credential"||c==="auth/wrong-password"||c==="auth/user-not-found"||c==="auth/invalid-login-credentials")return "Nesprávné jméno nebo heslo.";
-  return "Něco se nepovedlo ("+c+").";
+function aerr(msg){
+  if(!msg) return "Něco se nepovedlo.";
+  let s = String(msg);
+  if(s.includes("already registered") || s.includes("User already exists")) return "Tohle jméno už je zaregistrované.";
+  if(s.includes("weak") || s.includes("least 6 characters")) return "Heslo musí mít aspoň 6 znaků.";
+  if(s.includes("Invalid login")) return "Nesprávné jméno nebo heslo.";
+  if(s.includes("rate limit")) return "Příliš mnoho pokusů, zkus to za chvíli.";
+  return "Něco se nepovedlo ("+s+").";
 }
 $("ssave").onclick=async function(){
   var nn=$("sname").value.trim(),m=$("smsg1"),k=slug(nn);m.className="msg err";
@@ -595,8 +658,11 @@ $("ssave").onclick=async function(){
 $("spsave").onclick=async function(){
   var op=$("sop").value,np=$("snp").value,m=$("smsg2");m.className="msg err";
   if(!op||!np){m.textContent="Vyplň staré i nové heslo.";return}
-  try{var u=auth.currentUser;await reauthenticateWithCredential(u,EmailAuthProvider.credential(u.email,op));await updatePassword(u,np);$("sop").value="";$("snp").value="";m.className="msg ok";m.textContent="Heslo změněno."}
-  catch(x){m.textContent=(x.code==="auth/invalid-credential"||x.code==="auth/wrong-password")?"Staré heslo není správně.":aerr(x.code)}
+  try{
+    const { error } = await supabase.auth.updateUser({ password: np });
+    if(error) throw error;
+    $("sop").value="";$("snp").value="";m.className="msg ok";m.textContent="Heslo změněno."
+  }catch(x){m.textContent=aerr(x.message)}
 };
 var LOAN_MAX=100000,LOAN_FEE=0.1,REDS=[1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36],RRC={red:"#c62828",black:"#222",green:"#1b7a4b"},RRN={red:"červená",black:"černá",green:"zelená"},rrHist=[],spinning=false;
 var quotaUntil=0;
@@ -631,7 +697,7 @@ function loanPaymentDue(me,time,own){
   return count?{total,count,debt,balance,plan:debt>0?p:null}:null;
 }
 $('lschedule').onclick=async function(){var m=$('lmsg');m.className='msg err';this.disabled=true;
-  try{var plan=readLoanPlan(),id=uid;await runTransaction(fdb,async tr=>{var ref=fdoc(fdb,'accounts',id),sn=await tr.get(ref);if(!sn.exists()||!(sn.data().loan>0))throw Error('Nejdřív si vezmi půjčku.');tr.update(ref,{loanPlan:plan})});m.className='msg ok';m.textContent='Plán splácení uložen.';
+  try{var plan=readLoanPlan(),id=uid;await runTransaction(fdb,async tr=>{var ref=fdoc(fdb,'accounts',id),sn=await tr.get(ref);if(!sn.exists||!(sn.data().loan>0))throw Error('Nejdřív si vezmi půjčku.');tr.update(ref,{loanPlan:plan})});m.className='msg ok';m.textContent='Plán splácení uložen.';
   }catch(e){m.textContent=errt(e)}finally{this.disabled=false}
 };
 var payingLoans=false;
@@ -640,9 +706,9 @@ async function payDueLoans(){
   var activeUid=uid,ids=(isAdmin?accts:accts.filter(x=>x.id===activeUid)).filter(x=>loanPaymentDue(x,Date.now(),x.id===owner.id)).map(x=>x.id);
   if(!ids.length)return;payingLoans=true;
   try{for(var id of ids){if(uid!==activeUid)break;await runTransaction(fdb,async tr=>{
-    var ref=fdoc(fdb,'accounts',id),sn=await tr.get(ref);if(!sn.exists())return;
+    var ref=fdoc(fdb,'accounts',id),sn=await tr.get(ref);if(!sn.exists)return;
     var me=sn.data(),payment=loanPaymentDue(me,Date.now(),id===owner.id);if(!payment)return;
-    var or=fdoc(fdb,'accounts',owner.id),os=id===owner.id?sn:await tr.get(or);if(!os.exists())throw Error('Účet majitele neexistuje.');
+    var or=fdoc(fdb,'accounts',owner.id),os=id===owner.id?sn:await tr.get(or);if(!os.exists)throw Error('Účet majitele neexistuje.');
     tr.update(ref,{bal:payment.balance,loan:payment.debt,loanPlan:payment.plan,tx:txlog(me,'Automatická splátka půjčky ('+payment.count+'×)'+(id===owner.id?' · příjem majitele':''),id===owner.id?0:-payment.total)});
     if(id!==owner.id)tr.update(or,{bal:r2(os.data().bal+payment.total),tx:txlog(os.data(),'Automatická splátka od '+me.name,payment.total)});
   })}}catch(e){$('lmsg').className='msg err';$('lmsg').textContent=errt(e)}finally{payingLoans=false}
@@ -664,7 +730,7 @@ async function loanChange(mode){
         tr.update(ref,{bal:r2(me.bal+v),loan:r2(v*1.1),loanPlan:plan,loanAt:Date.now(),tx:txlog(me,'Půjčka od banky',v)});
       }else{
         if(debt<=0)throw Error('Nemáš žádnou půjčku.');v=Math.min(v,debt);if(v>me.bal)throw Error('Na účtu není dost peněz.');
-        var or=fdoc(fdb,'accounts',oid),os=oid===uid?sn:await tr.get(or);if(!os.exists())throw Error('Účet majitele neexistuje.');
+        var or=fdoc(fdb,'accounts',oid),os=oid===uid?sn:await tr.get(or);if(!os.exists)throw Error('Účet majitele neexistuje.');
         tr.update(ref,{bal:r2(me.bal-(oid===uid?0:v)),loan:r2(debt-v),loanPlan:debt===v?null:(me.loanPlan||null),tx:txlog(me,oid===uid?'Splátka vlastní půjčky (příjem majitele)':'Splátka půjčky',oid===uid?0:-v)});
         if(oid!==uid)tr.update(or,{bal:r2(os.data().bal+v),tx:txlog(os.data(),'Splátka půjčky od '+me.name,v)});
       }return v;
@@ -682,8 +748,8 @@ async function changeUserChips(add){var m=$('chipadminmsg'),id=$('chipadminwho')
   if(!id||!Number.isSafeInteger(n)||n<1||n>1000000){m.textContent='Vyber účet a počet 1 až 1 000 000 žetonů.';return}
   $('chipadminadd').disabled=$('chipadminsub').disabled=true;
   try{await runTransaction(fdb,async tr=>{var ref=fdoc(fdb,'accounts',id),sn=await tr.get(ref),self=await tr.get(fdoc(fdb,'accounts',uid));
-    if(!sn.exists())throw Error('Účet neexistuje.');var o=sn.data();
-    if(!isAdmin&&(!self.exists()||self.data().role!=='zastupce'||o.role==='majitel'||id===uid))throw Error('Tento účet nemůžeš spravovat.');
+    if(!sn.exists)throw Error('Účet neexistuje.');var o=sn.data();
+    if(!isAdmin&&(!self.exists||self.data().role!=='zastupce'||o.role==='majitel'||id===uid))throw Error('Tento účet nemůžeš spravovat.');
     var total=chipBalance(o)+(add?n:-n);if(total<0)throw Error('Hráč nemá dost žetonů.');
     tr.update(ref,{casinoChips:total,casinoTx:chipLog(o,(add?'Přidáno':'Odebráno')+' správcem '+myName,add?n:-n)});
   });m.className='msg ok';m.textContent=(add?'Přidáno ':'Odebráno ')+chips(n)+'.';$('chipadminamount').value='';
@@ -694,17 +760,17 @@ $('chipadminadd').onclick=()=>changeUserChips(true);$('chipadminsub').onclick=()
 function scratchPrize(n){return n<600?0:n<800?3:n<920?6:n<980?12:n<995?30:60}
 var scratchBusy=false,scratchCanvasKey='',scratchPointer=null;
 async function purchaseScratch(id,previous,ticket){
-  return runTransaction(fdb,async tr=>{var ref=fdoc(fdb,'accounts',id),sn=await tr.get(ref);if(!sn.exists())throw Error('Účet neexistuje.');var o=sn.data(),last=o.scratchLast;
+  return runTransaction(fdb,async tr=>{var ref=fdoc(fdb,'accounts',id),sn=await tr.get(ref);if(!sn.exists)throw Error('Účet neexistuje.');var o=sn.data(),last=o.scratchLast;
     if(last&&(!last.claimed||last.id!==previous))return last;
     if(chipBalance(o)<3)throw Error('Na stírací los potřebuješ 3 žetony.');
     tr.update(ref,{casinoChips:chipBalance(o)-3,casinoTx:chipLog(o,'Nákup stíracího losu',-3),scratchLast:ticket});return ticket;
   });
 }
 async function settleScratch(id,ticketId,oid){
-  return runTransaction(fdb,async tr=>{var ref=fdoc(fdb,'accounts',id),sn=await tr.get(ref);if(!sn.exists())throw Error('Účet neexistuje.');var o=sn.data(),t=o.scratchLast;
+  return runTransaction(fdb,async tr=>{var ref=fdoc(fdb,'accounts',id),sn=await tr.get(ref);if(!sn.exists)throw Error('Účet neexistuje.');var o=sn.data(),t=o.scratchLast;
     if(!t||t.id!==ticketId||t.claimed)return;
     var or=fdoc(fdb,'accounts',oid),os=t.prize===0?(oid===id?sn:await tr.get(or)):null;
-    if(os&&!os.exists())throw Error('Účet majitele neexistuje.');
+    if(os&&!os.exists)throw Error('Účet majitele neexistuje.');
     var amount=t.prize+(t.prize===0&&oid===id?3:0);
     tr.update(ref,{scratchLast:{...t,claimed:true},casinoChips:chipBalance(o)+amount,casinoTx:chipLog(o,t.prize?'Stírací los: výplata':oid===id?'Stírací los: prohra · příjem majitele':'Stírací los: bez výhry',amount)});
     if(t.prize===0&&oid!==id)tr.update(or,{casinoChips:chipBalance(os.data())+3,casinoTx:chipLog(os.data(),'Stírací los: prohra hráče '+o.name,3)});
@@ -747,7 +813,7 @@ function exchangeResult(o,n,buy){
   return {bal:r2(o.bal+(buy?-cash:cash)),casinoChips:c+(buy?n:-n)};
 }
 async function exchangeChips(buy){var m=$('cxmsg'),n=Number($('cxamount').value),id=uid;m.className='msg err';$('cxbuy').disabled=$('cxsell').disabled=true;
-  try{await runTransaction(fdb,async tr=>{var ref=fdoc(fdb,'accounts',id),sn=await tr.get(ref);if(!sn.exists())throw Error('Účet neexistuje.');var o=sn.data(),next=exchangeResult(o,n,buy);
+  try{await runTransaction(fdb,async tr=>{var ref=fdoc(fdb,'accounts',id),sn=await tr.get(ref);if(!sn.exists)throw Error('Účet neexistuje.');var o=sn.data(),next=exchangeResult(o,n,buy);
     tr.update(ref,{...next,tx:txlog(o,buy?'Směna na '+chips(n):'Zpětná směna '+chips(n),n*CHIP_RATE*(buy?-1:1)),casinoTx:chipLog(o,buy?'Nákup žetonů':'Směna žetonů na Kč',n*(buy?1:-1))});
   });m.className='msg ok';m.textContent=buy?'Vyměněno '+kc(n*CHIP_RATE)+' za '+chips(n)+'.':'Vyměněno '+chips(n)+' za '+kc(n*CHIP_RATE)+'.';
   }catch(e){m.textContent=errt(e)}finally{$('cxbuy').disabled=$('cxsell').disabled=false}
@@ -776,7 +842,7 @@ $('slotspin').onclick=async function(){
     timer=setInterval(()=>{$('reels').textContent=Array.from({length:3},()=>symbols[randomBelow(6)]).join(' ')},90);
     await runTransaction(fdb,async tr=>{
       var ref=fdoc(fdb,'accounts',id),sn=await tr.get(ref),or=fdoc(fdb,'accounts',oid),os=oid===id?sn:await tr.get(or);
-      if(!sn.exists()||!os.exists())throw Error('Účet neexistuje.');var me=sn.data(),settled=slotSettlement(me,os.data(),bet,mult,oid===id);
+      if(!sn.exists||!os.exists)throw Error('Účet neexistuje.');var me=sn.data(),settled=slotSettlement(me,os.data(),bet,mult,oid===id);
       tr.update(ref,{casinoChips:settled.player,casinoTx:chipLog(me,'Automat: '+roll.map(x=>symbols[x]).join(' ')+(mult?' · výplata ×'+mult:oid===id?' · sázka vrácena majiteli':' · prohra'),settled.change)});
       if(!mult&&oid!==id)tr.update(or,{casinoChips:settled.house,casinoTx:chipLog(os.data(),'Automat: prohra hráče '+me.name,bet)});
     });await new Promise(r=>setTimeout(r,1000));clearInterval(timer);$('reels').textContent=roll.map(x=>symbols[x]).join(' ');
@@ -790,7 +856,7 @@ function renderChipLottery(){var r=roundAt(Date.now()),d=chipRounds.find(x=>x.id
   $('lotresults').innerHTML=chipRounds.filter(x=>x.status==='drawn').sort((a,b)=>b.closesAt-a.closesAt).slice(0,5).map(x=>'<div class="tx"><div><b>'+esc(x.id)+'</b><small>Výherce: '+esc(x.winnerName)+'</small></div><span class="pos">'+chips(x.prize)+'</span></div>').join('');
 }
 async function buyChipTicket(){if(lotBusy)return;lotBusy=true;renderChipLottery();var m=$('lotmsg'),id=uid;m.className='msg err';
-  try{var r=roundAt(Date.now());await runTransaction(fdb,async tr=>{var ref=fdoc(fdb,'casinoRounds',r.id),sn=await tr.get(ref),ar=fdoc(fdb,'accounts',id),as=await tr.get(ar),me=as.data(),d=sn.exists()?sn.data():{closesAt:r.closesAt,status:'open',tickets:[]};
+  try{var r=roundAt(Date.now());await runTransaction(fdb,async tr=>{var ref=fdoc(fdb,'casinoRounds',r.id),sn=await tr.get(ref),ar=fdoc(fdb,'accounts',id),as=await tr.get(ar),me=as.data(),d=sn.exists?sn.data():{closesAt:r.closesAt,status:'open',tickets:[]};
     if(Date.now()>=r.closesAt||d.status!=='open')throw Error('Začalo nové kolo. Zkus to znovu.');if(d.tickets.length>=300)throw Error('Všechny losy jsou prodané.');if(chipBalance(me)<2)throw Error('Na los potřebuješ 2 žetony.');
     tr.set(ref,{...d,tickets:d.tickets.concat(id)});tr.update(ar,{casinoChips:chipBalance(me)-2,casinoTx:chipLog(me,'Los do loterie '+r.id,-2)});
   });m.className='msg ok';m.textContent='Los koupený za 2 žetony.';
@@ -798,9 +864,9 @@ async function buyChipTicket(){if(lotBusy)return;lotBusy=true;renderChipLottery(
 }
 async function drawChipRounds(){if(chipDrawing||!uid||Date.now()<quotaUntil)return;chipDrawing=true;
   try{for(var round of chipRounds.filter(x=>x.status==='open'&&x.closesAt<=Date.now())){var oid=ownerId();await runTransaction(fdb,async tr=>{
-    var ref=fdoc(fdb,'casinoRounds',round.id),sn=await tr.get(ref);if(!sn.exists())return;var d=sn.data();if(d.status!=='open'||d.closesAt>Date.now()||!d.tickets.length)return;
+    var ref=fdoc(fdb,'casinoRounds',round.id),sn=await tr.get(ref);if(!sn.exists)return;var d=sn.data();if(d.status!=='open'||d.closesAt>Date.now()||!d.tickets.length)return;
     var winner=d.tickets[randomBelow(d.tickets.length)],wr=fdoc(fdb,'accounts',winner),ws=await tr.get(wr),or=fdoc(fdb,'accounts',oid),os=winner===oid?ws:await tr.get(or);
-    if(!ws.exists()||!os.exists())throw Error('Účet výherce nebo majitele byl odstraněn.');var prize=d.tickets.length*4,house=(d.tickets.length-1)*2,value=prize+(winner===oid?house:0);
+    if(!ws.exists||!os.exists)throw Error('Účet výherce nebo majitele byl odstraněn.');var prize=d.tickets.length*4,house=(d.tickets.length-1)*2,value=prize+(winner===oid?house:0);
     tr.update(wr,{casinoChips:chipBalance(ws.data())+value,casinoTx:chipLog(ws.data(),'Výhra v loterii '+round.id+(winner===oid?' a příjem majitele':''),value)});
     if(winner!==oid&&house>0)tr.update(or,{casinoChips:chipBalance(os.data())+house,casinoTx:chipLog(os.data(),'Loterie '+round.id+': nevýherní losy',house)});
     tr.update(ref,{status:'drawn',winner,winnerName:ws.data().name,prize,drawnAt:Date.now()});
@@ -809,7 +875,6 @@ async function drawChipRounds(){if(chipDrawing||!uid||Date.now()<quotaUntil)retu
 function startChips(){
   $('lotbuy').onclick=buyChipTicket;chipRounds=[];
   unsubs.push(db.collection('casinoRounds').onSnapshot(sn=>{chipRounds=mapd(sn);renderChipLottery();drawChipRounds()},e=>{$('lotmsg').textContent='Žetonová loterie: '+errt(e)}));
-  // Previously bought cash tickets keep their original payouts in Kč.
   unsubs.push(db.collection('lottery').onSnapshot(sn=>{rounds=mapd(sn);drawDue();$('legacyLottery').textContent=rounds.some(x=>x.status==='open')?'Dříve zakoupené korunové losy budou vyhodnocené zvlášť a vyplacené v Kč.':''},()=>{}));
   var timer=setInterval(()=>{renderChipLottery();drawChipRounds();drawDue()},15000);unsubs.push(()=>clearInterval(timer));
 }
@@ -825,9 +890,9 @@ var drawing=false;
 async function drawDue(){if(drawing||!uid||Date.now()<quotaUntil)return;drawing=true;
   try{for(var round of rounds.filter(x=>x.status==='open'&&x.closesAt<=Date.now())){
     var oid=ownerId();await runTransaction(fdb,async tr=>{
-      var ref=fdoc(fdb,'lottery',round.id),sn=await tr.get(ref);if(!sn.exists())return;var d=sn.data();if(d.status!=='open'||d.closesAt>Date.now()||!d.tickets.length)return;
+      var ref=fdoc(fdb,'lottery',round.id),sn=await tr.get(ref);if(!sn.exists)return;var d=sn.data();if(d.status!=='open'||d.closesAt>Date.now()||!d.tickets.length)return;
       var winner=d.tickets[randomBelow(d.tickets.length)],wr=fdoc(fdb,'accounts',winner),ws=await tr.get(wr),or=fdoc(fdb,'accounts',oid),os=winner===oid?ws:await tr.get(or);
-      if(!ws.exists()||!os.exists())throw Error('Losování čeká: účet výherce nebo majitele byl odstraněn.');
+      if(!ws.exists||!os.exists)throw Error('Losování čeká: účet výherce nebo majitele byl odstraněn.');
       var prize=d.tickets.length*40,house=(d.tickets.length-1)*20;
       tr.update(wr,{bal:r2(ws.data().bal+prize+(winner===oid?house:0)),tx:txlog(ws.data(),'Výhra v loterii '+round.id+(winner===oid?' a příjem majitele':''),prize+(winner===oid?house:0))});
       if(winner!==oid&&house>0)tr.update(or,{bal:r2(os.data().bal+house),tx:txlog(os.data(),'Loterie '+round.id+': nevýherní losy',house)});
@@ -836,11 +901,9 @@ async function drawDue(){if(drawing||!uid||Date.now()<quotaUntil)return;drawing=
   }}catch(e){$('lotmsg').className='msg err';$('lotmsg').textContent=errt(e)}finally{drawing=false}
 }
 
-
 async function enter(user,typed,isNew){
   stop();
-  uid=user.uid;loadTheme();
-  if(user.email===ADMIN){myName="Zdeněk Buchta";$("who").textContent=myName;S.people.forEach(intr);show("app");startAdmin();startCommon();tab("acc");return}
+  uid=user.id;loadTheme();
   var ref=db.doc("accounts/"+uid),ex=await ref.get();
   if(!ex.exists)await ref.set({name:typed,bal:500,role:"zakaznik",sav:0,savAt:lastMon(),tx:[]});
   var nm=ex.exists?ex.data().name:typed;
@@ -853,23 +916,28 @@ $("doreg").onclick=async function(){
   if(!mail(n)){e.textContent="Jméno musí obsahovat písmena nebo čísla.";return}
   manualAuth=true;
   try{
-    await persistenceReady;var tk=null;try{tk=await db.doc("logins/"+slug(n)).get()}catch(e2){}
-    if(tk&&tk.exists){e.textContent="Tohle jméno už je obsazené.";return}
-    var c=await createUserWithEmailAndPassword(auth,mail(n),pw);
-    await db.doc("logins/"+slug(n)).set({email:mail(n),uid:c.user.uid}).catch(function(){});
-    await enter(c.user,n,true);$("rp").value="";
-  }catch(x){e.textContent=aerr(x.code)}finally{manualAuth=false}
+    const { data, error } = await supabase.auth.signUp({ email: mail(n), password: pw });
+    if (error) throw error;
+    await db.doc("logins/"+slug(n)).set({email:mail(n),uid:data.user.id});
+    await enter(data.user,n,true);$("rp").value="";
+  }catch(x){e.textContent=aerr(x.message)}finally{manualAuth=false}
 };
 $("go").onclick=async function(){
   var n=$("u").value.trim(),pw=$("p").value,e=$("lerr");e.textContent="";
   if(!mail(n)||!pw){e.textContent="Nesprávné jméno nebo heslo.";return}
-  manualAuth=true;try{await persistenceReady;var em=await emailFor(n);var c=await signInWithEmailAndPassword(auth,em,pw);await enter(c.user,n,false);$("p").value=""}catch(x){e.textContent=aerr(x.code)}finally{manualAuth=false}
+  manualAuth=true;
+  try{
+    var em=await emailFor(n);
+    const { data, error } = await supabase.auth.signInWithPassword({ email: em, password: pw });
+    if (error) throw error;
+    await enter(data.user, n, false);$("p").value=""
+  }catch(x){e.textContent=aerr(x.message)}finally{manualAuth=false}
 };
 function clearSession(){stopScan();uid=null;loadTheme();stop();reqs=[];apps={};msgsIn=[];msgsOut=[];anns=[];myDoc={};accts=[];myRole="zakaznik";["team","ann","qr","set","loan","rr","ppl","design","activity","invest"].forEach(function(x){$(x).classList.add("hidden")});$("reqcard").classList.add("hidden");$("p").value="";show("login")}
-$("logout").onclick=async()=>{try{await signOut(auth);clearSession()}catch(e){alert("Odhlášení se nezdařilo. Zkus to znovu.")}};
+$("logout").onclick=async()=>{try{await supabase.auth.signOut();clearSession()}catch(e){alert("Odhlášení se nezdařilo. Zkus to znovu.")}};
+
 function startAdmin(){
   if(!db)return;isAdmin=true;if(uid)S.people[0].uid=uid;
-
   unsubs.push(db.collection("accounts").onSnapshot(function(sn){
     accts=mapd(sn);renderTeam();renderDesignEditor();
     sn.docs.forEach(function(d){
@@ -916,7 +984,7 @@ $("addp").onclick=async function(){
   var n=$("nn").value.trim(),pw=$("np").value;
   if(!n||!pw){amsg("Zadej jméno i heslo.",false);return}
   if(!mail(n)){amsg("Jméno musí obsahovat písmena nebo čísla.",false);return}
-  try{await createPerson(n,pw);$("nn").value="";$("np").value="";amsg(n+" přidán(a) s 500 Kč.",true)}catch(x){amsg(aerr(x.code),false)}
+  try{await createPerson(n,pw);$("nn").value="";$("np").value="";amsg(n+" přidán(a) s 500 Kč.",true)}catch(x){amsg(aerr(x.message),false)}
 };
 $("plist").onclick=function(e){
   var b=e.target.closest("button");if(!b)return;
@@ -972,22 +1040,23 @@ $('designfile').onchange=async()=>{var file=$('designfile').files[0],m=$('design
 $('designsave').onclick=async()=>{if(!canDesign())return;var name=$('designname').value.trim(),recipients=Array.from($('designrecipients').querySelectorAll('input:checked')).map(x=>x.value),m=$('designmsg');m.className='msg err';
   if(!name||name.length>60||!designImage||!recipients.length||recipients.length>200){m.textContent='Vyplň název do 60 znaků, nahraj obrázek a vyber 1 až 200 lidí.';return}
   $('designsave').disabled=true;
-  try{var id=designEdit||crypto.randomUUID(),ref=fdoc(fdb,'cardDesigns',id);await runTransaction(fdb,async tr=>{var sn=await tr.get(ref);if(sn.exists()&&!isAdmin&&sn.data().createdBy!==uid)throw Error('Tento design může upravit pouze jeho autor nebo majitel.');tr.set(ref,{name,image:designImage,dark:$('designdark').checked,recipients,createdBy:sn.exists()?sn.data().createdBy:uid,updatedAt:Date.now()})});designEdit=id;designListKey='';renderDesignEditor();m.className='msg ok';m.textContent='Design uložený pro '+recipients.length+' lidí. Najdou ho ve výběru karet.'}
+  try{var id=designEdit||crypto.randomUUID(),ref=fdoc(fdb,'cardDesigns',id);await runTransaction(fdb,async tr=>{var sn=await tr.get(ref);if(sn.exists&&!isAdmin&&sn.data().createdBy!==uid)throw Error('Tento design může upravit pouze jeho autor nebo majitel.');tr.set(ref,{name,image:designImage,dark:$('designdark').checked,recipients,createdBy:sn.exists?sn.data().createdBy:uid,updatedAt:Date.now()})});designEdit=id;designListKey='';renderDesignEditor();m.className='msg ok';m.textContent='Design uložený pro '+recipients.length+' lidí. Najdou ho ve výběru karet.'}
   catch(e){m.textContent=errt(e)}finally{$('designsave').disabled=false}
 };
 function startDesigns(){
   unsubs.push(()=>{if(activityOff)activityOff();activityOff=null;customDesigns=[];DES=DES.filter(d=>!d.custom);designImage='';designEdit='';designListKey='';recipientKey='';resetEnabled=false;$('designfile').value='';$('designname').value='';$('designrecipients').innerHTML='';$('activitylist').textContent='';if($('resetdialog').open)$('resetdialog').close();$('resetpassword').value='';});
   unsubs.push(db.collection('cardDesigns').onSnapshot(sn=>{customDesigns=mapd(sn);refreshCustomGallery()},e=>{$('designmsg').textContent='Designy nelze načíst: '+errt(e)}));
-  if(isAdmin)unsubs.push(db.doc('appConfig/admin').onSnapshot(sn=>{resetEnabled=sn.exists&&sn.data().passwordResetEnabled===true;$('resetnotice').textContent=resetEnabled?'Reset nastaví nové heslo bez zobrazení původního.':'Reset hesel není aktivní: vyžaduje nasazenou serverovou funkci. Na současném tarifu Spark není dostupná.'},()=>{}));
 }
-function openReset(p){if(!isAdmin)return;if(!resetEnabled){$('resetname').textContent=p.name;$('resetpassword').hidden=true;$('resetpassword').previousElementSibling.hidden=true;$('resetsave').hidden=true;$('resetmsg').textContent='Reset cizího hesla zatím není zprovozněný. Vyžaduje důvěryhodnou serverovou službu; připravená Firebase funkce nejde nasadit na tarifu Spark. Uživatel si své heslo může změnit v Nastavení, pokud zná původní heslo.';$('resetcancel').textContent='Zavřít';$('resetdialog').showModal();return;} $('resetpassword').hidden=false;$('resetpassword').previousElementSibling.hidden=false;$('resetsave').hidden=false;$('resetcancel').textContent='Zrušit';if(!confirm('Opravdu chceš resetovat heslo uživateli '+p.name+'?'))return;resetTarget=p.uid;$('resetname').textContent=p.name;$('resetpassword').value='';$('resetmsg').textContent='';$('resetdialog').showModal();}
+function openReset(p){if(!isAdmin)return;$('resetname').textContent=p.name;$('resetpassword').hidden=false;$('resetpassword').previousElementSibling.hidden=false;$('resetsave').hidden=false;$('resetcancel').textContent='Zrušit';if(!confirm('Opravdu chceš resetovat heslo uživateli '+p.name+'?'))return;resetTarget=p.uid;$('resetname').textContent=p.name;$('resetpassword').value='';$('resetmsg').textContent='';$('resetdialog').showModal();}
 $('resetcancel').onclick=()=>{$('resetdialog').close();$('resetpassword').value='';resetTarget=null};
 $('resetdialog').addEventListener('close',()=>{$('resetpassword').value='';resetTarget=null});
-$('resetsave').onclick=async()=>{if(!isAdmin||!resetEnabled||!resetTarget)return;var password=$('resetpassword').value;$('resetmsg').textContent='';if(password.length<6){$('resetmsg').textContent='Nové heslo musí mít alespoň 6 znaků.';return}$('resetsave').disabled=true;
-  try{var {getFunctions,httpsCallable}=await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js');await httpsCallable(getFunctions(fbApp,'europe-west1'),'resetAccountPassword')({uid:resetTarget,password});$('resetdialog').close();amsg('Nové heslo bylo nastaveno.',true)}catch(e){$('resetmsg').textContent='Heslo se nepodařilo změnit. '+errt(e)}finally{$('resetpassword').value='';$('resetsave').disabled=false}
+$('resetsave').onclick=async()=>{
+  if(!isAdmin||!resetTarget)return;var password=$('resetpassword').value;$('resetmsg').textContent='';if(password.length<6){$('resetmsg').textContent='Nové heslo musí mít alespoň 6 znaků.';return}$('resetsave').disabled=true;
+  try{
+    throw Error('Pro reset hesla přes klienta použij Supabase Dashboard.');
+  }catch(e){$('resetmsg').textContent=errt(e)}finally{$('resetpassword').value='';$('resetsave').disabled=false}
 };
 
-// This market is a game: brand names identify simulations, never live securities.
 var INVEST_ASSETS=[
  ['apple','Apple','AAPL','tech',180],['microsoft','Microsoft','MSFT','tech',160],['nvidia','NVIDIA','NVDA','tech',95],['alphabet','Alphabet / Google','GOOGL','tech',125],['amazon','Amazon','AMZN','tech',120],['meta','Meta','META','tech',140],['samsung','Samsung','SAMS','tech',80],['tsmc','TSMC','TSM','tech',90],['amd','AMD','AMD','tech',65],['intel','Intel','INTC','tech',35],['asml','ASML','ASML','tech',240],['sap','SAP','SAP','tech',130],
  ['jpmorgan','JPMorgan Chase','JPM','banks',110],['bofa','Bank of America','BAC','banks',45],['citi','Citigroup','C','banks',55],['hsbc','HSBC','HSBC','banks',60],['barclays','Barclays','BARC','banks',32],['deutsche','Deutsche Bank','DB','banks',38],['bnp','BNP Paribas','BNP','banks',72],['ubs','UBS','UBS','banks',75],['moneta','MONETA Money Bank','MONET','banks',25],['kb','Komerční banka','KOMB','banks',85],['erste','Erste Group','ERST','banks',90],
@@ -1027,16 +1096,12 @@ function renderInvestments(){
 }
 async function tradeInvestment(buy){
   if(investBusy||!uid)return;var id=uid,a=investAsset(investSelected),n=Number($('investqty').value),quotedAt=investShownAt,price=investPrice(a,quotedAt),m=$('investmsg');investBusy=true;renderInvestments();m.className='msg err';
-  try{var result=await runTransaction(fdb,async tr=>{if(Date.now()-quotedAt>30000)throw Error('Kurz vypršel. Zkus obchod znovu.');var ref=fdoc(fdb,'accounts',id),sn=await tr.get(ref);if(!sn.exists())throw Error('Účet neexistuje.');var o=sn.data(),s=investSettlement(o,a,n,buy,price),cash=buy?-s.total:s.total,text=(buy?'Nákup: ':'Prodej: ')+a.name+' · '+n+' ks za '+kc(price);tr.update(ref,{bal:s.bal,investPositions:s.investPositions,tx:txlog(o,text,cash),investTx:[{text,date:now(),cash}].concat(o.investTx||[]).slice(0,50)});return s});m.className='msg ok';m.textContent=(buy?'Nakoupeno ':'Prodáno ')+n+' ks '+a.name+' za '+kc(result.total)+(buy?'':'. Zisk/ztráta tohoto prodeje: '+kc(result.profit))+'.';}
+  try{var result=await runTransaction(fdb,async tr=>{if(Date.now()-quotedAt>30000)throw Error('Kurz vypršel. Zkus obchod znovu.');var ref=fdoc(fdb,'accounts',id),sn=await tr.get(ref);if(!sn.exists)throw Error('Účet neexistuje.');var o=sn.data(),s=investSettlement(o,a,n,buy,price),cash=buy?-s.total:s.total,text=(buy?'Nákup: ':'Prodej: ')+a.name+' · '+n+' ks za '+kc(price);tr.update(ref,{bal:s.bal,investPositions:s.investPositions,tx:txlog(o,text,cash),investTx:[{text,date:now(),cash}].concat(o.investTx||[]).slice(0,50)});return s});m.className='msg ok';m.textContent=(buy?'Nakoupeno ':'Prodáno ')+n+' ks '+a.name+' za '+kc(result.total)+(buy?'':'. Zisk/ztráta tohoto prodeje: '+kc(result.profit))+'.';}
   catch(e){m.textContent=errt(e)}finally{investBusy=false;renderInvestments()}
 }
 $('investbuy').onclick=()=>tradeInvestment(true);$('investsell').onclick=()=>tradeInvestment(false);$('investqty').oninput=renderInvestments;$('investcategory').onchange=buildInvestMarket;
 $('investmarket').onclick=e=>{var button=e.target.closest('[data-asset]');if(!button)return;investSelected=button.dataset.asset;document.querySelectorAll('#investmarket [data-asset]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.asset===investSelected)));$('investmsg').textContent='';renderInvestments()};
 function startInvestments(){buildInvestMarket();var timer=setInterval(()=>{if(curTab==='invest')renderInvestments()},1000);unsubs.push(()=>{clearInterval(timer);$('investmsg').textContent='';$('investportfolio').innerHTML='';$('investhistory').innerHTML=''})}
-
-var manualAuth=false;
-var persistenceReady=setPersistence(auth,browserLocalPersistence);
-persistenceReady.catch(()=>{$('lerr').textContent='Pro trvalé přihlášení povol ukládání dat tohoto webu.'});
 
 var themeChoice={mode:'system',hue:166},themeMedia=matchMedia('(prefers-color-scheme: dark)');
 function applyTheme(){var t=themeChoice,root=document.documentElement,dark=t.mode==='dark'||t.mode==='system'&&themeMedia.matches;root.setAttribute('data-theme',dark?'dark':'light');var h=t.hue,vars=dark?{bg:[18,7],card:[18,12],ink:[16,94],mute:[12,70],brand:[62,67],line:[15,24]}:{bg:[20,96],card:[20,100],ink:[24,12],mute:[14,37],brand:[65,27],line:[18,85]};Object.keys(vars).forEach(k=>root.style.setProperty('--'+k,'hsl('+h+' '+vars[k][0]+'% '+vars[k][1]+'%)'));root.style.setProperty('--onbrand',dark?'#07110f':'#fff');$('thememode').value=t.mode;$('themehue').value=h;$('themevalue').textContent=h+'°';}
@@ -1044,7 +1109,21 @@ function loadTheme(){themeChoice={mode:'system',hue:166};try{var t=JSON.parse(lo
 function saveTheme(){applyTheme();try{if(uid)localStorage.setItem('nb-theme-'+uid,JSON.stringify(themeChoice));$('thememsg').textContent='Vzhled uložen v tomto prohlížeči.'}catch(e){$('thememsg').textContent='Vzhled je změněný, ale prohlížeč jej nedovolil uložit.'}}
 $('thememode').onchange=()=>{themeChoice.mode=$('thememode').value;saveTheme()};$('themehue').oninput=()=>{themeChoice.hue=Number($('themehue').value);saveTheme()};$('themereset').onclick=()=>{themeChoice={mode:'system',hue:166};saveTheme()};themeMedia.addEventListener('change',applyTheme);
 
-onAuthStateChanged(auth,async user=>{if(manualAuth)return;if(!user){clearSession();return}if(uid===user.uid)return;try{await enter(user,user.displayName||user.email.split('@')[0],false)}catch(e){stop();uid=null;show('login');$('lerr').textContent='Obnovení přihlášení se nezdařilo. '+errt(e)}});
+var manualAuth=false;
+supabase.auth.onAuthStateChange(async (event, session) => {
+  if(manualAuth) return;
+  if(!session){ clearSession(); return; }
+  if(uid===session.user.id) return;
+  try {
+    auth.currentUser = session.user;
+    var ex = await db.doc("accounts/"+session.user.id).get();
+    var nm = ex.exists ? ex.data().name : session.user.email.split('@')[0];
+    await enter(session.user, nm, false);
+  } catch(e) {
+    stop(); uid=null; show('login');
+    $('lerr').textContent='Obnovení přihlášení se nezdařilo. '+errt(e);
+  }
+});
 </script>
 </body>
 </html>
