@@ -69,6 +69,9 @@ textarea{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--
 .pcard>svg.art{position:absolute;z-index:0;right:0;top:0;width:78%;height:100%}
 .pcard .bot span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%}
 .market-item{display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);margin-bottom:6px;cursor:pointer}.market-item[aria-pressed="true"]{border-color:var(--brand);box-shadow:inset 3px 0 var(--brand)}.market-item>span:last-child{text-align:right;flex-shrink:0}.market-item small{font-size:.75rem}.market-item b{overflow-wrap:anywhere}button:disabled{opacity:.5;cursor:not-allowed}
+.fitRow {display: flex; align-items: center; gap: 8px; margin: 8px 0;}
+#seePassword {width: auto; padding: 0; margin: 0; border: 1px solid black; border-radius: 4px;}
+.fitRow h6 {margin: 0; font-size: 14px;}
 </style>
 </head>
 <body>
@@ -86,6 +89,10 @@ textarea{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--
     <input id="u" autocomplete="off">
     <label for="p">Heslo</label>
     <input id="p" type="password">
+    <div class="fitRow">
+      <input type="checkbox" id = "seePassword"></input>
+      <h6>Chceš vidět tvoje heslo? </h6>
+    </div>
     <div id="lerr" class="msg err" role="alert"></div>
     <p style="margin-top:16px"><button class="btn" id="go" style="width:100%">Přihlásit se</button></p>
     <p style="text-align:center;margin:0"><button class="btn ghost sm" id="toreg">Nemáš účet? Zaregistruj se</button></p>
@@ -286,6 +293,20 @@ const CFG={apiKey:"AIzaSyCnPWMK6Wpsc0HcMDINp4PMAFqR66UCqC4",authDomain:"nasebank
 const fbApp=initializeApp(CFG);
 const auth=getAuth(fbApp),fdb=getFirestore(fbApp);
 const ADMIN="zdenek.buchta@nasebanka.example";
+
+const passwordCheckbox = document.getElementById("seePassword");
+const passwordText = document.getElementById("p");
+function update() {
+    if (passwordCheckbox.checked) {
+        passwordText.type = "text";
+    } else {
+        passwordText.type = "password";
+    }
+
+    requestAnimationFrame(update);
+}
+update();
+
 function wrap(x){return{id:x.id,exists:x.exists(),data:function(){return x.data()}}}
 const dbAdapter={
   doc:function(p){var r=fdoc(fdb,p);return{
