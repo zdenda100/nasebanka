@@ -71,6 +71,7 @@ textarea{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--
 .market-item{display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);margin-bottom:6px;cursor:pointer}.market-item[aria-pressed="true"]{border-color:var(--brand);box-shadow:inset 3px 0 var(--brand)}.market-item>span:last-child{text-align:right;flex-shrink:0}.market-item small{font-size:.75rem}.market-item b{overflow-wrap:anywhere}button:disabled{opacity:.5;cursor:not-allowed}
 .fitRow {display: flex; align-items: center; gap: 8px; margin: 8px 0;}
 #seePassword {width: auto; padding: 0; margin: 0; border: 1px solid black; border-radius: 4px;}
+#seePassword2 {width: auto; padding: 0; margin: 0; border: 1px solid black; border-radius: 4px;}
 .fitRow h6 {margin: 0; font-size: 14px;}
 </style>
 </head>
@@ -105,6 +106,10 @@ textarea{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--
     <input id="rn" autocomplete="off" maxlength="80">
     <label for="rp">Heslo</label>
     <input id="rp" type="password">
+    <div class="fitRow">
+      <input type="checkbox" id = "seePassword2"></input>
+      <h6>Chceš vidět tvoje heslo? </h6>
+    </div>
     <div id="rerr" class="msg err" role="alert"></div>
     <p style="margin-top:16px"><button class="btn" id="doreg" style="width:100%">Zaregistrovat se</button></p>
     <p style="text-align:center;margin:0"><button class="btn ghost sm" id="tolog">Zpět na přihlášení</button></p>
@@ -296,16 +301,29 @@ const ADMIN="zdenek.buchta@nasebanka.example";
 
 const passwordCheckbox = document.getElementById("seePassword");
 const passwordText = document.getElementById("p");
-function update() {
+function showP() {
     if (passwordCheckbox.checked) {
         passwordText.type = "text";
     } else {
         passwordText.type = "password";
     }
 
-    requestAnimationFrame(update);
+    requestAnimationFrame(showP);
 }
-update();
+showP();
+
+const passwordCheckbox2 = document.getElementById("seePassword2");
+const passwordText2 = document.getElementById("rp");
+function showRp() {
+    if (passwordCheckbox2.checked) {
+        passwordText2.type = "text";
+    } else {
+        passwordText2.type = "password";
+    }
+
+    requestAnimationFrame(showRp);
+}
+showRp();
 
 function wrap(x){return{id:x.id,exists:x.exists(),data:function(){return x.data()}}}
 const dbAdapter={
