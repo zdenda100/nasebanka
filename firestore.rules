@@ -13,6 +13,7 @@ service cloud.firestore {
         || (deputy() && resource.data.role != 'majitel' && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['bal','tx']))
         || (signedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['bal','tx']) && request.resource.data.bal > resource.data.bal)
         || (deputy() && u != request.auth.uid && resource.data.role != 'majitel' && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['casinoChips','casinoTx']) && request.resource.data.casinoChips is int && request.resource.data.casinoChips >= 0)
+        || (signedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['casinoChips','casinoTx','bal','tx']) && request.resource.data.bal >= resource.data.bal && request.resource.data.casinoChips is int && request.resource.data.casinoChips > resource.data.get('casinoChips',0))
         || (signedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['casinoChips','casinoTx']) && request.resource.data.casinoChips is int && request.resource.data.casinoChips > resource.data.get('casinoChips',0))); 
       allow delete: if admin() || (deputy() && resource.data.role == 'zakaznik');
     }
@@ -37,6 +38,7 @@ service cloud.firestore {
         && request.resource.data.createdBy == resource.data.createdBy && validDesign();
       allow delete: if admin();
     }
+    match /appConfig/resetRuns/items/{id} { allow read, write: if admin(); }
     match /appConfig/{id} {
       allow read, write: if admin();
     }
@@ -55,6 +57,7 @@ service cloud.firestore {
       allow delete: if admin() || (signedIn() && resource.data.uid == request.auth.uid);
     }
     match /lottery/{day} {
+      allow write: if admin();
       allow read: if signedIn();
       function paidForTicket() {
         return getAfter(/databases/$(database)/documents/accounts/$(request.auth.uid)).data.bal == get(/databases/$(database)/documents/accounts/$(request.auth.uid)).data.bal - 20;
@@ -78,6 +81,7 @@ service cloud.firestore {
       );
     }
     match /casinoRounds/{day} {
+      allow write: if admin();
       allow read: if signedIn();
       function paidForTicket() {
         return getAfter(/databases/$(database)/documents/accounts/$(request.auth.uid)).data.casinoChips == get(/databases/$(database)/documents/accounts/$(request.auth.uid)).data.casinoChips - 2;
