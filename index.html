@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NašeBanka – internetové bankovnictví</title>
+<style>
+:root{--bg:#f2f5f3;--card:#fff;--ink:#14231f;--mute:#5d6e68;--brand:#0f4c45;--onbrand:#fff;--acc:#f2b705;--line:#dbe4e0;--neg:#b3261e;--pos:#1b7a4b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1816;--card:#16251f;--ink:#e6efeb;--mute:#93a69f;--brand:#3fb8a5;--onbrand:#06100d;--line:#26382f;--neg:#ff8a80;--pos:#6fd49b}}
+:root[data-theme="dark"]{--bg:#0e1816;--card:#16251f;--ink:#e6efeb;--mute:#93a69f;--brand:#3fb8a5;--onbrand:#06100d;--line:#26382f;--neg:#ff8a80;--pos:#6fd49b}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
+button,input,select{font:inherit;color:inherit}
+.wrap{max-width:900px;margin:0 auto;padding:16px}
+header{display:flex;align-items:center;justify-content:space-between;padding:12px 0 20px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.35rem;letter-spacing:-.02em}
+.logo i{width:34px;height:34px;border-radius:10px;background:var(--brand);display:grid;place-items:center;font-style:normal;color:var(--acc);font-size:1.1rem}
+.btn{background:var(--brand);color:var(--onbrand);border:0;border-radius:10px;padding:11px 18px;font-weight:700;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--brand);border:1px solid var(--line)}
+.btn.sm{padding:8px 12px}
+:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:16px}
+h1{font-size:1.9rem;line-height:1.15;margin:0 0 8px;letter-spacing:-.03em}
+h2{font-size:1.05rem;margin:0 0 12px}
+p{margin:0 0 12px;color:var(--mute)}
+label{display:block;font-weight:600;font-size:.9rem;margin:12px 0 4px}
+input,select{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg)}
+#login{max-width:420px;margin:6vh auto 0}
+.hidden{display:none!important}
+.hero{background:var(--brand);color:var(--onbrand);border:0}
+.hero p{color:inherit;opacity:.8;margin:0}
+.big{font-size:2.6rem;font-weight:800;letter-spacing:-.03em;line-height:1.1}
+.grid{display:grid;gap:16px;grid-template-columns:1fr 1fr}
+@media(max-width:700px){.grid{grid-template-columns:1fr}.big{font-size:2.1rem}}
+.tx{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.tx:last-child{border:0}
+small{color:var(--mute);display:block}
+.neg{color:var(--neg);font-weight:700;white-space:nowrap}.pos{color:var(--pos);font-weight:700;white-space:nowrap}
+.msg{margin-top:12px;font-weight:600}.msg.err{color:var(--neg)}.msg.ok{color:var(--pos)}
+.empty{color:var(--mute);margin:0}
+.prow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px 0;border-bottom:1px solid var(--line)}
+.prow:last-child{border:0}
+.badge{display:inline-block;background:var(--acc);color:#14231f;border-radius:8px;padding:1px 8px;font-size:.78rem;font-weight:800;margin-left:6px}
+.rs{width:auto}
+.cardwrap{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-bottom:16px}
+.pcard{background:linear-gradient(135deg,#0f4c45,#0a2925);color:#fff;border-radius:18px;padding:18px 20px;width:100%;max-width:340px;aspect-ratio:1.586;display:flex;flex-direction:column;justify-content:space-between}
+.pcard .top{display:flex;justify-content:space-between;align-items:center;font-weight:800}
+.chip{width:40px;height:30px;border-radius:6px;background:linear-gradient(135deg,#f2b705,#c98f00)}
+.pcard .num{font-size:1.2rem;letter-spacing:.12em;font-variant-numeric:tabular-nums}
+.pcard .bot{display:flex;justify-content:space-between;font-size:.85rem;opacity:.9}
+.wal{display:flex;flex-direction:column;gap:8px;flex:1 1 200px}
+.pn{flex:1 1 140px}
+.prow .ai{width:100px}
+.row2{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.add{display:flex;gap:8px}
+.bottom{text-align:center;margin:8px 0}
+footer{text-align:center;color:var(--mute);font-size:.8rem;padding:20px 0}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:16px;padding-bottom:2px}
+.tabs button{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-weight:700;white-space:nowrap;cursor:pointer}
+.tabs button.on{background:var(--brand);color:var(--onbrand);border-color:var(--brand)}
+.nb{display:inline-block;background:#e5484d;color:#fff;border-radius:999px;font-size:.72rem;padding:1px 7px;margin-left:6px;font-weight:800}
+textarea{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);min-height:80px;font:inherit;color:inherit}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}
+.gi{background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:8px;text-align:left;cursor:pointer;color:var(--ink)}
+.gi.on{border-color:var(--acc)}
+.sw{display:block;height:44px;border-radius:8px;margin-bottom:6px}
+.pcard>*{position:relative;z-index:1}
+.pcard>svg.art{position:absolute;z-index:0;right:0;top:0;width:78%;height:100%}
+.pcard .bot span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%}
+.market-item{display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);margin-bottom:6px;cursor:pointer}.market-item[aria-pressed="true"]{border-color:var(--brand);box-shadow:inset 3px 0 var(--brand)}.market-item>span:last-child{text-align:right;flex-shrink:0}.market-item small{font-size:.75rem}.market-item b{overflow-wrap:anywhere}button:disabled{opacity:.5;cursor:not-allowed}
+.fitRow{display:flex;align-items:center;gap:8px;margin:8px 0}.fitRow input{width:auto}.fitRow label{margin:0}</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo"><i>N</i>NašeBanka</div>
+    <button class="btn ghost hidden" id="logout">Odhlásit se</button>
+  </header>
+  <nav id="tabs" class="tabs hidden"><button data-t="acc" class="on">Účet</button><button data-t="team">Tým</button><button data-t="ann">Oznámení<span class="nb hidden" id="nba"></span></button><button data-t="qr">QR</button><button data-t="loan">Půjčky</button><button data-t="rr">Kasino</button><button data-t="invest">Investice</button><button data-t="set">Nastavení</button><button data-t="ppl" id="tppl" class="hidden">Lidé</button><button data-t="design" id="tdesign" class="hidden">Design karet</button><button data-t="activity" id="tactivity" class="hidden">Přihlášení</button><button data-t="history" id="thistory" class="hidden">Historie všech</button></nav>
+
+  <section id="login" class="card">
+    <h1>Přihlášení</h1>
+    <p>Internetové bankovnictví NašeBanka.</p>
+    <label for="u">Uživatelské jméno</label>
+    <input id="u" autocomplete="off">
+    <label for="p">Heslo</label>
+    <input id="p" type="password"><div class="fitRow"><input type="checkbox" id="seePassword"><label for="seePassword">Zobrazit moje heslo</label></div>
+    <div id="lerr" class="msg err" role="alert"></div>
+    <p style="margin-top:16px"><button class="btn" id="go" style="width:100%">Přihlásit se</button></p>
+    <p style="text-align:center;margin:0"><button class="btn ghost sm" id="toreg">Nemáš účet? Zaregistruj se</button></p>
+  </section>
+
+  <section id="reg" class="card hidden" style="max-width:420px;margin:6vh auto 0">
+    <h1>Registrace</h1>
+    <p>Účet se ti vytvoří hned. Heslo musí mít aspoň 6 znaků, nepoužívej své skutečné.</p>
+    <label for="rn">Jméno a příjmení</label>
+    <input id="rn" autocomplete="off" maxlength="80">
+    <label for="rp">Heslo</label>
+    <input id="rp" type="password"><div class="fitRow"><input type="checkbox" id="seePassword2"><label for="seePassword2">Zobrazit moje heslo</label></div>
+    <div id="rerr" class="msg err" role="alert"></div>
+    <p style="margin-top:16px"><button class="btn" id="doreg" style="width:100%">Zaregistrovat se</button></p>
+    <p style="text-align:center;margin:0"><button class="btn ghost sm" id="tolog">Zpět na přihlášení</button></p>
+  </section>
+
+  <section id="wait" class="card hidden" style="max-width:420px;margin:6vh auto 0">
+    <h1>Vytváří se účet</h1>
+    <p id="waitmsg">Účet se vytvoří, jakmile bude mít správce otevřenou stránku. Stránku nezavírej.</p>
+  </section>
+
+  <section id="member" class="hidden">
+    <div class="card hero">
+      <p>Vítejte, <b id="mwho"></b><span class="badge" id="mrole"></span></p>
+      <div class="big" id="mtotal">…</div>
+      <p>Zůstatek na účtu</p>
+    </div>
+    <div class="cardwrap" id="cardM"></div>
+    <div id="cgM"></div>
+    <div id="savM"></div>
+    <div class="card hidden" id="deputy">
+      <h2>Správa účtů (zástupce)</h2>
+      <label for="dn">Nový člověk</label>
+      <input id="dn" placeholder="Jméno a příjmení">
+      <input id="dp" type="password" placeholder="Heslo (aspoň 6 znaků)" style="margin-top:8px">
+      <p style="margin-top:12px"><button class="btn" id="dadd">Přidat člověka (500 Sh)</button></p>
+      <div id="dlist"></div>
+      <div id="dmsg" class="msg" role="status"></div>
+    </div>
+    <div class="card">
+      <h2>Nová platba</h2>
+      <label for="mto">Příjemce</label>
+      <select id="mto"></select>
+      <label for="mamt">Částka (Sh)</label>
+      <input id="mamt" type="number" min="1" placeholder="50">
+      <label for="mnote">Zpráva pro příjemce</label>
+      <input id="mnote" placeholder="Za oběd">
+      <p style="margin-top:16px"><button class="btn" id="mpay">Odeslat platbu</button></p>
+      <div id="mmsg" class="msg" role="status"></div>
+    </div>
+    <div class="card">
+      <h2>Poslední pohyby</h2>
+      <div id="mtxs"><p class="empty">Zatím žádné pohyby.</p></div>
+      <p style="margin:12px 0 0">Správce ti může peníze také přidat nebo odebrat.</p>
+    </div>
+  </section>
+
+  <main id="app" class="hidden">
+    <div id="reqcard" class="card hidden" style="border-color:var(--acc);border-width:2px">
+      <h2>🔔 Registrace a přihlášení</h2>
+      <div id="reqs"></div>
+      <div id="reqmsg" class="msg" role="status"></div>
+    </div>
+    <div id="user">
+      <div class="card hero">
+        <p>Vítejte, <b id="who"></b></p>
+        <div class="big" id="total"></div>
+        <p>Zůstatek na účtu 1234567890/0800</p>
+      </div>
+      <div class="cardwrap" id="cardA"></div>
+      <div id="cgA"></div>
+      <div id="savA"></div>
+      <div class="grid">
+        <div class="card">
+          <h2>Nová platba</h2>
+          <label for="to">Příjemce</label>
+          <select id="to"></select>
+          <label for="amt">Částka (Sh)</label>
+          <input id="amt" type="number" min="1" placeholder="50">
+          <label for="note">Zpráva pro příjemce</label>
+          <input id="note" placeholder="Za oběd">
+          <p style="margin-top:16px"><button class="btn" id="pay">Odeslat platbu</button></p>
+          <div id="msg" class="msg" role="status"></div>
+        </div>
+        <div class="card">
+          <h2>Poslední pohyby</h2>
+          <div id="txs"></div>
+        </div>
+      </div>
+    </div>
+
+    <section id="admin" class="hidden"><div class="card"><h2>Nový začátek banky</h2><p>Zachová lidi, role a karty. Všem nastaví 500 Sh, spoření a žetony 0. Vyčistí půjčky, investice, finanční historii, stírací losy a všechna kola loterie. Přihlášení a oznámení zůstanou.</p><p>Před změnou se uloží soukromá záloha pro majitele. Reset lze vrátit tlačítkem níže. Během resetu s bankou nepracujte.</p><button class="btn" id="preparebankreset">Připravit reset banky</button> <button class="btn ghost" id="restorebankreset">Vrátit poslední reset</button><div class="msg" id="bankresetmsg" role="status"></div></div><div class="card"><h2>Aktuálnost účtů</h2><p>Vlastní zůstatek se obnovuje automaticky. Ostatní účty načti tlačítkem; tím šetříme čtení Firebase. Úpravy vždy používají aktuální zůstatek z databáze.</p><button class="btn ghost" id="refreshadmin">Obnovit účty</button></div>
+      <div class="card">
+        <h2>Lidé – správa</h2>
+        <p>Nový člověk dostane na účet 500 Sh a roli Zákazník. Roli můžeš u každého změnit.</p>
+        <div class="add" style="flex-wrap:wrap">
+          <input id="nn" placeholder="Jméno a příjmení" aria-label="Jméno nového člověka">
+          <input id="np" type="password" placeholder="Heslo (aspoň 6 znaků)" aria-label="Heslo nového člověka">
+          <button class="btn" id="addp">Přidat</button>
+        </div>
+        <p id="resetnotice">Reset hesel zatím není aktivní; vyžaduje serverovou funkci.</p><div id="amsg" class="msg" role="status"></div>
+      </div>
+      <div class="card">
+        <h2>Lidé a zůstatky</h2>
+        <div id="plist"></div>
+        <div class="row2">
+          <button class="btn ghost" id="clr">Smazat historii</button>
+          <button class="btn ghost" id="rst">Všem nastavit 500 Sh</button>
+        </div>
+      </div>
+    </section>
+
+    
+  </main>
+  <section id="set" class="hidden"><div class="card"><h2>Poplatky banky · 2 %</h2><p>Majitel získává 2 % z odeslaných plateb, směny žetonů, vkladů a výběrů vlastního spoření, úroků a čerpání půjček. Majitelovy vlastní operace jsou zdarma. Správcovské úpravy zůstatků a splátky půjček se tímto poplatkem nezatěžují.</p><p>U příjmů se poplatek odečte, u výdajů se přičte k platbě. Z úroků se strhává ze spoření. U kasina se platí 2 % z výplaty v Sh; chybějící Sh se rozmění z části výhry a zbytek z rozměnění zůstane hráči.</p></div>
+    <div class="card"><h2>Vzhled banky</h2><p>Vyber si svou barvu ze spektra. Nastavení se pamatuje pro tvůj účet v tomto prohlížeči.</p><label for="thememode">Režim</label><select id="thememode"><option value="system">Podle zařízení</option><option value="light">Světlý</option><option value="dark">Tmavý</option></select><label for="themehue">Barva motivu · <output id="themevalue">166°</output></label><input id="themehue" type="range" min="0" max="360" value="166" style="padding:0;height:30px;accent-color:var(--brand);background:linear-gradient(to right,red,#ff0,#0f0,#0ff,#00f,#f0f,red)"><p style="margin-top:16px"><button class="btn" id="themereset">Výchozí vzhled</button></p><div id="thememsg" class="msg" role="status"></div></div>
+    <div class="card"><h2>Změna jména</h2><p>Nové jméno se zobrazí všem a použiješ ho i při přihlášení.</p>
+      <label for="sname">Nové jméno</label><input id="sname" maxlength="80">
+      <p style="margin-top:12px"><button class="btn" id="ssave">Změnit jméno</button></p><div id="smsg1" class="msg" role="status"></div></div>
+    <div class="card"><h2>Změna hesla</h2>
+      <label for="sop">Staré heslo</label><input id="sop" type="password">
+      <label for="snp">Nové heslo (aspoň 6 znaků)</label><input id="snp" type="password">
+      <p style="margin-top:12px"><button class="btn" id="spsave">Změnit heslo</button></p><div id="smsg2" class="msg" role="status"></div></div>
+    <div class="card"><h2>Minecraft</h2><p>Propoj banku se svým účtem na Minecraft serveru. Ve hře napiš <b>/banka propojit</b>, kód zadej sem a pak ve hře napiš <b>/banka stav</b>. Potom můžeš ve hře posílat Sh (<b>/banka posli</b>) a dostávat odměny za hraní.</p>
+      <label for="mccode">Kód ze hry</label><input id="mccode" maxlength="6" autocomplete="off" style="text-transform:uppercase;letter-spacing:.2em" placeholder="ABC123">
+      <p style="margin-top:12px"><button class="btn" id="mclink">Propojit</button></p><div id="mcmsg" class="msg" role="status"></div>
+      <p id="mclinked" style="margin-top:8px"></p></div>
+  </section>
+
+  <section id="loan" class="hidden">
+    <div class="card"><h2>Půjčky</h2><p>Půjč si od banky až <b>100 000 Sh</b>. Vrátíš o 10 % víc. Najednou můžeš mít jen jednu půjčku.</p>
+      <small>Dluh k zaplacení</small><div class="big" style="font-size:1.8rem" id="lvdebt">0,00 Sh</div>
+      <label for="lamt">Kolik si chceš půjčit (Sh)</label><input id="lamt" type="number" min="1" max="100000" step="0.01" placeholder="10000">
+      <label for="lautoamount">Automatická splátka (Sh)</label><input id="lautoamount" type="number" min="0.01" step="0.01" placeholder="1000">
+      <label for="lautodate">Datum první splátky (ve 20:00 českého času)</label><input id="lautodate" type="date">
+      <label for="lautofreq">Jak často splácet</label><select id="lautofreq"><option value="monthly">Každý měsíc</option><option value="weekly">Každý týden</option><option value="daily">Každý den</option></select>
+      <p style="margin-top:12px"><button class="btn ghost" id="lschedule">Uložit plán ke stávající půjčce</button></p>
+      <p id="lplanstatus"></p><small>Splátky se zpracují, když máš banku otevřenou ty nebo majitel. Zmeškané splátky se doženou z dostupných peněz; při nedostatku peněz čekají. Poslední splátka bude nejvýše zbývající dluh.</small>
+      <p style="margin-top:12px"><button class="btn" id="ltake">Půjčit si</button></p>
+      <label for="lpay">Splátka (Sh)</label><input id="lpay" type="number" min="1" placeholder="100">
+      <div class="row2"><button class="btn ghost" id="lrepay">Splatit část</button><button class="btn ghost" id="lall">Splatit vše</button></div>
+      <div id="lmsg" class="msg" role="status"></div></div>
+  </section>
+
+  <section id="rr" class="hidden">
+    <div class="card hero"><h2>Kasino · Žetony</h2><div class="big" id="rrbal">0 ž.</div><p id="cxvalue">Hodnota žetonů: 0 Sh</p></div>
+    <div class="card"><h2>Pokladna kasina</h2><p><b>1 žeton = 10 Sh</b> · směna oběma směry s poplatkem 2 % v Sh (majitel zdarma). Z počátečních 500 Sh si s poplatkem můžeš koupit 49 žetonů. Začínáš s 0 žetony; peníze se mění pouze tady v pokladně.</p><small>Zůstatek na bankovním účtu</small><b id="cxcash"></b>
+    <label for="cxamount">Počet žetonů ke směně</label><input id="cxamount" type="number" min="1" max="1000000" step="1" value="10"><p id="cxquote">100,00 Sh</p><div class="row2"><button class="btn" id="cxbuy">Koupit žetony</button><button class="btn ghost" id="cxsell">Směnit zpět na Sh</button></div><div class="msg" id="cxmsg" role="status"></div></div>
+    <div class="card"><h2>Točící automat</h2><p>Tři stejné: 🍒 ×3, 🍋 ×5, ⭐ ×8, 🔔 ×10, 🍇 ×15, 💎 ×20. Dva stejné: ×2. Výplata zahrnuje sázku. Prohrané žetony jdou majiteli; výhry vznikají nově. Poplatek z výplaty: 2 % v Sh (majitel zdarma).</p>
+    <div id="reels" aria-live="polite" style="font-size:2.6rem;letter-spacing:.15em;margin:18px 0;text-align:center;background:var(--bg);border-radius:12px;padding:18px">🍒 🍋 ⭐</div>
+    <label for="rramt">Sázka (1 až 100 žetonů)</label><input id="rramt" type="number" min="1" max="100" step="1" value="1"><small>1 žeton = 10 Sh · doporučený začátek: 1–5 žetonů</small><p style="margin-top:12px"><button class="btn" id="slotspin">Roztočit automat</button></p><div id="rrmsg" class="msg" role="status"></div></div>
+    <div class="card"><h2>Večerní loterie</h2><p>Losování každý den ve <b>20:00 českého času</b>. Los stojí <b>2 žetony (20 Sh)</b>. Jeden výherní los získá dvojnásobek žetonů vložených do kola.</p><p>Losování se dokončí při prvním otevření přihlášené banky po 20:00. Nevýherní losy připadnou majiteli. Z výplaty je poplatek 2 % v Sh (majitel zdarma).</p><p id="legacyLottery"></p>
+    <div id="lotinfo">Načítání loterie…</div><p style="margin-top:12px"><button class="btn" id="lotbuy" disabled>Koupit los za 2 žetony</button></p><div id="lotmsg" class="msg" role="status"></div><div id="lotresults"></div></div>
+    <div class="card"><h2>Stírací los · Zlatá šance</h2><p>Jeden los stojí <b>3 žetony</b>. Setři los a najdi výplatu až <b>60 žetonů</b>. Výplata 3 žetony vrací cenu losu; vyšší částky už znamenají zisk. Nevýherné losy jdou majiteli a výhry se nově připíšou hráči. Z výplaty je poplatek 2 % v Sh (majitel zdarma).</p>
+    <div id="scratchticket" hidden><div style="position:relative;max-width:480px;margin:18px auto;border:2px solid #c6a762;border-radius:16px;overflow:hidden;background:linear-gradient(135deg,#082f24,#185640);color:#f6dfa0;aspect-ratio:3/1;display:grid;place-items:center"><strong id="scratchprize" style="font-size:clamp(16px,5vw,30px)"></strong><canvas id="scratchcover" width="600" height="200" aria-label="Stírací plocha losu" style="position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair"></canvas></div><p id="scratchcaption"></p><button class="btn ghost" id="scratchreveal">Odkrýt celý los</button></div>
+    <p><button class="btn" id="scratchbuy">Koupit los · 3 žetony</button></p><div id="scratchmsg" class="msg" role="status"></div><details><summary>Možné výplaty a šance</summary><p>Bez výhry: 60 % · 3 žetony: 20 % · 6 žetonů: 12 % · 12 žetonů: 6 % · 30 žetonů: 1,5 % · 60 žetonů: 0,5 %. Částky zahrnují cenu losu. Los zůstává uložený i po obnovení stránky.</p></details></div>
+    <div class="card"><h2>Pohyby žetonů</h2><div id="chiptx"></div></div>
+  </section>
+
+  <section id="invest" class="hidden">
+    <div class="card hero"><h2>Investice · herní burza</h2><div class="big" id="investvalue">0,00 Sh</div><p>Hodnota tvého portfolia</p></div>
+    <div class="card"><h2>Obchoduj za fiktivní Sh</h2><p>Všechny ceny a grafy jsou simulované. Známé značky nejsou napojené na skutečnou burzu a nenakupuješ skutečné akcie. Ceny se mění jednou za <b>5 minut</b>. Vymyšlené firmy jsou vyřazené z nákupu; již držené kusy můžeš prodat. Obchodovat můžeš hned.</p><div class="grid"><div><small>Volné Sh na účtu</small><b id="investcash"></b></div><div><small>Nerealizovaný zisk / ztráta</small><b id="investgain"></b></div></div></div>
+    <div class="card"><h2>Vyber investici</h2><label for="investcategory">Kategorie</label><select id="investcategory"><option value="all">Všechny investice</option><option value="tech">Technologie · známé značky</option><option value="banks">Banky · známé značky</option><option value="oil">Ropa a energetika</option></select><div id="investmarket" style="max-height:370px;overflow:auto;margin-top:14px"></div></div>
+    <div class="card"><h2 id="investname">Apple</h2><div id="investprice" class="big"></div><small id="investclock"></small><div id="investchart"></div><p id="investowned"></p><label for="investqty">Počet kusů</label><input id="investqty" type="number" min="1" max="100000" step="1" value="1"><p id="investquote" style="margin-top:10px"></p><div class="row2"><button class="btn" id="investbuy">Koupit</button><button class="btn ghost" id="investsell">Prodat</button></div><div id="investmsg" class="msg" role="status"></div></div>
+    <div class="card"><h2>Moje portfolio</h2><div id="investportfolio"></div></div><div class="card"><h2>Poslední obchody</h2><div id="investhistory"></div></div>
+  </section>
+  <section id="activity" class="hidden"><div class="card"><h2>Přihlášení a registrace</h2><p>Poslední aktivita každého uživatele.</p><div id="activitylist"></div></div></section>
+  <section id="design" class="hidden"><div class="card"><h2>Studio karet</h2><p>Nahraj vlastní pozadí karty. Jméno a číslo doplní banka. Obrázek se ořízne na poměr karty; v náhledu zkontroluj čitelnost.</p><label for="designselect">Design</label><select id="designselect"><option value="">Nový design</option></select><label for="designname">Název karty</label><input id="designname" maxlength="60"><label for="designfile">Obrázek pozadí (PNG, JPG, WebP do 10 MB)</label><input id="designfile" type="file" accept="image/png,image/jpeg,image/webp"><label><input id="designdark" type="checkbox" style="width:auto"> Tmavý text na světlém pozadí</label><div class="cardwrap"><div id="designpreview" class="pcard" style="background:linear-gradient(135deg,#0f4c45,#0a2925)"><div class="top"><span>NašeBanka</span><div class="chip"></div></div><div class="num">9000 1234 5678 0000</div><div class="bot"><span>Ukázkové jméno</span><span>12/29</span></div></div></div><fieldset style="border:1px solid var(--line);border-radius:12px;padding:14px"><legend>Komu kartu zpřístupnit</legend><div id="designrecipients" style="max-height:300px;overflow:auto"></div></fieldset><p><button class="btn" id="designsave">Uložit a přidělit kartu</button></p><p>Karta se příjemcům zobrazí ve výběru karet zdarma. Grafik upravuje své návrhy, majitel všechny.</p><div id="designmsg" class="msg" role="status"></div></div></section>
+  <dialog id="resetdialog" style="background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:16px;max-width:420px"><h2>Nové heslo</h2><p id="resetname"></p><label for="resetpassword">Nové heslo (alespoň 6 znaků)</label><input id="resetpassword" type="password" autocomplete="new-password"><p>Původní heslo se nezobrazuje. Nové heslo se neukládá do historie banky.</p><div class="row2"><button class="btn" id="resetsave">Nastavit nové heslo</button><button class="btn ghost" id="resetcancel">Zrušit</button></div><div class="msg err" id="resetmsg" role="alert"></div></dialog>
+  <section id="ppl" class="hidden"><div class="card hidden" id="chipadmin"><h2>Správa žetonů</h2><p>Majitel spravuje všechny účty. Zástupce spravuje ostatní hráče kromě majitele. Přidání žetonů zde je bonus, neodečítá Sh.</p><label for="chipadminwho">Hráč</label><select id="chipadminwho"></select><label for="chipadminamount">Počet žetonů</label><input id="chipadminamount" type="number" min="1" max="1000000" step="1" placeholder="10"><div class="row2"><button class="btn" id="chipadminadd">Přidat žetony</button><button class="btn ghost" id="chipadminsub">Odebrat žetony</button></div><div class="msg" id="chipadminmsg" role="status"></div></div></section>
+
+  <section id="history" class="hidden"><div class="card"><h2>Historie všech lidí</h2><button class="btn ghost sm" id="refreshhistory">Obnovit historii</button><p>Všechny dostupné uložené pohyby. Databáze uchovává posledních 30 peněžních a žetonových pohybů a 50 obchodů na člověka. Již odstraněné záznamy nelze obnovit. Investiční obchody jsou uvedené také mezi pohyby účtu.</p><label for="historyperson">Člověk</label><select id="historyperson"></select><label for="historykind">Typ pohybů</label><select id="historykind"><option value="all">Všechny typy</option><option value="cash">Účet a spoření</option><option value="chips">Kasino a žetony</option><option value="invest">Investice</option></select><div id="allhistory"></div></div></section><section id="team" class="hidden"><div class="card"><h2>Tým</h2><p>Lidé v bance. Seznam se načítá při přihlášení.</p><button class="btn ghost sm" id="refreshpeople">Obnovit seznam</button><div id="directorymsg" class="msg" role="status"></div><div id="tlist"></div></div></section>
+
+  
+
+  <section id="ann" class="hidden">
+    <div class="card hidden" id="annnew"><h2>Nové oznámení</h2><textarea id="annt" placeholder="Co je nového?"></textarea><p style="margin-top:12px"><button class="btn" id="annsend">Poslat všem</button></p><div id="annmsg" class="msg"></div></div>
+    <div class="card"><h2>Oznámení</h2><div id="annl"></div></div>
+  </section>
+
+  <section id="qr" class="hidden">
+    <div class="card"><h2>Můj QR kód</h2><p>Kdo ho naskenuje, může ti poslat peníze.</p>
+      <label for="qamt">Částka (nepovinně)</label><input id="qamt" type="number" min="1">
+      <div id="qrimg" style="background:#fff;padding:12px;border-radius:12px;display:inline-block;margin-top:12px"></div></div>
+    <div class="card"><h2>Skenovat QR</h2>
+      <video id="qvid" playsinline muted class="hidden" style="width:100%;border-radius:12px"></video><canvas id="qcan" class="hidden"></canvas>
+      <p style="margin-top:12px"><button class="btn" id="qscan">Zapnout kameru</button></p>
+      <div id="qres" class="msg" role="status"></div><div id="qpay"></div></div>
+  </section>
+
+  <footer>NašeBanka je fiktivní banka – školní projekt. Žádné skutečné peníze ani údaje. Sh = svaté hokaido. Verze 3.5</footer><dialog id="bankresetdialog"><h2>Potvrdit nový začátek</h2><p id="bankresetpreview"></p><p>Účty, role a karty zůstanou. Všem 500 Sh; spoření, žetony, půjčky, investice a finanční historie se vyčistí. Staré losy už nepřinesou výhru. Záloha umožní vrátit reset.</p><button class="btn" id="confirmbankreset">Provést reset se zálohou</button> <button class="btn ghost" id="cancelbankreset">Zrušit</button></dialog>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,EmailAuthProvider,reauthenticateWithCredential,updatePassword,onAuthStateChanged,setPersistence,browserLocalPersistence} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {runTransaction as firebaseTransaction,getFirestore,initializeFirestore,persistentLocalCache,persistentMultipleTabManager,getDocsFromServer,writeBatch,deleteField,doc as fdoc,getDoc,getDocs,setDoc,updateDoc,deleteDoc,addDoc,query,where,orderBy,limit,onSnapshot as fsnap,collection as fcol} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const CFG={apiKey:"AIzaSyCnPWMK6Wpsc0HcMDINp4PMAFqR66UCqC4",authDomain:"nasebanka-bd9b3.firebaseapp.com",projectId:"nasebanka-bd9b3",storageBucket:"nasebanka-bd9b3.firebasestorage.app",messagingSenderId:"164586585177",appId:"1:164586585177:web:4bfcc69af9d16ce99d0548"};
+const fbApp=initializeApp(CFG);
+const auth=getAuth(fbApp),fdb=initializeFirestore(fbApp,{localCache:persistentLocalCache({tabManager:persistentMultipleTabManager()})});
+const ADMIN="zdenek.buchta@nasebanka.example";
+document.getElementById('seePassword').onchange=()=>{$('p').type=$('seePassword').checked?'text':'password'};
+document.getElementById('seePassword2').onchange=()=>{$('rp').type=$('seePassword2').checked?'text':'password'};
+function wrap(x){return{id:x.id,exists:x.exists(),data:function(){return x.data()}}}
+const dbAdapter={
+  doc:function(p){var r=fdoc(fdb,p);return{
+    get:async function(){return wrap(await getDoc(r))},
+    set:function(d){return setDoc(r,d,{merge:true})},
+    update:function(d){return updateDoc(r,d)},
+    delete:function(){return deleteDoc(r)},
+    onSnapshot:function(cb,er){return fsnap(r,function(x){cb(wrap(x))},er)}}},
+  collection:function(p){var c=fcol(fdb,p);return{
+    onSnapshot:function(cb,er){return fsnap(c,function(x){cb({docs:x.docs.map(wrap)})},er)}}}
+};
+dbAdapter.add=function(p,d){return addDoc(fcol(fdb,p),d)};
+dbAdapter.where=function(p,f,v){var q=query(fcol(fdb,p),where(f,"==",v));return{onSnapshot:function(cb,er){return fsnap(q,function(x){cb({docs:x.docs.map(wrap)})},er)}}};
+var $=function(i){return document.getElementById(i)};
+function fresh(){return{nid:2,people:[{id:1,name:"Zdeněk Buchta",bal:500,tx:[]}]}}
+var S;
+try{var r=localStorage.getItem("nb1");S=r?JSON.parse(r):fresh()}catch(e){S=fresh()}
+if(!S||!S.people||!S.people.length)S=fresh();
+function save(){try{localStorage.setItem("nb1",JSON.stringify(S))}catch(e){}}
+function kc(n){return n.toLocaleString("cs-CZ",{minimumFractionDigits:2,maximumFractionDigits:2})+" Sh"}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function now(){var d=new Date();return d.toLocaleDateString("cs-CZ")+" "+d.toLocaleTimeString("cs-CZ",{hour:"2-digit",minute:"2-digit"})}
+function find(id){return S.people.filter(function(p){return p.id===id})[0]}
+function log(p,t,a){p.tx.unshift({t:t,d:now(),a:a})}
+
+const BANK_FEE=0.02;
+function feeAmount(base){return r2(Math.max(0,base)*BANK_FEE)}
+function feeForChanges(old,next){var cash=0,casino=0;for(var t of next.tx||[]){if(!t.id||(old.tx||[]).some(x=>x.id===t.id))continue;if(/^(Platba →|Směna na |Zpětná směna |Vklad na spoření|Výběr ze spoření|Půjčka od banky|Úrok ze spoření)/.test(t.t))cash+=feeAmount(Math.abs(t.a));}for(var t of next.casinoTx||[]){if(!t.id||(old.casinoTx||[]).some(x=>x.id===t.id)||t.a<=0)continue;var base=0;if(/^Automat:/.test(t.t)){var mult=Number(t.t.match(/×(\d+)/)?.[1]||0);if(mult>1)base=t.a*mult/(mult-1);}else if(/^(Stírací los: výplata|Výhra v loterii)/.test(t.t))base=t.a;casino+=feeAmount(base*CHIP_RATE);}return {cash:r2(cash),casino:r2(casino)};}
+async function runTransaction(database,callback){return firebaseTransaction(database,async native=>{var old=new Map(),writes=new Map();var key=r=>r.path;var tr={get:async ref=>{var k=key(ref);if(!old.has(k))old.set(k,await native.get(ref));return old.get(k)},update:(ref,data)=>{var k=key(ref),w=writes.get(k);writes.set(k,{ref,data:{...(w?.data||{}),...data},set:w?.set||false})},set:(ref,data)=>writes.set(key(ref),{ref,data,set:true})};var result=await callback(tr),income=0,owner=accts.find(x=>x.role==='majitel');
+for(var [path,w] of writes){if(!path.startsWith('accounts/')||w.set)continue;var sn=old.get(path);if(!sn?.exists())continue;var before=sn.data(),after={...before,...w.data};if(before.role==='majitel')continue;var tax=feeForChanges(before,after),fee=r2(tax.cash+tax.casino);if(!fee)continue;if(!owner)throw Error('Počkej na načtení účtu majitele.');var interest=(after.tx||[]).filter(t=>t.id&&!(before.tx||[]).some(x=>x.id===t.id)&&/^Úrok ze spoření/.test(t.t)).reduce((sum,t)=>sum+feeAmount(t.a),0);if(interest){after.sav=r2((after.sav||0)-interest);w.data.sav=after.sav;after.tx=txlog(after,'Poplatek 2 % z úroku · ze spoření',-interest);fee=r2(fee-interest);income=r2(income+interest);}if(!fee){w.data.tx=after.tx;continue;}var balance=Number(after.bal||0);if(tax.casino>0&&(balance<fee||path!=='accounts/'+uid)){var convert=Math.ceil((path==='accounts/'+uid?fee-balance:fee)/CHIP_RATE);if(convert>Math.max(0,chipBalance(after)-chipBalance(before)))throw Error('Na poplatek není dost Sh.');after.casinoChips=chipBalance(after)-convert;after.casinoTx=chipLog(after,'Rozměnění části výhry na úhradu poplatku',-convert);balance=r2(balance+convert*CHIP_RATE);w.data.casinoChips=after.casinoChips;w.data.casinoTx=after.casinoTx;after.tx=txlog(after,'Rozměnění výhry na Sh',convert*CHIP_RATE);}if(balance<fee)throw Error('Na účtu není dost Sh včetně poplatku '+kc(fee)+'.');w.data.bal=r2(balance-fee);w.data.tx=txlog(after,'Poplatek bance 2 %',-fee);income=r2(income+fee);}
+if(income){var ref=fdoc(database,'accounts',owner.id),sn=await tr.get(ref);if(!sn.exists())throw Error('Účet majitele neexistuje.');var w=writes.get(ref.path),o={...sn.data(),...(w?.data||{})};tr.update(ref,{bal:r2(o.bal+income),tx:txlog(o,'Příjem poplatků 2 %',income)});}for(var w of writes.values()){if(w.set)native.set(w.ref,w.data);else native.update(w.ref,w.data)}return result;});}
+var interestRunning=new Set();async function settleInterest(id){if(!id||interestRunning.has(id))return;interestRunning.add(id);try{await runTransaction(fdb,async tr=>{var ref=fdoc(fdb,'accounts',id),sn=await tr.get(ref);if(!sn.exists())return;var o=sn.data();if(!intr(o))return;tr.update(ref,{sav:o.sav,savAt:o.savAt,tx:o.tx})});}catch(e){$('reqmsg').textContent=errt(e)}finally{interestRunning.delete(id)}}
+
+function r2(n){return Math.round(n*100)/100}
+function lastMon(){var d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return d.getTime()}
+function pushTx(o,t,a){o.tx=[{id:crypto.randomUUID(),t:t,d:now(),a:a}].concat(o.tx||[]).slice(0,30)}
+function intr(o){
+  var lm=lastMon(),ch=false;
+  if(o.sav===undefined||o.sav===null){o.sav=0;ch=true}
+  if(!o.savAt){o.savAt=lm;return true}
+  var k=Math.min(520,Math.round((lm-o.savAt)/604800000));
+  if(k>0){if(o.sav>0){var ns=r2(o.sav*Math.pow(1.05,k));pushTx(o,"Úrok ze spoření 5 %",r2(ns-o.sav));o.sav=ns}o.savAt=lm;ch=true}
+  return ch;
+}
+function savCard(el,w){
+  if(el.getAttribute("data-n"))return;el.setAttribute("data-n","1");
+  el.innerHTML='<div class="card"><h2>Spořicí účet</h2><p>Každé pondělí dostaneš úrok 5 % z peněz na spoření. Z úroku se odečte poplatek 2 % pro majitele.</p><div class="big" style="font-size:1.8rem" id="sv'+w+'">0,00 Sh</div><small id="sn'+w+'"></small><label for="sa'+w+'">Částka (Sh)</label><input id="sa'+w+'" type="number" min="1" placeholder="100"><div class="row2"><button class="btn" data-sv="in" data-who="'+w+'">Vložit na spoření</button><button class="btn ghost" data-sv="out" data-who="'+w+'">Vybrat ze spoření</button></div><div class="msg" id="sm'+w+'" role="status"></div></div>';
+}
+function updSav(w,o){
+  var sv=o.sav||0,nx=new Date(lastMon()+7*86400000+3600000);
+  $("sv"+w).textContent=kc(sv);
+  $("sn"+w).textContent="Příští úrok v pondělí "+nx.getDate()+". "+(nx.getMonth()+1)+".: "+kc(r2(sv*0.05));
+}
+function mv(o,dir,v){
+  if(dir==="in"){if(v>o.bal)return "Na hlavním účtu není dost peněz.";o.bal=r2(o.bal-v);o.sav=r2((o.sav||0)+v);pushTx(o,"Vklad na spoření",-v)}
+  else{if(v>(o.sav||0))return "Na spoření není dost peněz.";o.sav=r2(o.sav-v);o.bal=r2(o.bal+v);pushTx(o,"Výběr ze spoření",v)}
+  return null;
+}
+var savingBusy=false;
+async function moveSavings(dir,value){if(!uid)throw Error('Nejdřív se přihlas.');var v=r2(value);if(!Number.isFinite(value)||v<=0||!['in','out'].includes(dir))throw Error('Zadej platnou částku alespoň 0,01 Sh.');return runTransaction(fdb,async tr=>{var ref=fdoc(fdb,'accounts',uid),sn=await tr.get(ref);if(!sn.exists())throw Error('Účet neexistuje.');var o=sn.data();intr(o);var er=mv(o,dir,v);if(er)throw Error(er);tr.update(ref,{bal:o.bal,sav:o.sav,savAt:o.savAt,tx:o.tx});return o;});}
+document.addEventListener('click',async e=>{var button=e.target.closest('button[data-sv]');if(!button||savingBusy)return;var w=button.dataset.who,m=$('sm'+w),v=Number($('sa'+w).value),dir=button.dataset.sv;if(!Number.isFinite(v)||v<=0){m.textContent='Zadej kladnou částku.';return}if(!confirm((dir==='in'?'Vložit na spoření ':'Vybrat ze spoření ')+kc(v)+'? Poplatek '+kc(isAdmin?0:feeAmount(v))+'.'))return;savingBusy=true;document.querySelectorAll('[data-sv]').forEach(b=>b.disabled=true);m.className='msg';m.textContent='Ukládám…';try{var o=await moveSavings(dir,v);m.className='msg ok';m.textContent=(dir==='in'?'Vloženo na spoření: ':'Vybráno ze spoření: ')+kc(r2(v));$('sa'+w).value='';}catch(e){m.className='msg err';m.textContent=errt(e)}finally{savingBusy=false;document.querySelectorAll('[data-sv]').forEach(b=>b.disabled=false)}});
+function cardNum(name){var h=7;for(var i=0;i<name.length;i++)h=(h*31+name.charCodeAt(i))%1000000007;var d=String(h*997%100000000).padStart(8,"0");return "9000 "+d.slice(0,4)+" "+d.slice(4)+" 0000"}
+var DES=[{id:"klasik",n:"Klasik",min:0,css:"linear-gradient(135deg,#0f4c45,#0a2925)"},{id:"pulnoc",n:"Půlnoc",min:1000,css:"linear-gradient(135deg,#0d0d0f,#2c2c31)"},{id:"slunce",n:"Slunce",min:2500,css:"linear-gradient(135deg,#ff9a3c,#ff4f81)"},{id:"ocean",n:"Oceán",min:5000,css:"linear-gradient(135deg,#0072ff,#00c6a7)"},{id:"neon",n:"Neon",min:10000,css:"linear-gradient(135deg,#7a2cff,#00e0ff)"},{id:"zlata",n:"Zlatá",min:25000,css:"linear-gradient(135deg,#f6d365,#b8860b)",dark:1},{id:"tym",n:"Tým",min:0,staff:1,css:"radial-gradient(circle at 70% 40%,#a855f7,transparent 45%),radial-gradient(circle at 55% 65%,#f59e0b,transparent 30%),linear-gradient(135deg,#141416,#0a0a0b)",art:'<svg class="art" viewBox="0 0 200 120" preserveAspectRatio="xMidYMid slice"><defs><filter id="liq" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency="0.018 0.04" numOctaves="3" seed="6"/><feDisplacementMap in="SourceGraphic" scale="46"/></filter></defs><g filter="url(#liq)"><ellipse cx="125" cy="55" rx="52" ry="34" fill="#8b3fe0"/><ellipse cx="150" cy="78" rx="30" ry="16" fill="#f59e0b" opacity=".85"/><ellipse cx="100" cy="48" rx="26" ry="14" fill="#c084fc"/><ellipse cx="140" cy="40" rx="22" ry="10" fill="#5b21b6"/></g></svg>'}];
+DES.push(...[{"id":"casino_ace","n":"Pikové eso","min":0,"owner":1,"css":"url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22680%22%20height%3D%22428%22%20viewBox%3D%220%200%20680%20428%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22bg%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22%23111115%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23171027%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22accent%22%20x2%3D%22.5%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22%23b675ff%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23382056%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22680%22%20height%3D%22428%22%20fill%3D%22url(%23bg)%22%2F%3E%3Cpath%20d%3D%22M240%20428C580%20320%20330%20120%20680%200V428Z%22%20fill%3D%22%23b675ff%22%20opacity%3D%22.09%22%2F%3E%3Cpath%20d%3D%22M510%2062C488%20103%20408%20148%20408%20199C408%20252%20472%20266%20501%20223C503%20261%20486%20280%20468%20294H552C534%20278%20519%20261%20520%20223C550%20266%20615%20252%20615%20199C615%20148%20536%20103%20510%2062Z%22%20fill%3D%22url(%23accent)%22%20opacity%3D%22.85%22%2F%3E%3C%2Fsvg%3E\") center/cover"},{"id":"casino_cherry","n":"Třešně","min":500,"css":"url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22680%22%20height%3D%22428%22%20viewBox%3D%220%200%20680%20428%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22bg%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22%23230a13%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23540e24%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22accent%22%20x2%3D%22.5%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22%23ff526c%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23a01535%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22680%22%20height%3D%22428%22%20fill%3D%22url(%23bg)%22%2F%3E%3Cpath%20d%3D%22M240%20428C580%20320%20330%20120%20680%200V428Z%22%20fill%3D%22%23ff526c%22%20opacity%3D%22.09%22%2F%3E%3Cpath%20d%3D%22M481%20177Q509%20115%20554%2088M565%20193L554%2088%22%20fill%3D%22none%22%20stroke%3D%22%23da4b65%22%20stroke-width%3D%2210%22%2F%3E%3Ccircle%20cx%3D%22471%22%20cy%3D%22208%22%20r%3D%2247%22%20fill%3D%22url(%23accent)%22%2F%3E%3Ccircle%20cx%3D%22577%22%20cy%3D%22231%22%20r%3D%2247%22%20fill%3D%22url(%23accent)%22%2F%3E%3C%2Fsvg%3E\") center/cover"},{"id":"casino_diamond","n":"Diamant","min":1500,"css":"url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22680%22%20height%3D%22428%22%20viewBox%3D%220%200%20680%20428%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22bg%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22%23071324%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23063550%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22accent%22%20x2%3D%22.5%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22%2326d7f2%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2308619d%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22680%22%20height%3D%22428%22%20fill%3D%22url(%23bg)%22%2F%3E%3Cpath%20d%3D%22M240%20428C580%20320%20330%20120%20680%200V428Z%22%20fill%3D%22%2326d7f2%22%20opacity%3D%22.09%22%2F%3E%3Cpath%20d%3D%22M424%20145L463%2089H563L610%20145L516%20281Z%22%20fill%3D%22url(%23accent)%22%2F%3E%3Cpath%20d%3D%22M424%20145H610M463%2089L487%20145L516%20281L549%20145L563%2089M487%20145L515%2089L549%20145%22%20fill%3D%22none%22%20stroke%3D%22%2370e6ff%22%20stroke-opacity%3D%22.5%22%20stroke-width%3D%222%22%2F%3E%3C%2Fsvg%3E\") center/cover"},{"id":"casino_seven","n":"Šťastná sedmička","min":3000,"css":"url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22680%22%20height%3D%22428%22%20viewBox%3D%220%200%20680%20428%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22bg%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22%23161021%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%233d1546%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22accent%22%20x2%3D%22.5%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22%23d8a5ff%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%239860ba%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22680%22%20height%3D%22428%22%20fill%3D%22url(%23bg)%22%2F%3E%3Cpath%20d%3D%22M240%20428C580%20320%20330%20120%20680%200V428Z%22%20fill%3D%22%23d8a5ff%22%20opacity%3D%22.09%22%2F%3E%3Cg%20fill%3D%22url(%23accent)%22%20transform%3D%22translate(394%20139)%20skewX(-10)%22%3E%3Cpath%20d%3D%22M0%200H70V22L32%20113H4L44%2025H0Z%22%2F%3E%3Cpath%20d%3D%22M78%200H148V22L110%20113H82L122%2025H78Z%22%2F%3E%3Cpath%20d%3D%22M156%200H226V22L188%20113H160L200%2025H156Z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E\") center/cover"},{"id":"casino_chip","n":"Zlatý žeton","min":7500,"css":"url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22680%22%20height%3D%22428%22%20viewBox%3D%220%200%20680%20428%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22bg%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22%23081c18%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23203c22%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22accent%22%20x2%3D%22.5%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22%23f5d778%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23a47b22%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22680%22%20height%3D%22428%22%20fill%3D%22url(%23bg)%22%2F%3E%3Cpath%20d%3D%22M240%20428C580%20320%20330%20120%20680%200V428Z%22%20fill%3D%22%23f5d778%22%20opacity%3D%22.09%22%2F%3E%3Cg%20transform%3D%22translate(520%20193)%22%3E%3Ccircle%20r%3D%2290%22%20fill%3D%22none%22%20stroke%3D%22%23d4ad48%22%20stroke-width%3D%223%22%2F%3E%3Ccircle%20r%3D%2264%22%20fill%3D%22url(%23accent)%22%2F%3E%3Crect%20x%3D%22-7%22%20y%3D%22-84%22%20width%3D%2214%22%20height%3D%2218%22%20rx%3D%222%22%20fill%3D%22%23eed276%22%20transform%3D%22rotate(0)%22%2F%3E%3Crect%20x%3D%22-7%22%20y%3D%22-84%22%20width%3D%2214%22%20height%3D%2218%22%20rx%3D%222%22%20fill%3D%22%23eed276%22%20transform%3D%22rotate(45)%22%2F%3E%3Crect%20x%3D%22-7%22%20y%3D%22-84%22%20width%3D%2214%22%20height%3D%2218%22%20rx%3D%222%22%20fill%3D%22%23eed276%22%20transform%3D%22rotate(90)%22%2F%3E%3Crect%20x%3D%22-7%22%20y%3D%22-84%22%20width%3D%2214%22%20height%3D%2218%22%20rx%3D%222%22%20fill%3D%22%23eed276%22%20transform%3D%22rotate(135)%22%2F%3E%3Crect%20x%3D%22-7%22%20y%3D%22-84%22%20width%3D%2214%22%20height%3D%2218%22%20rx%3D%222%22%20fill%3D%22%23eed276%22%20transform%3D%22rotate(180)%22%2F%3E%3Crect%20x%3D%22-7%22%20y%3D%22-84%22%20width%3D%2214%22%20height%3D%2218%22%20rx%3D%222%22%20fill%3D%22%23eed276%22%20transform%3D%22rotate(225)%22%2F%3E%3Crect%20x%3D%22-7%22%20y%3D%22-84%22%20width%3D%2214%22%20height%3D%2218%22%20rx%3D%222%22%20fill%3D%22%23eed276%22%20transform%3D%22rotate(270)%22%2F%3E%3Crect%20x%3D%22-7%22%20y%3D%22-84%22%20width%3D%2214%22%20height%3D%2218%22%20rx%3D%222%22%20fill%3D%22%23eed276%22%20transform%3D%22rotate(315)%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E\") center/cover"},{"id":"casino_royal","n":"Royal","min":15000,"css":"url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22680%22%20height%3D%22428%22%20viewBox%3D%220%200%20680%20428%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22bg%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22%23121017%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2322142b%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22accent%22%20x2%3D%22.5%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22%23bd81ff%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23deb35e%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22680%22%20height%3D%22428%22%20fill%3D%22url(%23bg)%22%2F%3E%3Cpath%20d%3D%22M240%20428C580%20320%20330%20120%20680%200V428Z%22%20fill%3D%22%23bd81ff%22%20opacity%3D%22.09%22%2F%3E%3Cpath%20d%3D%22M320%20400Q630%20160%20680%20342V428Z%22%20fill%3D%22%23ac7b32%22%20opacity%3D%22.5%22%2F%3E%3Cpath%20d%3D%22M422%20174L451%20198L477%20141L510%20195L553%20143L572%20200L611%20167L590%20243H447Z%22%20fill%3D%22%23e8c56c%22%2F%3E%3Cpath%20d%3D%22M280%200Q660%20142%20433%20276Q580%20203%20680%20227V0Z%22%20fill%3D%22%23944ced%22%20opacity%3D%22.25%22%2F%3E%3C%2Fsvg%3E\") center/cover"}]);
+DES.forEach(function(d){if(d.id.startsWith('casino_')&&!d.owner){d.minChips=d.min/10;d.min=0}});
+function cardWealth(o){return (o.bal||0)+(o.sav||0)}
+function cardUnlocked(o,d){if(d.custom)return customAllowed(o,d);return d.minChips!==undefined?chipBalance(o)>=d.minChips:cardWealth(o)>=d.min}
+function cardLimitLabel(d){return d.minChips!==undefined?chips(d.minChips):kc(d.min).replace(',00','')}
+function isOwner(o,w){return w==="A"||o.id===1||o.role==="majitel"}
+function des(id){return DES.filter(function(d){return d.id===id})[0]||DES[0]}
+function isStaff(o,w){return o.role==="grafik"||o.role==="vyvojar"||w==="A"||o.id===1||o.role==="majitel"||o.role==="zastupce"}
+function effCard(o){var st=isStaff(o,"");var d=des(o.card||(st?"tym":"klasik"));if((d.owner&&!isOwner(o,""))||(d.staff&&!st))return "klasik";return cardUnlocked(o,d)?d.id:"klasik"}
+function setCard(el,name,did){
+  var k=name+"|"+did;if(el.getAttribute("data-n")===k)return;el.setAttribute("data-n",k);var d=des(did);
+  el.innerHTML='<div class="pcard" style="background:'+esc(d.css)+(d.dark?';color:#2b2000':'')+';position:relative;overflow:hidden">'+(d.art||"")+'<div class="top"><span>NašeBanka</span><div class="chip"></div></div><div class="num">'+cardNum(name)+'</div><div class="bot"><span>'+esc(name)+'</span><span>12/29</span></div></div>';
+}
+function gallery(el,w,o){
+  var sel=effCard(o),available=DES.filter(d=>(!d.owner||isOwner(o,w))&&(!d.staff||isStaff(o,w))&&customAllowed(o,d));
+  function buttons(list){return list.map(function(d){var lock=!cardUnlocked(o,d);return '<button class="gi'+(d.id===sel?' on':'')+'" data-cd="'+d.id+'" data-who="'+w+'"'+(lock?' data-lock="1"':'')+'><span class="sw" style="background:'+esc(d.css)+(lock?';opacity:.35':'')+'"></span><b>'+esc(d.n)+'</b><small>'+(d.owner?'jen majitel':lock?'🔒 od '+cardLimitLabel(d):d.staff?'jen tým':(d.min||d.minChips)?'odemčeno':'základní')+'</small></button>'}).join('')}
+  el.innerHTML='<div class="card"><h2>Bankovní karty</h2><p>Odemčení podle zůstatku na běžném a spořicím účtu v Sh.</p><div class="gal">'+buttons(available.filter(d=>!d.custom&&!d.id.startsWith('casino_')))+'</div><h2 style="margin-top:24px">Kasino karty · za žetony</h2><p>Odemčení podle aktuálního zůstatku žetonů. Žetony se neodečítají. Při poklesu pod limit se použije základní karta; po doplnění žetonů se vybraný motiv vrátí.</p><div class="gal">'+buttons(available.filter(d=>d.id.startsWith('casino_')))+'</div><h2 style="margin-top:24px">Karty od grafika</h2><div class="gal">'+buttons(available.filter(d=>d.custom))+'</div><div class="msg" id="cm'+w+'"></div></div>';
+}
+
+function render(){
+  if(!S.people[0])return;
+  setCard($("cardA"),S.people[0].name,effCard(S.people[0]));gallery($("cgA"),"A",S.people[0]);savCard($("savA"),"A");updSav("A",S.people[0]);
+  var me=S.people[0];
+  $("total").textContent=kc(me.bal);
+  $("txs").innerHTML=me.tx.length?me.tx.map(function(x){return '<div class="tx"><div><b>'+esc(x.t)+'</b><small>'+esc(x.d)+'</small></div><span class="'+(x.a<0?"neg":"pos")+'">'+(x.a>0?"+":"")+kc(x.a)+'</span></div>'}).join(""):'<p class="empty">Zatím žádné pohyby.</p>';
+  var others=S.people.slice(1);
+  $("to").innerHTML=others.length?others.map(function(p){return '<option value="'+p.id+'">'+esc(p.name)+'</option>'}).join(""):'<option value="">Nikdo další zatím není</option>';
+  $("plist").innerHTML=S.people.map(function(p){
+    return '<div class="prow"><div class="pn"><b>'+esc(p.name)+'</b>'+(p.id===1?'<span class="badge">Majitel</span>':'')+'<small>'+kc(p.bal)+(p.sav?' · spoření '+kc(p.sav):'')+'</small></div>'+
+    (p.id!==1?'<select class="rs" data-i="'+p.id+'" aria-label="Role pro '+esc(p.name)+'">'+['zakaznik','zastupce','grafik','vyvojar'].map(r=>'<option value="'+r+'"'+((p.role||'zakaznik')===r?' selected':'')+'>'+lbl(r)+'</option>').join('')+'</select>':'')+
+    '<input type="number" min="1" class="ai" placeholder="Sh" aria-label="Částka pro '+esc(p.name)+'">'+
+    '<button class="btn sm" data-a="add" data-i="'+p.id+'">Přidat</button>'+
+    '<button class="btn sm ghost" data-a="sub" data-i="'+p.id+'">Odebrat</button>'+
+    '<button class="btn sm ghost" data-a="savadd" data-i="'+p.id+'">Přidat na spoření</button><button class="btn sm ghost" data-a="savsub" data-i="'+p.id+'">Odebrat ze spoření</button>'+ 
+    (p.id!==1?'<button class="btn sm ghost" data-a="reset" data-i="'+p.id+'"'+''+'>Reset hesla</button><button class="btn sm ghost" data-a="del" data-i="'+p.id+'">Smazat člověka</button>':'')+'</div>';
+  }).join("");
+  save();
+}
+function amsg(t,ok){var m=$("amsg");m.className="msg "+(ok?"ok":"err");m.textContent=t}
+var watchD=false,db=dbAdapter,uid=null,unsubs=[],isAdmin=false,sent={},reqs=[],apps={},lastN=0;
+async function sha(t){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0")}).join("")}
+function show(id){["login","reg","wait","member","app"].forEach(function(x){$(x).classList.toggle("hidden",x!==id)});$("logout").classList.toggle("hidden",id==="login"||id==="reg");$("tabs").classList.toggle("hidden",!(id==="member"||id==="app"))}
+function noDb(el){el.textContent="Tohle funguje jen pro lidi přihlášené na claude.ai, kteří mají k této stránce přístup od správce."}
+$("toreg").onclick=function(){show("reg");$("logout").classList.add("hidden")};
+$("tolog").onclick=function(){show("login")};
+function stop(){watchD=false;unsubs.forEach(function(f){try{f()}catch(e){}});unsubs=[];isAdmin=false;document.title="NašeBanka – internetové bankovnictví"}
+async function sendReq(type,name){
+  var at=Date.now();show("wait");$("waitmsg").textContent="Účet se vytvoří, jakmile bude mít správce otevřenou stránku. Stránku nezavírej.";
+  try{await db.doc("requests/"+uid).set({name:name,type:type,at:at})}catch(e){show("login");$("lerr").textContent="Žádost se nepodařilo odeslat.";return}
+  unsubs.push(db.doc("approvals/"+uid).onSnapshot(function(sn){
+    var d=sn.exists&&sn.data();if(!d||d.reqAt!==at)return;
+    if(d.ok)enterMember(name);else $("waitmsg").textContent="Účet se nepodařilo vytvořit."
+  }));
+}
+var accts=[],myRole="zakaznik";
+function lbl(r){return ({majitel:"Majitel",zastupce:"Zástupce",grafik:"Grafik",vyvojar:"Vývojář",zakaznik:"Zákazník"})[r]||"Zákazník"}
+function renderOthers(){
+  var sel=$("mto"),cur=sel.value,o=accts.filter(function(x){return x.id!==uid});
+  sel.innerHTML=o.length?o.map(function(x){return '<option value="'+esc(x.id)+'">'+esc(x.name)+'</option>'}).join(""):'<option value="">Nikdo další zatím není</option>';
+  if(cur)sel.value=cur;
+  if(myRole==="zastupce"&&!(document.activeElement&&document.activeElement.tagName==="INPUT"&&$("dlist").contains(document.activeElement)))$("dlist").innerHTML=accts.map(function(x){
+    var mine=x.id===uid,own=x.role==="majitel";
+    return '<div class="prow"><div class="pn"><b>'+esc(x.name)+'</b>'+(own?'<span class="badge">Majitel</span>':'')+'<small>'+lbl(x.role)+' · '+kc(x.bal)+'</small></div>'+
+    ((own)?'':'<input type="number" min="1" class="ai" placeholder="Sh" aria-label="Částka pro '+esc(x.name)+'"><button class="btn sm" data-d="add" data-i="'+esc(x.id)+'">Přidat</button><button class="btn sm ghost" data-d="sub" data-i="'+esc(x.id)+'">Odebrat</button>'+(x.role==="zakaznik"?'<button class="btn sm ghost" data-x="del" data-i="'+esc(x.id)+'">Smazat</button>':''))+'</div>'}).join("");
+}
+function enterMember(name){
+  $("mwho").textContent=name;show("member");
+  unsubs.push(db.doc("accounts/"+uid).onSnapshot(function(sn){
+    var d=sn.exists&&sn.data();if(!d)return;
+    d=JSON.parse(JSON.stringify(d));
+    if(!d.savAt||d.savAt<lastMon())settleInterest(uid);
+    savCard($("savM"),"M");updSav("M",d);setCard($("cardM"),name,effCard(d));gallery($("cgM"),"M",d);
+    myRole=d.role||"zakaznik";$("mrole").textContent=lbl(myRole);$("tppl").classList.toggle("hidden",myRole!=="zastupce");$("deputy").classList.toggle("hidden",myRole!=="zastupce");
+    $("mtotal").textContent=kc(d.bal);
+    $("mtxs").innerHTML=(d.tx&&d.tx.length)?d.tx.map(function(x){return '<div class="tx"><div><b>'+esc(x.t)+'</b><small>'+esc(x.d)+'</small></div><span class="'+(x.a<0?"neg":"pos")+'">'+(x.a>0?"+":"")+kc(x.a)+'</span></div>'}).join(""):'<p class="empty">Zatím žádné pohyby.</p>';
+    renderOthers();
+  }));
+
+}
+$("dlist").onclick=async function(e){
+  var b=e.target.closest("button[data-d]");if(!b)return;
+  var row=b.parentNode,m=$("dmsg"),v=parseFloat(row.querySelector(".ai").value),id=b.getAttribute("data-i"),add=b.getAttribute("data-d")==="add";
+  m.className="msg err";
+  if(!(v>0)){m.textContent="Zadej částku větší než 0.";return}
+  try{
+    var ref=db.doc("accounts/"+id),o=(await ref.get()).data();
+    if(myRole!=="zastupce"||o.role==="majitel")throw Error("Tento účet nemůžeš spravovat.");
+    if(!add&&v>o.bal){m.textContent=o.name+" má jen "+kc(o.bal)+".";return}
+    await ref.update({bal:r2(o.bal+(add?v:-v)),tx:[{t:add?"Vklad od zástupce":"Odečteno zástupcem",d:now(),a:add?v:-v}].concat(o.tx||[]).slice(0,30)});
+    m.className="msg ok";m.textContent=(add?"Přidáno ":"Odebráno ")+kc(v)+": "+o.name;
+    row.querySelector(".ai").value="";if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();
+  }catch(x){m.textContent="Nepovedlo se: "+((x&&(x.code||x.message))||"neznámá chyba")}
+};
+async function sendMoney(to,v,n){if(!Number.isFinite(v)||v<=0||r2(v)!==v)return 'Zadej platnou částku na dvě desetinná místa.';if(to===uid)return 'Vyber jiného příjemce.';var fee=isAdmin?0:feeAmount(v);if(!confirm('Odeslat '+kc(v)+'? Poplatek '+kc(fee)+', celkem '+kc(r2(v+fee))+'.'))return 'Platba zrušena.';return runTransaction(fdb,async tr=>{var mr=fdoc(fdb,'accounts',uid),rr=fdoc(fdb,'accounts',to),ms=await tr.get(mr),rs=await tr.get(rr);if(!ms.exists()||!rs.exists())throw Error('Účet neexistuje.');var me=ms.data(),other=rs.data();if(me.bal<v+fee)throw Error('Na účtu není dost Sh včetně poplatku.');tr.update(mr,{bal:r2(me.bal-v),tx:txlog(me,'Platba → '+other.name+(n?' ('+n+')':''),-v)});tr.update(rr,{bal:r2(other.bal+v),tx:txlog(other,'Od '+me.name+(n?' ('+n+')':''),v)});return null;});}
+
+// Minecraft linking: the page only stores "this code belongs to me"; the bank server on the Pi completes the link.
+async function showMcLinks(){var el=$('mclinked');if(!el||!uid)return;try{var sn=await getDocs(query(fcol(fdb,'mcLinks'),where('uid','==',uid)));el.textContent=sn.empty?'':'Propojeno s: '+sn.docs.map(d=>d.data().mcName).join(', ');}catch(e){el.textContent='';}}
+$('mclink').onclick=async function(){var m=$('mcmsg'),code=$('mccode').value.trim().toUpperCase();m.className='msg err';
+  if(!uid){m.textContent='Nejdřív se přihlas.';return}
+  if(!/^[A-Z0-9]{6}$/.test(code)){m.textContent='Kód má 6 znaků (písmena a čísla).';return}
+  try{await setDoc(fdoc(fdb,'mcLinkClaims',code),{uid:uid,at:Date.now()});m.className='msg ok';m.textContent='Hotovo. Teď ve hře napiš /banka stav.';$('mccode').value='';setTimeout(showMcLinks,4000);}
+  catch(e){m.textContent='Kód se nepodařilo uložit. Zkus /banka propojit znovu.';}};
+$("mpay").onclick=async function(){
+  var m=$("mmsg"),to=$("mto").value,v=parseFloat($("mamt").value),n=$("mnote").value.trim();m.className="msg err";
+  if(!to){m.textContent="Vyber příjemce.";return}
+  if(!(v>0)){m.textContent="Zadej částku větší než 0.";return}
+  try{var er=await sendMoney(to,v,n);if(er){m.textContent=er;return}m.className="msg ok";m.textContent="Platba odeslána: "+kc(v);$("mamt").value="";$("mnote").value=""}catch(x){m.textContent="Platba se nepovedla."}
+};
+
+$("ppl").appendChild($("admin"));$("ppl").appendChild($("deputy"));
+var myName="",myDoc={},msgsIn=[],msgsOut=[],anns=[],curTab="acc",stream=null,scanOn=false;
+function mapd(sn){return sn.docs.map(function(d){var o=d.data();o.id=d.id;return o})}
+function nameOf(id){var a=accts.filter(function(x){return x.id===id})[0];return a?a.name:"?"}
+async function createPerson(name,pw){
+  var app2=initializeApp(CFG,"sec"+Date.now()),a2=getAuth(app2),f2=getFirestore(app2);
+  var c=await createUserWithEmailAndPassword(a2,mail(name),pw);
+  await setDoc(fdoc(f2,"accounts/"+c.user.uid),{name:name,bal:500,role:"zakaznik",sav:0,savAt:lastMon(),tx:[]});
+  await setDoc(fdoc(f2,"logins/"+slug(name)),{email:mail(name),uid:c.user.uid}).catch(function(){});
+  await signOut(a2);await refreshDirectory();
+}
+$("dadd").onclick=async function(){
+  var m=$("dmsg"),n=$("dn").value.trim(),pw=$("dp").value;m.className="msg err";
+  if(!n||!pw){m.textContent="Zadej jméno i heslo.";return}
+  if(!mail(n)){m.textContent="Jméno musí obsahovat písmena nebo čísla.";return}
+  try{await createPerson(n,pw);$("dn").value="";$("dp").value="";m.className="msg ok";m.textContent=n+" přidán(a) s 500 Sh."}catch(x){m.textContent=aerr(x.code)}
+};
+$("dlist").addEventListener("click",async function(e){
+  var b=e.target.closest("button[data-x]");if(!b)return;var m=$("dmsg");
+  try{await db.doc("accounts/"+b.getAttribute("data-i")).delete();m.className="msg ok";m.textContent="Smazáno."}catch(x){m.className="msg err";m.textContent="Nepovedlo se."}
+});
+function tab(t){
+  curTab=t;
+  ["team","ann","qr","set","loan","rr","ppl","design","activity","invest","history"].forEach(function(x){$(x).classList.toggle("hidden",x!==t)});
+  (isAdmin?$("app"):$("member")).classList.toggle("hidden",t!=="acc");
+  document.querySelectorAll("#tabs button").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-t")===t)});
+  $("admin").classList.toggle("hidden",!isAdmin);
+  $("deputy").classList.toggle("hidden",isAdmin||myRole!=="zastupce");
+  if(t==="history"){if(!isAdmin){tab("acc");return}renderAllHistory()}
+  syncRoleTools();if(t==="invest")renderInvestments();
+  if(t!=="qr")stopScan();
+  if(t==="ann")markAnn();if(t==="qr")drawQR();
+}
+$("tabs").onclick=function(e){var b=e.target.closest("button");if(b)tab(b.getAttribute("data-t"))};
+var directoryBusy=false;
+async function refreshDirectory(){if(!uid||directoryBusy)return;var id=uid;directoryBusy=true;$('directorymsg').textContent='Načítám…';try{var sn=await getDocs(fcol(fdb,'accounts'));if(uid!==id)return;accts=[];if(isAdmin)S.people=[];sn.docs.forEach(d=>adoptAccount(d.id,d.data()));if(isAdmin)render();if(curTab==='history')renderAllHistory();renderOthers();renderTeam();renderDesignEditor();$('directorymsg').textContent='Seznam je aktuální.';if(!myDoc.savAt||myDoc.savAt<lastMon())settleInterest(uid)}catch(e){if(uid===id)$('directorymsg').textContent=errt(e)}finally{directoryBusy=false}}
+$('refreshpeople').onclick=refreshDirectory;$('refreshadmin').onclick=refreshDirectory;$('refreshhistory').onclick=refreshDirectory;
+function renderAllHistory(){if(!isAdmin)return;var selected=$('historyperson').value||'all';$('historyperson').innerHTML='<option value="all">Všichni</option>'+accts.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.name)+'</option>').join('');$('historyperson').value=selected;var kind=$('historykind').value||'all',rows=[];accts.filter(x=>selected==='all'||x.id===selected).forEach(x=>{if(kind==='all'||kind==='cash')(x.tx||[]).forEach(t=>rows.push({name:x.name,text:t.t,date:t.d,a:t.a,unit:'Sh',type:'Účet / spoření'}));if(kind==='all'||kind==='chips')(x.casinoTx||[]).forEach(t=>rows.push({name:x.name,text:t.t,date:t.d,a:t.a,unit:'žetonů',type:'Kasino'}));if(kind==='all'||kind==='invest')(x.investTx||[]).forEach(t=>rows.push({name:x.name,text:t.text,date:t.date,a:t.cash,unit:'Sh',type:'Investice'}));});$('allhistory').innerHTML=rows.map(t=>'<div class="tx"><div><b>'+esc(t.name)+' · '+esc(t.text)+'</b><small>'+esc(t.type)+' · '+esc(t.date)+'</small></div><span>'+esc(t.a)+' '+t.unit+'</span></div>').join('')||'<p class="empty">Žádné uložené pohyby.</p>';}
+$('historyperson').onchange=renderAllHistory;$('historykind').onchange=renderAllHistory;
+function startCommon(){
+  startInvestments();
+  startDesigns();
+  startChips();
+  startLoanPayments();
+  $("tppl").classList.toggle("hidden",!(isAdmin||myRole==="zastupce"));
+  $("annnew").classList.toggle("hidden",!isAdmin);
+  unsubs.push(db.doc("accounts/"+uid).onSnapshot(function(sn){myDoc=sn.exists?sn.data():{};if(sn.exists){adoptAccount(uid,myDoc);if(isAdmin)render();}renderOthers();myRole=myDoc.role||"zakaznik";syncRoleTools();badges();renderLoan();renderRR();refreshCustomGallery();renderInvestments()}));
+  unsubs.push(fsnap(query(fcol(fdb,"announcements"),orderBy("at","desc"),limit(20)),function(sn){anns=sn.docs.map(d=>({...d.data(),id:d.id}));renderAnn();badges();if(curTab==="ann")markAnn()}));
+  if(!isAdmin)refreshDirectory();
+}
+function badges(){
+  var a=anns.filter(function(x){return x.at>(myDoc.annSeen||0)}).length,e=$("nba");
+  e.textContent=a;e.classList.toggle("hidden",!a);
+}
+function markAnn(){if(anns.some(function(x){return x.at>(myDoc.annSeen||0)}))db.doc("accounts/"+uid).update({annSeen:Date.now()}).catch(function(){})}
+function renderTeam(){
+  renderChipAdmin();
+  var ord={majitel:0,zastupce:1,vyvojar:2,grafik:3,zakaznik:4};
+  $("tlist").innerHTML=accts.slice().sort(function(a,b){var x=ord[a.role],y=ord[b.role];return (x===undefined?2:x)-(y===undefined?2:y)||String(a.name).localeCompare(b.name)}).map(function(x){
+    return '<div class="prow"><div class="pn"><b>'+esc(x.name)+'</b><small>'+lbl(x.role)+'</small></div>'+(["majitel","zastupce","grafik","vyvojar"].includes(x.role)?'<span class="badge">'+lbl(x.role)+'</span>':'')+'</div>'}).join("")||'<p class="empty">Zatím nikdo.</p>';
+}
+function renderAnn(){
+  $("annl").innerHTML=anns.slice().sort(function(a,b){return b.at-a.at}).map(function(x){return '<div class="tx"><div><b>'+esc(x.text)+'</b><small>'+esc(x.by||"")+' · '+new Date(x.at).toLocaleString("cs-CZ")+'</small></div></div>'}).join("")||'<p class="empty">Zatím žádná oznámení.</p>';
+}
+$("annsend").onclick=async function(){
+  var t=$("annt").value.trim(),m=$("annmsg");m.className="msg err";
+  if(!t){m.textContent="Napiš oznámení.";return}
+  try{await db.add("announcements",{text:t,at:Date.now(),by:myName});$("annt").value="";m.className="msg ok";m.textContent="Odesláno všem."}catch(x){m.textContent="Nepovedlo se."}
+};
+function drawQR(){
+  var a=parseFloat($("qamt").value)||0,p="NB|"+uid+"|"+(a>0?a:"");
+  if(window.qrcode){var q=qrcode(0,"M");q.addData(p);q.make();$("qrimg").innerHTML=q.createSvgTag(5,0)}else $("qrimg").textContent="QR knihovna se nenačetla.";
+}
+$("qamt").oninput=drawQR;
+function stopScan(){scanOn=false;if(stream)stream.getTracks().forEach(function(t){t.stop()});stream=null;$("qvid").classList.add("hidden");$("qscan").textContent="Zapnout kameru"}
+$("qscan").onclick=async function(){
+  var r=$("qres");r.className="msg";r.textContent="";
+  if(scanOn){stopScan();return}
+  try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}})}catch(e){r.className="msg err";r.textContent="Kamera není dostupná.";return}
+  var v=$("qvid");v.srcObject=stream;v.classList.remove("hidden");await v.play();scanOn=true;$("qscan").textContent="Vypnout kameru";
+  var c=$("qcan"),cx=c.getContext("2d");
+  (function loop(){
+    if(!scanOn)return;
+    if(v.readyState===4&&window.jsQR){c.width=v.videoWidth;c.height=v.videoHeight;cx.drawImage(v,0,0);var im=cx.getImageData(0,0,c.width,c.height),code=jsQR(im.data,c.width,c.height);if(code&&code.data.indexOf("NB|")===0){stopScan();gotQR(code.data);return}}
+    requestAnimationFrame(loop);
+  })();
+};
+async function gotQR(d){
+  var p=d.split("|"),to=p[1],amt=parseFloat(p[2])||0,r=$("qres");
+  if(to===uid){r.className="msg err";r.textContent="To je tvůj vlastní kód.";return}
+  var tg=await db.doc("accounts/"+to).get();
+  if(!tg.exists){r.className="msg err";r.textContent="Účet neexistuje.";return}
+  var nm=tg.data().name;
+  $("qpay").innerHTML='<p><b>Zaplatit: '+esc(nm)+'</b></p><input id="qpa" type="number" min="1" placeholder="Částka (Sh)" value="'+(amt>0?amt:"")+'"'+(amt>0?' readonly':'')+'><p style="margin-top:12px"><button class="btn" id="qpb">Zaplatit</button></p>';
+  $("qpb").onclick=async function(){
+    var v=parseFloat($("qpa").value);r.className="msg err";
+    if(!(v>0)){r.textContent="Zadej částku.";return}
+    try{var er=await sendMoney(to,v,"QR platba");if(er){r.textContent=er;return}
+      r.className="msg ok";r.textContent="Zaplaceno: "+kc(v)+" → "+nm;$("qpay").innerHTML=""}catch(x){r.textContent="Platba se nepovedla."}
+  };
+}
+document.addEventListener("click",function(e){
+  var b=e.target.closest("button[data-cd]");if(!b)return;
+  var w=b.getAttribute("data-who"),m=$("cm"+w),id=b.getAttribute("data-cd");
+  if(des(id).owner&&!isAdmin){m.textContent="Tato karta je jen pro majitele.";return}
+  if(b.getAttribute("data-lock")){m.className="msg err";m.textContent="Karta se odemkne od "+cardLimitLabel(des(id))+".";return}
+  db.doc("accounts/"+uid).update({card:id}).catch(e=>alert(errt(e)))
+});
+function slug(n){
+  var k=n.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,".").replace(/^\.+|\.+$/g,"");
+  if(k.length>50){var h=5381;for(var i=0;i<k.length;i++)h=((h*33)^k.charCodeAt(i))>>>0;k=k.slice(0,40)+"."+h.toString(36)}
+  return k;
+}
+function mail(n){var k=slug(n);return k?k+"@nasebanka.example":""}
+async function emailFor(n){try{var l=await db.doc("logins/"+slug(n)).get();if(l.exists)return l.data().email}catch(e){}return mail(n)}
+function aerr(c){
+  if(c==="auth/email-already-in-use")return "Tohle jméno už je zaregistrované.";
+  if(c==="auth/weak-password")return "Heslo musí mít aspoň 6 znaků.";
+  if(c==="auth/too-many-requests")return "Příliš mnoho pokusů, zkus to za chvíli.";
+  if(c==="auth/invalid-credential"||c==="auth/wrong-password"||c==="auth/user-not-found"||c==="auth/invalid-login-credentials")return "Nesprávné jméno nebo heslo.";
+  return "Něco se nepovedlo ("+c+").";
+}
+$("ssave").onclick=async function(){
+  var nn=$("sname").value.trim(),m=$("smsg1"),k=slug(nn);m.className="msg err";
+  if(!k){m.textContent="Zadej nové jméno.";return}
+  if(accts.some(function(a){return a.id!==uid&&slug(a.name||"")===k})){m.textContent="Tohle jméno už někdo má.";return}
+  try{
+    var u=auth.currentUser,ex=await db.doc("logins/"+k).get();
+    if(ex.exists&&ex.data().uid!==uid){m.textContent="Tohle jméno už někdo má.";return}
+    if(!ex.exists)await db.doc("logins/"+k).set({email:u.email,uid:uid});
+    var ok=slug(myName);if(ok!==k)db.doc("logins/"+ok).delete().catch(function(){});
+    await db.doc("accounts/"+uid).update({name:nn});
+    myName=nn;$("mwho").textContent=nn;$("who").textContent=nn;
+    m.className="msg ok";m.textContent="Jméno změněno na "+nn+".";$("sname").value="";
+  }catch(x){m.textContent="Nepovedlo se: "+((x&&(x.code||x.message))||"")}
+};
+$("spsave").onclick=async function(){
+  var op=$("sop").value,np=$("snp").value,m=$("smsg2");m.className="msg err";
+  if(!op||!np){m.textContent="Vyplň staré i nové heslo.";return}
+  try{var u=auth.currentUser;await reauthenticateWithCredential(u,EmailAuthProvider.credential(u.email,op));await updatePassword(u,np);$("sop").value="";$("snp").value="";m.className="msg ok";m.textContent="Heslo změněno."}
+  catch(x){m.textContent=(x.code==="auth/invalid-credential"||x.code==="auth/wrong-password")?"Staré heslo není správně.":aerr(x.code)}
+};
+var LOAN_MAX=100000,LOAN_FEE=0.1,REDS=[1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36],RRC={red:"#c62828",black:"#222",green:"#1b7a4b"},RRN={red:"červená",black:"černá",green:"zelená"},rrHist=[],spinning=false;
+var quotaUntil=0;
+function errt(x){var code=String(x&&(x.code||x.message)||'');if(code.includes('resource-exhausted')){quotaUntil=Date.now()+300000;return 'Databáze má vyčerpaný limit požadavků. Obchod ani změnu nelze nyní potvrdit. Zkus to po obnovení limitu Firebase; opakované klikání nepomůže.'}return 'Nepovedlo se: '+code;}
+function renderLoan(){$("lvdebt").textContent=kc(myDoc.loan||0);var p=myDoc.loanPlan;$('lplanstatus').textContent=!(myDoc.loan>0)?'Nemáš žádný dluh.':p?'Plán: '+kc(p.amount)+' · '+({daily:'denně',weekly:'týdně',monthly:'měsíčně'}[p.frequency])+' · další splátka '+p.nextDate+' ve 20:00.':'U této půjčky ještě není nastavený plán splácení.';}
+function renderRR(){renderCasino()}
+async function myAcct(){return (await db.doc("accounts/"+uid).get()).data()}
+function dueTime(date){return roundAt(Date.parse(date+'T12:00:00Z')).closesAt}
+function readLoanPlan(){
+  var amount=Number($('lautoamount').value),date=$('lautodate').value,frequency=$('lautofreq').value;
+  if(!Number.isFinite(amount)||amount<=0||amount>110000||r2(amount)!==amount)throw Error('Zadej automatickou splátku od 0,01 do 110 000 Sh.');
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(Date.parse(date+'T12:00:00Z'))||dueTime(date)<=Date.now())throw Error('Vyber datum první splátky, jehož 20:00 ještě nenastalo.');
+  if(!['daily','weekly','monthly'].includes(frequency))throw Error('Vyber četnost splácení.');
+  return {amount,frequency,nextDate:date,anchorDay:Number(date.slice(8))};
+}
+function nextLoanDate(plan){
+  var d=new Date(plan.nextDate+'T12:00:00Z');
+  if(plan.frequency==='monthly'){
+    d.setUTCDate(1);d.setUTCMonth(d.getUTCMonth()+1);
+    var last=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,0)).getUTCDate();d.setUTCDate(Math.min(plan.anchorDay,last));
+  }else d.setUTCDate(d.getUTCDate()+(plan.frequency==='weekly'?7:1));
+  return d.toISOString().slice(0,10);
+}
+function loanPaymentDue(me,time,own){
+  var p=me.loanPlan;if(!p||!(me.loan>0)||!Number.isFinite(p.amount)||p.amount<=0||!['daily','weekly','monthly'].includes(p.frequency)||!(p.anchorDay>=1&&p.anchorDay<=31)||!/^\d{4}-\d{2}-\d{2}$/.test(p.nextDate))return null;
+  p={...p};var debt=r2(me.loan),balance=r2(me.bal),total=0,count=0;
+  while(debt>0&&dueTime(p.nextDate)<=time&&count<3660){
+    var installment=Math.min(p.amount,debt);if(balance<installment)break;
+    total=r2(total+installment);debt=r2(debt-installment);if(!own)balance=r2(balance-installment);count++;
+    p.nextDate=nextLoanDate(p);
+  }
+  return count?{total,count,debt,balance,plan:debt>0?p:null}:null;
+}
+$('lschedule').onclick=async function(){var m=$('lmsg');m.className='msg err';this.disabled=true;
+  try{var plan=readLoanPlan(),id=uid;await runTransaction(fdb,async tr=>{var ref=fdoc(fdb,'accounts',id),sn=await tr.get(ref);if(!sn.exists()||!(sn.data().loan>0))throw Error('Nejdřív si vezmi půjčku.');tr.update(ref,{loanPlan:plan})});m.className='msg ok';m.textContent='Plán splácení uložen.';
+  }catch(e){m.textContent=errt(e)}finally{this.disabled=false}
+};
+var payingLoans=false;
+async function payDueLoans(){
+  if(payingLoans||!uid||Date.now()<quotaUntil)return;var owner=accts.find(x=>x.role==='majitel');if(!owner)return;
+  var activeUid=uid,ids=(isAdmin?accts:accts.filter(x=>x.id===activeUid)).filter(x=>loanPaymentDue(x,Date.now(),x.id===owner.id)).map(x=>x.id);
+  if(!ids.length)return;payingLoans=true;
+  try{for(var id of ids){if(uid!==activeUid)break;await runTransaction(fdb,async tr=>{
+    var ref=fdoc(fdb,'accounts',id),sn=await tr.get(ref);if(!sn.exists())return;
+    var me=sn.data(),payment=loanPaymentDue(me,Date.now(),id===owner.id);if(!payment)return;
+    var or=fdoc(fdb,'accounts',owner.id),os=id===owner.id?sn:await tr.get(or);if(!os.exists())throw Error('Účet majitele neexistuje.');
+    tr.update(ref,{bal:payment.balance,loan:payment.debt,loanPlan:payment.plan,tx:txlog(me,'Automatická splátka půjčky ('+payment.count+'×)'+(id===owner.id?' · příjem majitele':''),id===owner.id?0:-payment.total)});
+    if(id!==owner.id)tr.update(or,{bal:r2(os.data().bal+payment.total),tx:txlog(os.data(),'Automatická splátka od '+me.name,payment.total)});
+  })}}catch(e){$('lmsg').className='msg err';$('lmsg').textContent=errt(e)}finally{payingLoans=false}
+}
+function startLoanPayments(){var timer=setInterval(payDueLoans,60000);unsubs.push(()=>clearInterval(timer));}
+
+function amount(v){return Number.isSafeInteger(v)&&v>0&&v<=1000000000}
+function ownerId(){var o=accts.find(x=>x.role==='majitel');if(!o)throw Error('Účet majitele ještě není načtený. Zkus to za chvíli.');return o.id}
+function txlog(o,t,v){return [{id:crypto.randomUUID(),t:t,d:now(),a:v}].concat(o.tx||[]).slice(0,30)}
+async function loanChange(mode){
+  var m=$('lmsg');m.className='msg err';
+  ['ltake','lrepay','lall'].forEach(x=>$(x).disabled=true);
+  try{var entered=Number($(mode==='take'?'lamt':'lpay').value),oid=mode==='take'?null:ownerId(),plan=mode==='take'?readLoanPlan():null;
+    if(mode==='take'&&!confirm('Půjčit si '+kc(entered)+'? Poplatek '+kc(isAdmin?0:feeAmount(entered))+', dluh včetně úroku '+kc(r2(entered*1.1))+'.'))return;var paid=await runTransaction(fdb,async tr=>{
+      var ref=fdoc(fdb,'accounts',uid),sn=await tr.get(ref),me=sn.data(),debt=me.loan||0,v=mode==='all'?debt:entered;
+      if(!Number.isFinite(v)||v<=0||r2(v)!==v)throw Error('Zadej kladnou částku, nejvýše na dvě desetinná místa.');
+      if(mode==='take'){
+        if(v>LOAN_MAX)throw Error('Maximum půjčky je 100 000 Sh.');if(debt>0)throw Error('Nejdřív splať stávající půjčku.');
+        tr.update(ref,{bal:r2(me.bal+v),loan:r2(v*1.1),loanPlan:plan,loanAt:Date.now(),tx:txlog(me,'Půjčka od banky',v)});
+      }else{
+        if(debt<=0)throw Error('Nemáš žádnou půjčku.');v=Math.min(v,debt);if(v>me.bal)throw Error('Na účtu není dost peněz.');
+        var or=fdoc(fdb,'accounts',oid),os=oid===uid?sn:await tr.get(or);if(!os.exists())throw Error('Účet majitele neexistuje.');
+        tr.update(ref,{bal:r2(me.bal-(oid===uid?0:v)),loan:r2(debt-v),loanPlan:debt===v?null:(me.loanPlan||null),tx:txlog(me,oid===uid?'Splátka vlastní půjčky (příjem majitele)':'Splátka půjčky',oid===uid?0:-v)});
+        if(oid!==uid)tr.update(or,{bal:r2(os.data().bal+v),tx:txlog(os.data(),'Splátka půjčky od '+me.name,v)});
+      }return v;
+    });m.className='msg ok';m.textContent=(mode==='take'?'Půjčeno: ':'Splaceno: ')+kc(paid);$('lamt').value='';$('lpay').value='';
+  }catch(e){m.textContent=errt(e)}finally{['ltake','lrepay','lall'].forEach(x=>$(x).disabled=false)}
+}
+$('ltake').onclick=()=>loanChange('take');$('lrepay').onclick=()=>loanChange('part');$('lall').onclick=()=>loanChange('all');
+function randomBelow(n){var x,limit=4294967296-4294967296%n;do{x=crypto.getRandomValues(new Uint32Array(1))[0]}while(x>=limit);return x%n}
+function renderChipAdmin(){
+  var staff=isAdmin||myRole==='zastupce';$('chipadmin').classList.toggle('hidden',!staff);if(!staff)return;
+  var sel=$('chipadminwho'),selected=sel.value,targets=accts.filter(x=>isAdmin||(x.role!=='majitel'&&x.id!==uid));
+  sel.innerHTML=targets.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.name)+' · '+chips(chipBalance(x))+'</option>').join('');if(targets.some(x=>x.id===selected))sel.value=selected;
+}
+async function changeUserChips(add){var m=$('chipadminmsg'),id=$('chipadminwho').value,n=Number($('chipadminamount').value);m.className='msg err';
+  if(!id||!Number.isSafeInteger(n)||n<1||n>1000000){m.textContent='Vyber účet a počet 1 až 1 000 000 žetonů.';return}
+  $('chipadminadd').disabled=$('chipadminsub').disabled=true;
+  try{await runTransaction(fdb,async tr=>{var ref=fdoc(fdb,'accounts',id),sn=await tr.get(ref),self=await tr.get(fdoc(fdb,'accounts',uid));
+    if(!sn.exists())throw Error('Účet neexistuje.');var o=sn.data();
+    if(!isAdmin&&(!self.exists()||self.data().role!=='zastupce'||o.role==='majitel'||id===uid))throw Error('Tento účet nemůžeš spravovat.');
+    var total=chipBalance(o)+(add?n:-n);if(total<0)throw Error('Hráč nemá dost žetonů.');
+    tr.update(ref,{casinoChips:total,casinoTx:chipLog(o,(add?'Přidáno':'Odebráno')+' správcem '+myName,add?n:-n)});
+  });m.className='msg ok';m.textContent=(add?'Přidáno ':'Odebráno ')+chips(n)+'.';$('chipadminamount').value='';
+  }catch(e){m.textContent=errt(e)}finally{$('chipadminadd').disabled=$('chipadminsub').disabled=false}
+}
+$('chipadminadd').onclick=()=>changeUserChips(true);$('chipadminsub').onclick=()=>changeUserChips(false);
+
+function scratchPrize(n){return n<600?0:n<800?3:n<920?6:n<980?12:n<995?30:60}
+var scratchBusy=false,scratchCanvasKey='',scratchPointer=null;
+async function purchaseScratch(id,previous,ticket){
+  return runTransaction(fdb,async tr=>{var ref=fdoc(fdb,'accounts',id),sn=await tr.get(ref);if(!sn.exists())throw Error('Účet neexistuje.');var o=sn.data(),last=o.scratchLast;
+    if(last&&(!last.claimed||last.id!==previous))return last;
+    if(chipBalance(o)<3)throw Error('Na stírací los potřebuješ 3 žetony.');
+    tr.update(ref,{casinoChips:chipBalance(o)-3,casinoTx:chipLog(o,'Nákup stíracího losu',-3),scratchLast:ticket});return ticket;
+  });
+}
+async function settleScratch(id,ticketId,oid){
+  return runTransaction(fdb,async tr=>{var ref=fdoc(fdb,'accounts',id),sn=await tr.get(ref);if(!sn.exists())throw Error('Účet neexistuje.');var o=sn.data(),t=o.scratchLast;
+    if(!t||t.id!==ticketId||t.claimed)return;
+    var or=fdoc(fdb,'accounts',oid),os=t.prize===0?(oid===id?sn:await tr.get(or)):null;
+    if(os&&!os.exists())throw Error('Účet majitele neexistuje.');
+    var amount=t.prize+(t.prize===0&&oid===id?3:0);
+    tr.update(ref,{scratchLast:{...t,claimed:true},casinoChips:chipBalance(o)+amount,casinoTx:chipLog(o,t.prize?'Stírací los: výplata':oid===id?'Stírací los: prohra · příjem majitele':'Stírací los: bez výhry',amount)});
+    if(t.prize===0&&oid!==id)tr.update(or,{casinoChips:chipBalance(os.data())+3,casinoTx:chipLog(os.data(),'Stírací los: prohra hráče '+o.name,3)});
+  });
+}
+function renderScratch(){
+  var t=myDoc.scratchLast,active=t&&!t.claimed;
+  $('scratchbuy').disabled=scratchBusy||!!active;$('scratchbuy').textContent=t?'Koupit další los · 3 žetony':'Koupit los · 3 žetony';
+  $('scratchreveal').disabled=scratchBusy||!active;$('scratchticket').hidden=!t;
+  if(!t){scratchCanvasKey='';return}
+  $('scratchprize').textContent=t.prize?chips(t.prize):'Tentokrát bez výhry';
+  $('scratchcaption').textContent=t.claimed?(t.prize?'Výplata připsána na tvůj žetonový účet.':'Los je vyhodnocený.'):'Setři plochu nebo použij tlačítko pod losem.';
+  var canvas=$('scratchcover');canvas.hidden=!!t.claimed;
+  if(active&&scratchCanvasKey!==uid+':'+t.id){scratchCanvasKey=uid+':'+t.id;var c=canvas.getContext('2d');c.globalCompositeOperation='source-over';var g=c.createLinearGradient(0,0,600,200);g.addColorStop(0,'#d9dfdb');g.addColorStop(.5,'#8caaa0');g.addColorStop(1,'#d9dfdb');c.fillStyle=g;c.fillRect(0,0,600,200);c.fillStyle='#214b3b';c.textAlign='center';c.font='bold 30px sans-serif';c.fillText('✦ SETŘI A VYHRAJ ✦',300,110);}
+}
+async function revealScratch(){if(scratchBusy||!myDoc.scratchLast||myDoc.scratchLast.claimed)return;var id=uid,t=myDoc.scratchLast;scratchBusy=true;renderScratch();
+  try{await settleScratch(id,t.id,ownerId());$('scratchmsg').className='msg ok';$('scratchmsg').textContent='Los byl vyhodnocen.'}
+  catch(e){$('scratchmsg').className='msg err';$('scratchmsg').textContent=errt(e)}finally{scratchBusy=false;renderScratch()}
+}
+$('scratchbuy').onclick=async()=>{if(scratchBusy)return;var id=uid,previous=myDoc.scratchLast?.id||null,ticket={id:crypto.randomUUID(),prize:scratchPrize(randomBelow(1000)),claimed:false,at:Date.now()};scratchBusy=true;renderScratch();
+  try{await purchaseScratch(id,previous,ticket);$('scratchmsg').className='msg ok';$('scratchmsg').textContent='Los je připravený ke setření.'}
+  catch(e){$('scratchmsg').className='msg err';$('scratchmsg').textContent=errt(e)}finally{scratchBusy=false;renderScratch()}
+};
+$('scratchreveal').onclick=revealScratch;
+function scratchAt(e){var canvas=$('scratchcover'),b=canvas.getBoundingClientRect(),x=(e.clientX-b.left)*600/b.width,y=(e.clientY-b.top)*200/b.height,c=canvas.getContext('2d');c.globalCompositeOperation='destination-out';c.lineWidth=46;c.lineCap='round';c.beginPath();c.moveTo(scratchPointer.x,scratchPointer.y);c.lineTo(x,y);c.stroke();c.beginPath();c.arc(x,y,23,0,Math.PI*2);c.fill();scratchPointer.x=x;scratchPointer.y=y;}
+$('scratchcover').onpointerdown=e=>{if(scratchBusy||!myDoc.scratchLast||myDoc.scratchLast.claimed)return;var b=e.currentTarget.getBoundingClientRect();scratchPointer={id:e.pointerId,x:(e.clientX-b.left)*600/b.width,y:(e.clientY-b.top)*200/b.height};e.currentTarget.setPointerCapture(e.pointerId);scratchAt(e)};
+$('scratchcover').onpointermove=e=>{if(scratchPointer&&scratchPointer.id===e.pointerId)scratchAt(e)};
+$('scratchcover').onpointerup=e=>{if(!scratchPointer||scratchPointer.id!==e.pointerId)return;scratchPointer=null;var data=e.currentTarget.getContext('2d').getImageData(0,0,600,200).data,clear=0,total=0;for(var i=3;i<data.length;i+=64){total++;if(data[i]<128)clear++}if(clear/total>=.4)revealScratch()};
+$('scratchcover').onpointercancel=()=>{scratchPointer=null};
+
+const CHIP_RATE=10;
+function chipBalance(o){return Number.isSafeInteger(o.casinoChips)&&o.casinoChips>=0?o.casinoChips:0}
+function chips(n){return n.toLocaleString('cs-CZ')+' ž.'}
+function chipLog(o,t,a){return [{id:crypto.randomUUID(),t,d:now(),a}].concat(o.casinoTx||[]).slice(0,30)}
+function exchangeResult(o,n,buy){
+  if(!Number.isSafeInteger(n)||n<1||n>1000000)throw Error('Zadej 1 až 1 000 000 celých žetonů.');
+  var cash=n*CHIP_RATE,c=chipBalance(o);
+  if(buy&&o.bal<cash)throw Error('Na účtu není dost peněz.');
+  if(!buy&&c<n)throw Error('Nemáš dost žetonů.');
+  return {bal:r2(o.bal+(buy?-cash:cash)),casinoChips:c+(buy?n:-n)};
+}
+async function exchangeChips(buy){var m=$('cxmsg'),n=Number($('cxamount').value),id=uid;m.className='msg err';$('cxbuy').disabled=$('cxsell').disabled=true;
+  try{if(!confirm('Směnit '+chips(n)+'? Poplatek '+kc(isAdmin?0:feeAmount(n*CHIP_RATE))+'.'))return;await runTransaction(fdb,async tr=>{var ref=fdoc(fdb,'accounts',id),sn=await tr.get(ref);if(!sn.exists())throw Error('Účet neexistuje.');var o=sn.data(),next=exchangeResult(o,n,buy);
+    tr.update(ref,{...next,tx:txlog(o,buy?'Směna na '+chips(n):'Zpětná směna '+chips(n),n*CHIP_RATE*(buy?-1:1)),casinoTx:chipLog(o,buy?'Nákup žetonů':'Směna žetonů na Sh',n*(buy?1:-1))});
+  });m.className='msg ok';m.textContent=buy?'Vyměněno '+kc(n*CHIP_RATE)+' za '+chips(n)+'.':'Vyměněno '+chips(n)+' za '+kc(n*CHIP_RATE)+'.';
+  }catch(e){m.textContent=errt(e)}finally{$('cxbuy').disabled=$('cxsell').disabled=false}
+}
+$('cxbuy').onclick=()=>exchangeChips(true);$('cxsell').onclick=()=>exchangeChips(false);
+$('cxamount').oninput=()=>{$('cxquote').textContent=Number.isSafeInteger(Number($('cxamount').value))&&Number($('cxamount').value)>0?kc(Number($('cxamount').value)*CHIP_RATE):'Zadej počet celých žetonů.'};
+function renderCasino(){
+  renderScratch();
+  renderChipAdmin();
+  $('rrbal').textContent=chips(chipBalance(myDoc));$('cxcash').textContent=kc(myDoc.bal||0);$('cxvalue').textContent='Hodnota žetonů: '+kc(chipBalance(myDoc)*CHIP_RATE);
+  $('chiptx').innerHTML=(myDoc.casinoTx||[]).map(x=>'<div class="tx"><div><b>'+esc(x.t)+'</b><small>'+esc(x.d)+'</small></div><span class="'+(x.a<0?'neg':'pos')+'">'+(x.a>0?'+':'')+chips(x.a)+'</span></div>').join('')||'<p class="empty">Zatím žádné pohyby žetonů.</p>';
+}
+function slotSettlement(me,house,bet,mult,own){
+  if(!Number.isSafeInteger(bet)||bet<1||bet>100)throw Error('Sázka musí být 1 až 100 žetonů.');
+  if(chipBalance(me)<bet)throw Error('Nemáš dost žetonů. Nejdřív si je směň.');
+  var net=bet*(mult-1),change=net+(!mult&&own?bet:0);
+  return {player:chipBalance(me)+change,house:chipBalance(house)+(!mult?bet:0),change};
+}
+const symbols=['🍒','🍋','⭐','🔔','🍇','💎'];
+const triplePayouts=[3,5,8,10,15,20];
+$('slotspin').onclick=async function(){
+  if(spinning)return;var bet=Number($('rramt').value),m=$('rrmsg'),id=uid;m.className='msg err';
+  if(!Number.isSafeInteger(bet)||bet<1||bet>100){m.textContent='Sázej 1 až 100 celých žetonů.';return}
+  spinning=true;this.disabled=true;var timer;
+  try{var oid=ownerId(),roll=[randomBelow(6),randomBelow(6),randomBelow(6)],count=new Set(roll).size,mult=count===1?triplePayouts[roll[0]]:count===2?2:0;
+    timer=setInterval(()=>{$('reels').textContent=Array.from({length:3},()=>symbols[randomBelow(6)]).join(' ')},90);
+    await runTransaction(fdb,async tr=>{
+      var ref=fdoc(fdb,'accounts',id),sn=await tr.get(ref),or=fdoc(fdb,'accounts',oid),os=oid===id?sn:await tr.get(or);
+      if(!sn.exists()||!os.exists())throw Error('Účet neexistuje.');var me=sn.data(),settled=slotSettlement(me,os.data(),bet,mult,oid===id);
+      tr.update(ref,{casinoChips:settled.player,casinoTx:chipLog(me,'Automat: '+roll.map(x=>symbols[x]).join(' ')+(mult?' · výplata ×'+mult:oid===id?' · sázka vrácena majiteli':' · prohra'),settled.change)});
+      if(!mult&&oid!==id)tr.update(or,{casinoChips:settled.house,casinoTx:chipLog(os.data(),'Automat: prohra hráče '+me.name,bet)});
+    });await new Promise(r=>setTimeout(r,1000));clearInterval(timer);$('reels').textContent=roll.map(x=>symbols[x]).join(' ');
+    m.className='msg '+(mult?'ok':'err');m.textContent=mult?'Výplata '+chips(bet*mult)+' · čistá výhra '+chips(bet*(mult-1)):oid===id?'Prohra — jako majitel dostáváš žetony zpět.':'Prohra: '+chips(bet);
+  }catch(e){m.textContent=errt(e)}finally{clearInterval(timer);spinning=false;$('slotspin').disabled=false}
+};
+var chipRounds=[],chipDrawing=false;
+function renderChipLottery(){var r=roundAt(Date.now()),d=chipRounds.find(x=>x.id===r.id),tickets=d?d.tickets:[];
+  $('lotinfo').textContent='Losování '+r.id+' ve 20:00 · losů '+tickets.length+'/300 · tvoje losy '+tickets.filter(x=>x===uid).length+' · výhra '+chips(tickets.length*4);
+  $('lotbuy').disabled=lotBusy||tickets.length>=300;
+  $('lotresults').innerHTML=chipRounds.filter(x=>x.status==='drawn').sort((a,b)=>b.closesAt-a.closesAt).slice(0,5).map(x=>'<div class="tx"><div><b>'+esc(x.id)+'</b><small>Výherce: '+esc(x.winnerName)+'</small></div><span class="pos">'+chips(x.prize)+'</span></div>').join('');
+}
+async function buyChipTicket(){if(lotBusy)return;lotBusy=true;renderChipLottery();var m=$('lotmsg'),id=uid;m.className='msg err';
+  try{var r=roundAt(Date.now());await runTransaction(fdb,async tr=>{var ref=fdoc(fdb,'casinoRounds',r.id),sn=await tr.get(ref),ar=fdoc(fdb,'accounts',id),as=await tr.get(ar),me=as.data(),d=sn.exists()?sn.data():{closesAt:r.closesAt,status:'open',tickets:[]};
+    if(Date.now()>=r.closesAt||d.status!=='open')throw Error('Začalo nové kolo. Zkus to znovu.');if(d.tickets.length>=300)throw Error('Všechny losy jsou prodané.');if(chipBalance(me)<2)throw Error('Na los potřebuješ 2 žetony.');
+    tr.set(ref,{...d,tickets:d.tickets.concat(id)});tr.update(ar,{casinoChips:chipBalance(me)-2,casinoTx:chipLog(me,'Los do loterie '+r.id,-2)});
+  });m.className='msg ok';m.textContent='Los koupený za 2 žetony.';
+  }catch(e){m.textContent=errt(e)}finally{lotBusy=false;renderChipLottery()}
+}
+async function drawChipRounds(){if(chipDrawing||!uid||Date.now()<quotaUntil)return;chipDrawing=true;
+  try{for(var round of chipRounds.filter(x=>x.status==='open'&&x.closesAt<=Date.now())){var oid=ownerId();await runTransaction(fdb,async tr=>{
+    var ref=fdoc(fdb,'casinoRounds',round.id),sn=await tr.get(ref);if(!sn.exists())return;var d=sn.data();if(d.status!=='open'||d.closesAt>Date.now()||!d.tickets.length)return;
+    var winner=d.tickets[randomBelow(d.tickets.length)],wr=fdoc(fdb,'accounts',winner),ws=await tr.get(wr),or=fdoc(fdb,'accounts',oid),os=winner===oid?ws:await tr.get(or);
+    if(!ws.exists()||!os.exists())throw Error('Účet výherce nebo majitele byl odstraněn.');var prize=d.tickets.length*4,house=(d.tickets.length-1)*2,value=prize+(winner===oid?house:0);
+    tr.update(wr,{casinoChips:chipBalance(ws.data())+value,casinoTx:chipLog(ws.data(),'Výhra v loterii '+round.id+(winner===oid?' a příjem majitele':''),value)});
+    if(winner!==oid&&house>0)tr.update(or,{casinoChips:chipBalance(os.data())+house,casinoTx:chipLog(os.data(),'Loterie '+round.id+': nevýherní losy',house)});
+    tr.update(ref,{status:'drawn',winner,winnerName:ws.data().name,prize,drawnAt:Date.now()});
+  })}}catch(e){$('lotmsg').className='msg err';$('lotmsg').textContent=errt(e)}finally{chipDrawing=false}
+}
+function startChips(){
+  $('lotbuy').onclick=buyChipTicket;chipRounds=[];
+  var openRounds=[],recentRounds=[];function showRounds(){chipRounds=[...openRounds,...recentRounds];renderChipLottery();drawChipRounds()}
+  unsubs.push(fsnap(query(fcol(fdb,'casinoRounds'),where('status','==','open')),sn=>{openRounds=sn.docs.map(d=>({...d.data(),id:d.id}));showRounds()},e=>{$('lotmsg').textContent=errt(e)}));
+  getDocs(query(fcol(fdb,'casinoRounds'),orderBy('closesAt','desc'),limit(6))).then(sn=>{if(!uid)return;recentRounds=sn.docs.map(d=>({...d.data(),id:d.id})).filter(x=>x.status==='drawn');showRounds()}).catch(()=>{});
+  // Previously bought cash tickets keep their original payouts in Sh.
+  unsubs.push(db.where('lottery','status','open').onSnapshot(sn=>{rounds=mapd(sn);drawDue();$('legacyLottery').textContent=rounds.some(x=>x.status==='open')?'Dříve zakoupené původní losy budou vyhodnocené zvlášť a vyplacené v Sh.':''},()=>{}));
+  var timer=setInterval(()=>{renderChipLottery();drawChipRounds();drawDue()},15000);unsubs.push(()=>clearInterval(timer));
+}
+
+function roundAt(time){
+  var parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Prague',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',hourCycle:'h23'}).formatToParts(new Date(time)),p=Object.fromEntries(parts.map(x=>[x.type,x.value]));
+  var date=new Date(Date.UTC(+p.year,+p.month-1,+p.day+(+p.hour>=20?1:0),12)),id=date.toISOString().slice(0,10);
+  var hour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Prague',hour:'2-digit',hourCycle:'h23'}).format(date));
+  return {id,closesAt:date.getTime()+(20-hour)*3600000};
+}
+var rounds=[],lotBusy=false;
+var drawing=false;
+async function drawDue(){if(drawing||!uid||Date.now()<quotaUntil)return;drawing=true;
+  try{for(var round of rounds.filter(x=>x.status==='open'&&x.closesAt<=Date.now())){
+    var oid=ownerId();await runTransaction(fdb,async tr=>{
+      var ref=fdoc(fdb,'lottery',round.id),sn=await tr.get(ref);if(!sn.exists())return;var d=sn.data();if(d.status!=='open'||d.closesAt>Date.now()||!d.tickets.length)return;
+      var winner=d.tickets[randomBelow(d.tickets.length)],wr=fdoc(fdb,'accounts',winner),ws=await tr.get(wr),or=fdoc(fdb,'accounts',oid),os=winner===oid?ws:await tr.get(or);
+      if(!ws.exists()||!os.exists())throw Error('Losování čeká: účet výherce nebo majitele byl odstraněn.');
+      var prize=d.tickets.length*40,house=(d.tickets.length-1)*20;
+      tr.update(wr,{bal:r2(ws.data().bal+prize+(winner===oid?house:0)),tx:txlog(ws.data(),'Výhra v loterii '+round.id+(winner===oid?' a příjem majitele':''),prize+(winner===oid?house:0))});
+      if(winner!==oid&&house>0)tr.update(or,{bal:r2(os.data().bal+house),tx:txlog(os.data(),'Loterie '+round.id+': nevýherní losy',house)});
+      tr.update(ref,{status:'drawn',winner,winnerName:ws.data().name,prize,drawnAt:Date.now()});
+    });
+  }}catch(e){$('lotmsg').className='msg err';$('lotmsg').textContent=errt(e)}finally{drawing=false}
+}
+
+
+async function enter(user,typed,isNew){
+  stop();
+  uid=user.uid;loadTheme();
+  if(user.email===ADMIN){myName="Zdeněk Buchta";$("who").textContent=myName;show("app");startAdmin();startCommon();tab("acc");return}
+  var ref=db.doc("accounts/"+uid),ex=await ref.get();
+  if(!ex.exists)await ref.set({name:typed,bal:500,role:"zakaznik",sav:0,savAt:lastMon(),tx:[]});
+  var nm=ex.exists?ex.data().name:typed;
+  db.doc("requests/"+uid).set({name:nm,type:isNew?"register":"login",at:Date.now()}).catch(function(){});
+  myName=nm;enterMember(nm);startCommon();tab("acc");
+}
+$("doreg").onclick=async function(){
+  var n=$("rn").value.trim(),pw=$("rp").value,e=$("rerr");e.textContent="";
+  if(!n||!pw){e.textContent="Vyplň jméno i heslo.";return}
+  if(!mail(n)){e.textContent="Jméno musí obsahovat písmena nebo čísla.";return}
+  manualAuth=true;
+  try{
+    await persistenceReady;var tk=null;try{tk=await db.doc("logins/"+slug(n)).get()}catch(e2){}
+    if(tk&&tk.exists){e.textContent="Tohle jméno už je obsazené.";return}
+    var c=await createUserWithEmailAndPassword(auth,mail(n),pw);
+    await db.doc("logins/"+slug(n)).set({email:mail(n),uid:c.user.uid}).catch(function(){});
+    await enter(c.user,n,true);$("rp").value="";
+  }catch(x){e.textContent=aerr(x.code)}finally{manualAuth=false}
+};
+$("go").onclick=async function(){
+  var n=$("u").value.trim(),pw=$("p").value,e=$("lerr");e.textContent="";
+  if(!mail(n)||!pw){e.textContent="Nesprávné jméno nebo heslo.";return}
+  manualAuth=true;try{await persistenceReady;var em=await emailFor(n);var c=await signInWithEmailAndPassword(auth,em,pw);await enter(c.user,n,false);$("p").value=""}catch(x){e.textContent=aerr(x.code)}finally{manualAuth=false}
+};
+function clearSession(){stopScan();uid=null;loadTheme();stop();reqs=[];apps={};msgsIn=[];msgsOut=[];anns=[];myDoc={};accts=[];myRole="zakaznik";["team","ann","qr","set","loan","rr","ppl","design","activity","invest","history"].forEach(function(x){$(x).classList.add("hidden")});$("reqcard").classList.add("hidden");$("p").value="";show("login")}
+$("logout").onclick=async()=>{try{await signOut(auth);clearSession()}catch(e){alert("Odhlášení se nezdařilo. Zkus to znovu.")}};
+function adoptAccount(id,o){var ix=accts.findIndex(x=>x.id===id),a={...o,id};if(ix<0)accts.push(a);else accts[ix]=a;if(!isAdmin)return;var p=S.people.find(x=>x.uid===id);if(!p){p={id:id===uid?1:S.nid++,uid:id};S.people.push(p)}Object.assign(p,{name:o.name||'Bez jména',bal:o.bal||0,tx:o.tx||[],sav:o.sav||0,savAt:o.savAt,card:o.card,casinoChips:o.casinoChips||0,role:o.role||'zakaznik'});S.people.sort((a,b)=>a.id===1?-1:b.id===1?1:a.id-b.id);}
+async function refreshOne(id){var sn=await getDoc(fdoc(fdb,'accounts',id));if(sn.exists()){adoptAccount(id,sn.data());if(isAdmin)render();renderTeam();if(curTab==='history')renderAllHistory();}}
+function startAdmin(){if(!db)return;isAdmin=true;S.people=[];refreshDirectory();}
+var done={};
+function auto(){
+  if(!db||!isAdmin)return;
+  reqs.forEach(function(r){
+    var k=r.id+":"+r.at;if(done[k])return;done[k]=1;
+    if(apps[r.id]&&apps[r.id].reqAt===r.at)return;
+    db.doc("approvals/"+r.id).set({reqAt:r.at,ok:true}).catch(function(x){var m=$("reqmsg");m.className="msg err";m.textContent="Nepovedlo se: "+((x&&(x.code||x.message))||"")});
+    if(!S.people.some(function(p){return p.uid===r.id})){S.people.push({id:S.nid++,uid:r.id,name:r.name,bal:500,tx:[]});render()}
+  });
+}
+function showReqs(){
+  if(!canReadActivity())return;
+  $("activitylist").innerHTML=reqs.slice().sort((a,b)=>b.at-a.at).map(r=>'<div class="prow"><div class="pn"><b>'+esc(r.name)+'</b><small>'+(r.type==="register"?"Registrace":"Přihlášení")+' · '+new Date(r.at).toLocaleString("cs-CZ")+'</small></div></div>').join('')||'<p class="empty">Zatím žádná aktivita.</p>';
+  var l=reqs.slice().sort(function(a,b){return b.at-a.at}).slice(0,6);
+  $("reqcard").classList.toggle("hidden",!isAdmin||!l.length);
+  if(reqs.length>lastN&&lastN>0)document.title="🔔 NašeBanka – nová aktivita";
+  lastN=reqs.length;
+  $("reqs").innerHTML=l.map(function(r){return '<div class="prow"><div class="pn"><b>'+esc(r.name)+'</b><small>'+(r.type==="register"?"Nová registrace – účet vytvořen":"Přihlášení")+' · '+new Date(r.at).toLocaleTimeString("cs-CZ",{hour:"2-digit",minute:"2-digit"})+'</small></div></div>'}).join("");
+}
+$("pay").onclick=async function(){var m=$('msg'),to=find(Number($('to').value)),v=Number($('amt').value);if(!to)return;m.className='msg err';this.disabled=true;try{var error=await sendMoney(to.uid,v,$('note').value.trim());if(error){m.textContent=error;return}m.className='msg ok';m.textContent='Platba odeslána: '+kc(v);$('amt').value='';$('note').value='';await refreshOne(to.uid);}catch(e){m.textContent=errt(e)}finally{this.disabled=false}};
+$("addp").onclick=async function(){
+  var n=$("nn").value.trim(),pw=$("np").value;
+  if(!n||!pw){amsg("Zadej jméno i heslo.",false);return}
+  if(!mail(n)){amsg("Jméno musí obsahovat písmena nebo čísla.",false);return}
+  try{await createPerson(n,pw);$("nn").value="";$("np").value="";amsg(n+" přidán(a) s 500 Sh.",true)}catch(x){amsg(aerr(x.code),false)}
+};
+async function adminSavings(id,value,add){if(!isAdmin||!id)throw Error('Spoření může spravovat pouze majitel.');if(!Number.isFinite(value)||value<=0||r2(value)!==value)throw Error('Zadej kladnou částku, nejvýše na dvě desetinná místa.');return runTransaction(fdb,async tr=>{var ref=fdoc(fdb,'accounts',id),sn=await tr.get(ref);if(!sn.exists())throw Error('Účet neexistuje.');var o=sn.data();intr(o);if(!add&&value>(o.sav||0))throw Error('Na spoření není dost Sh.');o.sav=r2((o.sav||0)+(add?value:-value));pushTx(o,(add?'Přidáno na spoření':'Odebráno ze spoření')+' majitelem',add?value:-value);tr.update(ref,{sav:o.sav,savAt:o.savAt,tx:o.tx});});}
+$("plist").onclick=async function(e){
+  if(!isAdmin)return;
+  var b=e.target.closest("button");if(!b)return;
+  var p=find(parseInt(b.getAttribute("data-i"),10)),a=b.getAttribute("data-a");if(!p)return;
+  if(a==='savadd'||a==='savsub'){var value=Number(b.parentNode.querySelector('.ai').value);b.disabled=true;try{await adminSavings(p.uid,value,a==='savadd');await refreshOne(p.uid);amsg((a==='savadd'?'Přidáno na spoření: ':'Odebráno ze spoření: ')+kc(value)+' · '+p.name,true)}catch(e){amsg(errt(e),false)}finally{b.disabled=false}return;}
+  if(a==="reset"){openReset(p);return}
+  if(a==="del"){if(db&&p.uid)db.doc("accounts/"+p.uid).delete().catch(function(){});S.people=S.people.filter(function(x){return x!==p});amsg(p.name+" smazán(a).",true);render();return}
+  var v=Number(b.parentNode.querySelector('.ai').value);if(!Number.isFinite(v)||v<=0||r2(v)!==v){amsg('Zadej kladnou částku na dvě desetinná místa.',false);return}b.disabled=true;
+  try{await runTransaction(fdb,async tr=>{var ref=fdoc(fdb,'accounts',p.uid),sn=await tr.get(ref);if(!sn.exists())throw Error('Účet neexistuje.');var o=sn.data(),delta=a==='add'?v:-v;if(o.bal+delta<0)throw Error('Na účtu není dost Sh.');tr.update(ref,{bal:r2(o.bal+delta),tx:txlog(o,a==='add'?'Vklad od správce':'Odečteno správcem',delta)});});await refreshOne(p.uid);amsg('Zůstatek upraven: '+p.name,true);}catch(e){amsg(errt(e),false)}finally{b.disabled=false}
+};
+$("plist").onchange=async function(e){var t=e.target;if(!isAdmin||!t.classList.contains('rs'))return;var p=find(Number(t.dataset.i));if(!p)return;t.disabled=true;try{await updateDoc(fdoc(fdb,'accounts',p.uid),{role:t.value});await refreshOne(p.uid);amsg(p.name+': role '+lbl(t.value)+'.',true)}catch(e){amsg(errt(e),false)}finally{t.disabled=false}};
+async function bulkCash(reset){if(!isAdmin||!confirm(reset?'Nastavit všem 500 Sh a vymazat historii běžného účtu?':'Vymazat historii běžných účtů všech lidí?'))return;if(!confirm('Poslední potvrzení: změnit všechny účty?'))return;try{var sn=await getDocsFromServer(fcol(fdb,'accounts'));if(sn.size>490)throw Error('Příliš mnoho účtů pro jednu bezpečnou operaci.');var b=writeBatch(fdb);sn.docs.forEach(d=>b.update(d.ref,reset?{bal:500,tx:[]}:{tx:[]}));await b.commit();await refreshDirectory();amsg('Hotovo.',true)}catch(e){amsg(errt(e),false)}}
+$('clr').onclick=()=>bulkCash(false);$('rst').onclick=()=>bulkCash(true);
+
+var bankResetPlan=null,bankResetBusy=false;
+const RESET_FIELDS=['bal','sav','savAt','casinoChips','casinoTx','tx','loan','loanPlan','loanAt','investPositions','investTx','scratchLast'];
+function resetFinancialData(){return {bal:500,sav:0,savAt:lastMon(),casinoChips:0,casinoTx:[],tx:[],loan:0,loanPlan:null,loanAt:null,investPositions:{},investTx:[],scratchLast:null};}
+function financialBackup(o){var values={},absent=[];RESET_FIELDS.forEach(k=>{if(Object.prototype.hasOwnProperty.call(o,k))values[k]=o[k];else absent.push(k)});return {values,absent};}
+function resetMessage(t,ok=false){$('bankresetmsg').className='msg '+(ok?'ok':'err');$('bankresetmsg').textContent=t;}
+async function prepareBankReset(){if(!isAdmin||bankResetBusy)return;bankResetBusy=true;$('preparebankreset').disabled=true;resetMessage('Načítám rozsah resetu…',true);try{var groups=await Promise.all(['accounts','casinoRounds','lottery'].map(c=>getDocsFromServer(fcol(fdb,c))));var docs=groups.flatMap(s=>s.docs);if(!groups[0].size)throw Error('Nenašly se žádné účty.');if(docs.length>240)throw Error('Reset má příliš mnoho dokumentů pro jedinou bezpečnou změnu. Nic se nezměnilo.');bankResetPlan={paths:docs.map(d=>d.ref.path),people:groups[0].size,rounds:groups[1].size+groups[2].size,at:Date.now()};$('bankresetpreview').textContent='Reset zahrne '+bankResetPlan.people+' účtů a '+bankResetPlan.rounds+' kol loterie. Všechno se uloží jednou společnou operací.';$('bankresetdialog').showModal();resetMessage('Reset je připravený; zatím se nic nezměnilo.',true);}catch(e){resetMessage(errt(e))}finally{bankResetBusy=false;$('preparebankreset').disabled=false;}}
+async function executeBankReset(){if(!isAdmin||bankResetBusy||!bankResetPlan)return;var plan=bankResetPlan;if(Date.now()-plan.at>300000){resetMessage('Náhled vypršel. Připrav reset znovu.');$('bankresetdialog').close();return}bankResetBusy=true;$('confirmbankreset').disabled=true;try{var run=crypto.randomUUID();await firebaseTransaction(fdb,async tr=>{var snapshots=[];for(var path of plan.paths)snapshots.push(await tr.get(fdoc(fdb,path)));for(var i=0;i<snapshots.length;i++){var sn=snapshots[i];if(!sn.exists())throw Error('Seznam účtů nebo kol se změnil. Připrav reset znovu.');var account=plan.paths[i].startsWith('accounts/'),saved=account?financialBackup(sn.data()):{values:sn.data(),absent:[]};tr.set(fdoc(fdb,'appConfig/resetRuns/items/'+run+'_'+i),{path:plan.paths[i],account,...saved});if(account)tr.update(sn.ref,resetFinancialData());else tr.delete(sn.ref);}tr.set(fdoc(fdb,'appConfig/lastReset'),{run,count:snapshots.length,people:plan.people,rounds:plan.rounds,at:Date.now(),restored:false});});bankResetPlan=null;$('bankresetdialog').close();chipRounds=[];rounds=[];await refreshDirectory();renderChipLottery();resetMessage('Hotovo: '+plan.people+' účtů má 500 Sh, spoření a žetony 0. Půjčky, investice, finanční historie a losy jsou vyčištěné. Lidé, role a karty zůstaly. Záloha je uložená.',true);}catch(e){resetMessage('Reset se nepovedl; žádná část resetu se neuložila. '+errt(e));$('bankresetdialog').close();}finally{bankResetBusy=false;$('confirmbankreset').disabled=false;}}
+async function restoreBankReset(){if(!isAdmin||bankResetBusy)return;bankResetBusy=true;try{var state=await getDoc(fdoc(fdb,'appConfig/lastReset'));if(!state.exists()||state.data().restored)throw Error('Není k dispozici nevrácený reset.');var s=state.data();if(!confirm('Vrátit '+s.people+' účtů do finančního stavu před resetem z '+new Date(s.at).toLocaleString('cs-CZ')+'? Pozdější pohyby těchto účtů se nahradí. Role a karty se nemění.'))return;var saved=[];for(var i=0;i<s.count;i++){var d=await getDoc(fdoc(fdb,'appConfig/resetRuns/items/'+s.run+'_'+i));if(!d.exists())throw Error('Záloha není úplná.');saved.push(d.data());}var current=await Promise.all(['casinoRounds','lottery'].map(c=>getDocsFromServer(fcol(fdb,c))));var extra=current.flatMap(x=>x.docs).filter(d=>!saved.some(x=>x.path===d.ref.path));if(saved.length+extra.length>490)throw Error('Obnova je příliš velká pro jednu operaci.');var batch=writeBatch(fdb);for(var entry of saved){var ref=fdoc(fdb,entry.path);if(entry.account){var data={...entry.values};entry.absent.forEach(k=>data[k]=deleteField());batch.update(ref,data)}else batch.set(ref,entry.values);}extra.forEach(d=>batch.delete(d.ref));batch.update(state.ref,{restored:true,restoredAt:Date.now()});await batch.commit();await refreshDirectory();resetMessage('Stav před posledním resetem byl obnoven. Obnov stránku pro aktuální výsledky loterie.',true);}catch(e){resetMessage(errt(e))}finally{bankResetBusy=false;}}
+$('preparebankreset').onclick=prepareBankReset;$('confirmbankreset').onclick=executeBankReset;$('cancelbankreset').onclick=()=>{$('bankresetdialog').close();bankResetPlan=null};$('restorebankreset').onclick=restoreBankReset;
+
+var customDesigns=[],designImage='',designEdit='',designListKey='',recipientKey='',activityOff=null,resetEnabled=false,resetTarget=null;
+function canDesign(){return isAdmin||myRole==='grafik'}
+function canReadActivity(){return isAdmin||myRole==='vyvojar'}
+function customAllowed(o,d){return !d.custom||d.recipients.includes(o.uid||(typeof o.id==='string'?o.id:uid))}
+function syncRoleTools(){
+  $('thistory').classList.toggle('hidden',!isAdmin);$('tdesign').classList.toggle('hidden',!canDesign());$('tactivity').classList.toggle('hidden',!canReadActivity());
+  if(!canDesign()&&curTab==='design')tab('acc');if(!canReadActivity()&&curTab==='activity')tab('acc');
+  if(canReadActivity()&&curTab==='activity'&&!activityOff){activityOff=db.collection('requests').onSnapshot(sn=>{reqs=mapd(sn);showReqs()},e=>{$('activitylist').textContent=errt(e)});}
+  if((!canReadActivity()||curTab!=='activity')&&activityOff){activityOff();activityOff=null;reqs=[];$('activitylist').textContent='';$('reqcard').classList.add('hidden');}
+  renderDesignEditor();
+}
+function refreshCustomGallery(){
+  DES=DES.filter(d=>!d.custom).concat(customDesigns.map(d=>({id:'custom_'+d.id,n:d.name,min:0,custom:true,recipients:d.recipients||[],dark:d.dark,css:'linear-gradient(#0003,#0003),url("'+d.image+'") center/cover',version:d.updatedAt})));
+  if(isAdmin){$('cardA').removeAttribute('data-n');setCard($('cardA'),myDoc.name||myName,effCard({...myDoc,uid}));gallery($('cgA'),'A',{...myDoc,uid});}
+  else if(uid){$('cardM').removeAttribute('data-n');setCard($('cardM'),myDoc.name||myName,effCard({...myDoc,uid}));gallery($('cgM'),'M',{...myDoc,uid});}
+  renderDesignEditor();
+}
+function renderDesignEditor(){
+  if(!canDesign())return;
+  var editable=customDesigns.filter(d=>isAdmin||d.createdBy===uid),key=JSON.stringify(editable.map(d=>[d.id,d.name]));
+  if(key!==designListKey){designListKey=key;$('designselect').innerHTML='<option value="">Nový design</option>'+editable.map(d=>'<option value="'+esc(d.id)+'">'+esc(d.name)+'</option>').join('');$('designselect').value=designEdit;}
+  var users=accts.slice().sort((a,b)=>a.name.localeCompare(b.name)),rk=JSON.stringify(users.map(x=>[x.id,x.name]));
+  if(rk!==recipientKey){var selected=new Set(Array.from($('designrecipients').querySelectorAll('input:checked')).map(x=>x.value));recipientKey=rk;$('designrecipients').innerHTML=users.map(x=>'<label style="display:flex;gap:10px;align-items:center"><input style="width:auto" type="checkbox" value="'+esc(x.id)+'"'+(selected.has(x.id)?' checked':'')+'>'+esc(x.name)+'</label>').join('');}
+}
+function previewDesign(){var p=$('designpreview');p.style.background=designImage?'linear-gradient(#0003,#0003),url("'+designImage+'") center/cover':'linear-gradient(135deg,#0f4c45,#0a2925)';p.style.color=$('designdark').checked?'#171717':'#fff';}
+$('designdark').onchange=previewDesign;
+$('designselect').onchange=()=>{designEdit=$('designselect').value;var d=customDesigns.find(x=>x.id===designEdit);designImage=d?.image||'';$('designname').value=d?.name||'';$('designdark').checked=!!d?.dark;$('designfile').value='';$('designrecipients').querySelectorAll('input').forEach(x=>x.checked=!!d?.recipients.includes(x.value));$('designmsg').textContent='';previewDesign()};
+$('designfile').onchange=async()=>{var file=$('designfile').files[0],m=$('designmsg');if(!file)return;m.className='msg err';
+  if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>10*1024*1024){m.textContent='Vyber PNG, JPG nebo WebP do 10 MB.';return}
+  $('designsave').disabled=true;var url=URL.createObjectURL(file);
+  try{var img=new Image();img.src=url;await img.decode();var cv=document.createElement('canvas');cv.width=680;cv.height=428;var c=cv.getContext('2d'),scale=Math.max(680/img.width,428/img.height);c.fillStyle='#0f4c45';c.fillRect(0,0,680,428);c.drawImage(img,(680-img.width*scale)/2,(428-img.height*scale)/2,img.width*scale,img.height*scale);designImage=cv.toDataURL('image/jpeg',.82);if(designImage.length>450000)throw Error('Obrázek je příliš složitý. Vyber menší.');previewDesign();m.className='msg ok';m.textContent='Obrázek připravený. Vyber příjemce a ulož design.'}
+  catch(e){m.textContent='Obrázek se nepodařilo načíst. '+e.message}finally{URL.revokeObjectURL(url);$('designsave').disabled=false}
+};
+$('designsave').onclick=async()=>{if(!canDesign())return;var name=$('designname').value.trim(),recipients=Array.from($('designrecipients').querySelectorAll('input:checked')).map(x=>x.value),m=$('designmsg');m.className='msg err';
+  if(!name||name.length>60||!designImage||!recipients.length||recipients.length>200){m.textContent='Vyplň název do 60 znaků, nahraj obrázek a vyber 1 až 200 lidí.';return}
+  $('designsave').disabled=true;
+  try{var id=designEdit||crypto.randomUUID(),ref=fdoc(fdb,'cardDesigns',id);await runTransaction(fdb,async tr=>{var sn=await tr.get(ref);if(sn.exists()&&!isAdmin&&sn.data().createdBy!==uid)throw Error('Tento design může upravit pouze jeho autor nebo majitel.');tr.set(ref,{name,image:designImage,dark:$('designdark').checked,recipients,createdBy:sn.exists()?sn.data().createdBy:uid,updatedAt:Date.now()})});designEdit=id;designListKey='';renderDesignEditor();m.className='msg ok';m.textContent='Design uložený pro '+recipients.length+' lidí. Najdou ho ve výběru karet.'}
+  catch(e){m.textContent=errt(e)}finally{$('designsave').disabled=false}
+};
+function startDesigns(){
+  unsubs.push(()=>{if(activityOff)activityOff();activityOff=null;customDesigns=[];DES=DES.filter(d=>!d.custom);designImage='';designEdit='';designListKey='';recipientKey='';resetEnabled=false;$('designfile').value='';$('designname').value='';$('designrecipients').innerHTML='';$('activitylist').textContent='';if($('resetdialog').open)$('resetdialog').close();$('resetpassword').value='';});
+  unsubs.push(db.collection('cardDesigns').onSnapshot(sn=>{customDesigns=mapd(sn);refreshCustomGallery()},e=>{$('designmsg').textContent='Designy nelze načíst: '+errt(e)}));
+  if(isAdmin)unsubs.push(db.doc('appConfig/admin').onSnapshot(sn=>{resetEnabled=sn.exists&&sn.data().passwordResetEnabled===true;$('resetnotice').textContent=resetEnabled?'Reset nastaví nové heslo bez zobrazení původního.':'Reset hesel není aktivní: vyžaduje nasazenou serverovou funkci. Na současném tarifu Spark není dostupná.'},()=>{}));
+}
+function openReset(p){if(!isAdmin)return;if(!resetEnabled){$('resetname').textContent=p.name;$('resetpassword').hidden=true;$('resetpassword').previousElementSibling.hidden=true;$('resetsave').hidden=true;$('resetmsg').textContent='Reset cizího hesla zatím není zprovozněný. Vyžaduje důvěryhodnou serverovou službu; připravená Firebase funkce nejde nasadit na tarifu Spark. Uživatel si své heslo může změnit v Nastavení, pokud zná původní heslo.';$('resetcancel').textContent='Zavřít';$('resetdialog').showModal();return;} $('resetpassword').hidden=false;$('resetpassword').previousElementSibling.hidden=false;$('resetsave').hidden=false;$('resetcancel').textContent='Zrušit';if(!confirm('Opravdu chceš resetovat heslo uživateli '+p.name+'?'))return;resetTarget=p.uid;$('resetname').textContent=p.name;$('resetpassword').value='';$('resetmsg').textContent='';$('resetdialog').showModal();}
+$('resetcancel').onclick=()=>{$('resetdialog').close();$('resetpassword').value='';resetTarget=null};
+$('resetdialog').addEventListener('close',()=>{$('resetpassword').value='';resetTarget=null});
+$('resetsave').onclick=async()=>{if(!isAdmin||!resetEnabled||!resetTarget)return;var password=$('resetpassword').value;$('resetmsg').textContent='';if(password.length<6){$('resetmsg').textContent='Nové heslo musí mít alespoň 6 znaků.';return}$('resetsave').disabled=true;
+  try{var {getFunctions,httpsCallable}=await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js');await httpsCallable(getFunctions(fbApp,'europe-west1'),'resetAccountPassword')({uid:resetTarget,password});$('resetdialog').close();amsg('Nové heslo bylo nastaveno.',true)}catch(e){$('resetmsg').textContent='Heslo se nepodařilo změnit. '+errt(e)}finally{$('resetpassword').value='';$('resetsave').disabled=false}
+};
+
+// This market is a game: brand names identify simulations, never live securities.
+var INVEST_ASSETS=[
+ ['apple','Apple','AAPL','tech',180],['microsoft','Microsoft','MSFT','tech',160],['nvidia','NVIDIA','NVDA','tech',95],['alphabet','Alphabet / Google','GOOGL','tech',125],['amazon','Amazon','AMZN','tech',120],['meta','Meta','META','tech',140],['samsung','Samsung','SAMS','tech',80],['tsmc','TSMC','TSM','tech',90],['amd','AMD','AMD','tech',65],['intel','Intel','INTC','tech',35],['asml','ASML','ASML','tech',240],['sap','SAP','SAP','tech',130],
+ ['jpmorgan','JPMorgan Chase','JPM','banks',110],['bofa','Bank of America','BAC','banks',45],['citi','Citigroup','C','banks',55],['hsbc','HSBC','HSBC','banks',60],['barclays','Barclays','BARC','banks',32],['deutsche','Deutsche Bank','DB','banks',38],['bnp','BNP Paribas','BNP','banks',72],['ubs','UBS','UBS','banks',75],['moneta','MONETA Money Bank','MONET','banks',25],['kb','Komerční banka','KOMB','banks',85],['erste','Erste Group','ERST','banks',90],
+ ['shell','Shell','SHEL','oil',60],['bp','BP','BP','oil',40],['exxon','ExxonMobil','XOM','oil',90],['chevron','Chevron','CVX','oil',95],['total','TotalEnergies','TTE','oil',70],['brent','Ropa Brent · herní kontrakt','BRENT','oil',75],
+ ['novabyte','NovaByte Labs','NOVA','fiction',35],['quantumfox','Quantum Fox','QFOX','fiction',60],['cloudpanda','Cloud Panda','PANDA','fiction',25],['neonrobotics','Neon Robotics','NEON','fiction',90],['pixelrocket','Pixel Rocket','PXLR','fiction',18],['orbitcola','Orbit Cola','COLA','fiction',12],['sunvolt','SunVolt Energy','SUNV','fiction',50],['turbotaco','Turbo Taco','TACO','fiction',15],['moonforge','MoonForge Industries','MOON','fiction',75],['velvetbank','Velvet Bank','VBNK','fiction',40],['crystalcargo','Crystal Cargo','CRYS','fiction',22],['bytebloom','ByteBloom AI','BLOOM','fiction',110]
+].map(([id,name,symbol,category,base])=>({id,name,symbol,category,base,interval:300000}));
+var investSelected='apple',investBusy=false,investShownAt=0;
+function investAsset(id){return INVEST_ASSETS.find(a=>a.id===id)}
+function investPrice(asset,time){var tick=Math.floor(time/asset.interval),seed=0;for(var c of asset.id)seed=(seed*31+c.charCodeAt(0))>>>0;var noise=Math.sin(tick*.618+seed)*Math.sin(tick*.173+seed/7),wave=Math.sin(tick/28+seed);return r2(Math.max(1,asset.base*(1+(asset.category==='fiction'?.22:.045)*noise+.08*wave)))}
+function investSettlement(account,asset,quantity,buy,price){
+  if(!Number.isSafeInteger(quantity)||quantity<1||quantity>100000)throw Error('Zadej 1 až 100 000 celých kusů.');
+  if(!asset||!Number.isFinite(price)||price<=0)throw Error('Kurz není dostupný.');
+  var positions={...(account.investPositions||{})},old=positions[asset.id]||{qty:0,cost:0},total=r2(quantity*price);
+  if(buy&&account.bal<total)throw Error('Na účtu nemáš dost Sh.');
+  if(!buy&&old.qty<quantity)throw Error('Tolik kusů nevlastníš.');
+  var qty=old.qty+(buy?quantity:-quantity),cost=buy?r2(old.cost+total):r2(old.cost*(qty/old.qty));
+  if(qty)positions[asset.id]={qty,cost};else delete positions[asset.id];
+  return {bal:r2(account.bal+(buy?-total:total)),investPositions:positions,total,profit:buy?0:r2(total-old.cost*quantity/old.qty)};
+}
+function buildInvestMarket(){
+  var category=$('investcategory').value||'all',list=INVEST_ASSETS.filter(a=>a.category!=='fiction'&&(category==='all'||a.category===category));
+  $('investmarket').innerHTML=list.map(a=>'<button class="market-item" data-asset="'+a.id+'" aria-pressed="'+(a.id===investSelected)+'"><span><b>'+esc(a.name)+'</b><small>'+a.symbol+' · '+(a.category==='fiction'?'vymyšlená firma':a.id==='brent'?'simulovaná komodita':'známá značka · simulace')+'</small></span><span><strong id="ip_'+a.id+'"></strong><small id="ic_'+a.id+'"></small></span></button>').join('');renderInvestments();
+}
+function renderInvestments(){
+  if(!uid)return;var time=Date.now(),a=investAsset(investSelected),price=investPrice(a,time),positions=myDoc.investPositions||{},total=0,cost=0;
+  for(var item of INVEST_ASSETS){var p=investPrice(item,time),previous=investPrice(item,time-item.interval),change=(p/previous-1)*100,el=$('ip_'+item.id),cl=$('ic_'+item.id);if(el){el.textContent=kc(p);cl.textContent=(change>=0?'+':'')+change.toFixed(2).replace('.',',')+' % za krok';cl.className=change>=0?'pos':'neg'}var holding=positions[item.id];if(holding){total+=holding.qty*p;cost+=holding.cost}}
+  $('investcash').textContent=kc(myDoc.bal||0);$('investvalue').textContent=kc(r2(total));$('investgain').textContent=(total-cost>=0?'+':'')+kc(r2(total-cost));$('investgain').className=total-cost>=0?'pos':'neg';
+  $('investname').textContent=a.name+' · '+a.symbol;$('investprice').textContent=kc(price);$('investclock').textContent='Další herní kurz za '+Math.ceil((a.interval-time%a.interval)/1000)+' s · nákup i prodej ihned';
+  $('investowned').textContent='Vlastníš '+(positions[a.id]?.qty||0).toLocaleString('cs-CZ')+' ks';
+  var n=Number($('investqty').value),valid=Number.isSafeInteger(n)&&n>=1&&n<=100000;$('investquote').textContent=valid?'Cena '+kc(r2(n*price))+' · bez poplatku':'Zadej počet celých kusů.';
+  $('investbuy').disabled=investBusy||!valid||a.category==='fiction';$('investsell').disabled=investBusy||!valid||(positions[a.id]?.qty||0)<n;
+  var values=Array.from({length:24},(_,i)=>investPrice(a,time-(23-i)*a.interval)),min=Math.min(...values)*.99,max=Math.max(...values)*1.01;
+  $('investchart').innerHTML='<svg viewBox="0 0 600 100" role="img" aria-label="Vývoj herní ceny za posledních 24 kroků" style="width:100%;height:100px"><polyline fill="none" stroke="var(--brand)" stroke-width="3" points="'+values.map((v,i)=>(i*600/23).toFixed(1)+','+(95-(v-min)/(max-min)*90).toFixed(1)).join(' ')+'"/></svg>';
+  $('investportfolio').innerHTML=INVEST_ASSETS.filter(x=>positions[x.id]?.qty>0).map(x=>{var h=positions[x.id],value=r2(h.qty*investPrice(x,time)),gain=r2(value-h.cost);return '<div class="tx"><div><button class="btn ghost sm" data-holding="'+x.id+'">'+esc(x.name)+'</button><small>'+h.qty+' ks · vloženo '+kc(h.cost)+'</small></div><div><b>'+kc(value)+'</b><small class="'+(gain>=0?'pos':'neg')+'">'+(gain>=0?'+':'')+kc(gain)+'</small></div></div>'}).join('')||'<p class="empty">Zatím žádné investice. Vyber firmu a kup první kus.</p>';
+  $('investhistory').innerHTML=(myDoc.investTx||[]).map(t=>'<div class="tx"><div><b>'+esc(t.text)+'</b><small>'+esc(t.date)+'</small></div><span class="'+(t.cash<0?'neg':'pos')+'">'+(t.cash>0?'+':'')+kc(t.cash)+'</span></div>').join('')||'<p class="empty">Zatím žádné obchody.</p>';
+  investShownAt=time;
+}
+async function tradeInvestment(buy){
+  if(investBusy||!uid)return;var id=uid,a=investAsset(investSelected),n=Number($('investqty').value),quotedAt=investShownAt,price=investPrice(a,quotedAt),m=$('investmsg');investBusy=true;renderInvestments();m.className='msg err';
+  try{if(buy&&a.category==='fiction')throw Error('Tato firma je vyřazená z nákupu; držené kusy můžeš prodat.');var result=await runTransaction(fdb,async tr=>{if(Date.now()-quotedAt>30000)throw Error('Kurz vypršel. Zkus obchod znovu.');var ref=fdoc(fdb,'accounts',id),sn=await tr.get(ref);if(!sn.exists())throw Error('Účet neexistuje.');var o=sn.data(),s=investSettlement(o,a,n,buy,price),cash=buy?-s.total:s.total,text=(buy?'Nákup: ':'Prodej: ')+a.name+' · '+n+' ks za '+kc(price);tr.update(ref,{bal:s.bal,investPositions:s.investPositions,tx:txlog(o,text,cash),investTx:[{text,date:now(),cash}].concat(o.investTx||[]).slice(0,50)});return s});m.className='msg ok';m.textContent=(buy?'Nakoupeno ':'Prodáno ')+n+' ks '+a.name+' za '+kc(result.total)+(buy?'':'. Zisk/ztráta: '+kc(result.profit))+'.';}
+  catch(e){m.textContent=errt(e)}finally{investBusy=false;renderInvestments()}
+}
+$('investbuy').onclick=()=>tradeInvestment(true);$('investsell').onclick=()=>tradeInvestment(false);$('investqty').oninput=renderInvestments;$('investcategory').onchange=buildInvestMarket;
+$('investportfolio').onclick=e=>{var b=e.target.closest('[data-holding]');if(b){investSelected=b.dataset.holding;renderInvestments()}};
+$('investmarket').onclick=e=>{var button=e.target.closest('[data-asset]');if(!button)return;investSelected=button.dataset.asset;document.querySelectorAll('#investmarket [data-asset]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.asset===investSelected)));$('investmsg').textContent='';renderInvestments()};
+function startInvestments(){buildInvestMarket();var timer=setInterval(()=>{if(curTab==='invest')renderInvestments()},1000);unsubs.push(()=>{clearInterval(timer);$('investmsg').textContent='';$('investportfolio').innerHTML='';$('investhistory').innerHTML=''})}
+
+var manualAuth=false;
+var persistenceReady=setPersistence(auth,browserLocalPersistence);
+persistenceReady.catch(()=>{$('lerr').textContent='Pro trvalé přihlášení povol ukládání dat tohoto webu.'});
+
+var themeChoice={mode:'system',hue:166},themeMedia=matchMedia('(prefers-color-scheme: dark)');
+function applyTheme(){var t=themeChoice,root=document.documentElement,dark=t.mode==='dark'||t.mode==='system'&&themeMedia.matches;root.setAttribute('data-theme',dark?'dark':'light');var h=t.hue,vars=dark?{bg:[18,7],card:[18,12],ink:[16,94],mute:[12,70],brand:[62,67],line:[15,24]}:{bg:[20,96],card:[20,100],ink:[24,12],mute:[14,37],brand:[65,27],line:[18,85]};Object.keys(vars).forEach(k=>root.style.setProperty('--'+k,'hsl('+h+' '+vars[k][0]+'% '+vars[k][1]+'%)'));root.style.setProperty('--onbrand',dark?'#07110f':'#fff');$('thememode').value=t.mode;$('themehue').value=h;$('themevalue').textContent=h+'°';}
+function loadTheme(){themeChoice={mode:'system',hue:166};try{var t=JSON.parse(localStorage.getItem('nb-theme-'+uid));if(uid&&t&&['system','light','dark'].includes(t.mode)&&Number.isFinite(t.hue)&&t.hue>=0&&t.hue<=360)themeChoice=t}catch(e){}applyTheme();$('thememsg').textContent='';}
+function saveTheme(){applyTheme();try{if(uid)localStorage.setItem('nb-theme-'+uid,JSON.stringify(themeChoice));$('thememsg').textContent='Vzhled uložen v tomto prohlížeči.'}catch(e){$('thememsg').textContent='Vzhled je změněný, ale prohlížeč jej nedovolil uložit.'}}
+$('thememode').onchange=()=>{themeChoice.mode=$('thememode').value;saveTheme()};$('themehue').oninput=()=>{themeChoice.hue=Number($('themehue').value);saveTheme()};$('themereset').onclick=()=>{themeChoice={mode:'system',hue:166};saveTheme()};themeMedia.addEventListener('change',applyTheme);
+
+onAuthStateChanged(auth,async user=>{setTimeout(showMcLinks,3000);if(manualAuth)return;if(!user){clearSession();return}if(uid===user.uid)return;try{await enter(user,user.displayName||user.email.split('@')[0],false)}catch(e){stop();uid=null;show('login');$('lerr').textContent='Obnovení přihlášení se nezdařilo. '+errt(e)}});
+</script>
+</body>
+</html>
