@@ -77,7 +77,7 @@ textarea{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--
     <div class="logo"><i>N</i>NašeBanka</div>
     <button class="btn ghost hidden" id="logout">Odhlásit se</button>
   </header>
-  <nav id="tabs" class="tabs hidden"><button data-t="acc" class="on">Účet</button><button data-t="team">Tým</button><button data-t="ann">Oznámení<span class="nb hidden" id="nba"></span></button><button data-t="qr">QR</button><button data-t="loan">Půjčky</button><button data-t="rr">Kasino</button><button data-t="invest">Investice</button><button data-t="set">Nastavení</button><button data-t="ppl" id="tppl" class="hidden">Lidé</button><button data-t="design" id="tdesign" class="hidden">Design karet</button><button data-t="activity" id="tactivity" class="hidden">Přihlášení</button><button data-t="history" id="thistory" class="hidden">Historie všech</button></nav>
+  <nav id="tabs" class="tabs hidden"><button data-t="acc" class="on">Účet</button><button data-t="team">Tým</button><button data-t="ann">Oznámení<span class="nb hidden" id="nba"></span></button><button data-t="loan">Půjčky</button><button data-t="rr">Kasino</button><button data-t="invest">Investice</button><button data-t="set">Nastavení</button><button data-t="ppl" id="tppl" class="hidden">Lidé</button><button data-t="design" id="tdesign" class="hidden">Design karet</button><button data-t="activity" id="tactivity" class="hidden">Přihlášení</button><button data-t="history" id="thistory" class="hidden">Historie všech</button></nav>
 
   <section id="login" class="card">
     <h1>Přihlášení</h1>
@@ -267,21 +267,10 @@ textarea{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--
     <div class="card"><h2>Oznámení</h2><div id="annl"></div></div>
   </section>
 
-  <section id="qr" class="hidden">
-    <div class="card"><h2>Můj QR kód</h2><p>Kdo ho naskenuje, může ti poslat peníze.</p>
-      <label for="qamt">Částka (nepovinně)</label><input id="qamt" type="number" min="1">
-      <div id="qrimg" style="background:#fff;padding:12px;border-radius:12px;display:inline-block;margin-top:12px"></div></div>
-    <div class="card"><h2>Skenovat QR</h2>
-      <video id="qvid" playsinline muted class="hidden" style="width:100%;border-radius:12px"></video><canvas id="qcan" class="hidden"></canvas>
-      <p style="margin-top:12px"><button class="btn" id="qscan">Zapnout kameru</button></p>
-      <div id="qres" class="msg" role="status"></div><div id="qpay"></div></div>
-  </section>
 
   <footer>NašeBanka je fiktivní banka – školní projekt. Žádné skutečné peníze ani údaje. Sh = svaté hokaido. Verze 3.9</footer><dialog id="bankresetdialog"><h2>Potvrdit nový začátek</h2><p id="bankresetpreview"></p><p>Účty, role a karty zůstanou. Všem 500 Sh; spoření, žetony, půjčky, investice a finanční historie se vyčistí. Staré losy už nepřinesou výhru. Záloha umožní vrátit reset.</p><button class="btn" id="confirmbankreset">Provést reset se zálohou</button> <button class="btn ghost" id="cancelbankreset">Zrušit</button></dialog>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,EmailAuthProvider,reauthenticateWithCredential,updatePassword,onAuthStateChanged,setPersistence,browserLocalPersistence} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -465,7 +454,7 @@ $("mpay").onclick=async function(){
 };
 
 $("ppl").appendChild($("admin"));$("ppl").appendChild($("deputy"));
-var myName="",myDoc={},msgsIn=[],msgsOut=[],anns=[],curTab="acc",stream=null,scanOn=false;
+var myName="",myDoc={},msgsIn=[],msgsOut=[],anns=[],curTab="acc";
 function mapd(sn){return sn.docs.map(function(d){var o=d.data();o.id=d.id;return o})}
 function nameOf(id){var a=accts.filter(function(x){return x.id===id})[0];return a?a.name:"?"}
 async function createPerson(name,pw){
@@ -487,15 +476,15 @@ $("dlist").addEventListener("click",async function(e){
 });
 function tab(t){
   curTab=t;
-  ["team","ann","qr","set","loan","rr","ppl","design","activity","invest","history"].forEach(function(x){$(x).classList.toggle("hidden",x!==t)});
+  ["team","ann","set","loan","rr","ppl","design","activity","invest","history"].forEach(function(x){$(x).classList.toggle("hidden",x!==t)});
   (isAdmin?$("app"):$("member")).classList.toggle("hidden",t!=="acc");
   document.querySelectorAll("#tabs button").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-t")===t)});
   $("admin").classList.toggle("hidden",!isAdmin);
   $("deputy").classList.toggle("hidden",isAdmin||myRole!=="zastupce");
   if(t==="history"){if(!isAdmin){tab("acc");return}renderAllHistory()}
   syncRoleTools();if(t==="invest")renderInvestments();
-  if(t!=="qr")stopScan();
-  if(t==="ann")markAnn();if(t==="qr")drawQR();
+
+  if(t==="ann")markAnn();
 }
 $("tabs").onclick=function(e){var b=e.target.closest("button");if(b)tab(b.getAttribute("data-t"))};
 var directoryBusy=false;
@@ -533,38 +522,6 @@ $("annsend").onclick=async function(){
   if(!t){m.textContent="Napiš oznámení.";return}
   try{await db.add("announcements",{text:t,at:Date.now(),by:myName});$("annt").value="";m.className="msg ok";m.textContent="Odesláno všem."}catch(x){m.textContent="Nepovedlo se."}
 };
-function drawQR(){
-  var a=parseFloat($("qamt").value)||0,p="NB|"+uid+"|"+(a>0?a:"");
-  if(window.qrcode){var q=qrcode(0,"M");q.addData(p);q.make();$("qrimg").innerHTML=q.createSvgTag(5,0)}else $("qrimg").textContent="QR knihovna se nenačetla.";
-}
-$("qamt").oninput=drawQR;
-function stopScan(){scanOn=false;if(stream)stream.getTracks().forEach(function(t){t.stop()});stream=null;$("qvid").classList.add("hidden");$("qscan").textContent="Zapnout kameru"}
-$("qscan").onclick=async function(){
-  var r=$("qres");r.className="msg";r.textContent="";
-  if(scanOn){stopScan();return}
-  try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}})}catch(e){r.className="msg err";r.textContent="Kamera není dostupná.";return}
-  var v=$("qvid");v.srcObject=stream;v.classList.remove("hidden");await v.play();scanOn=true;$("qscan").textContent="Vypnout kameru";
-  var c=$("qcan"),cx=c.getContext("2d");
-  (function loop(){
-    if(!scanOn)return;
-    if(v.readyState===4&&window.jsQR){c.width=v.videoWidth;c.height=v.videoHeight;cx.drawImage(v,0,0);var im=cx.getImageData(0,0,c.width,c.height),code=jsQR(im.data,c.width,c.height);if(code&&code.data.indexOf("NB|")===0){stopScan();gotQR(code.data);return}}
-    requestAnimationFrame(loop);
-  })();
-};
-async function gotQR(d){
-  var p=d.split("|"),to=p[1],amt=parseFloat(p[2])||0,r=$("qres");
-  if(to===uid){r.className="msg err";r.textContent="To je tvůj vlastní kód.";return}
-  var tg=await db.doc("accounts/"+to).get();
-  if(!tg.exists){r.className="msg err";r.textContent="Účet neexistuje.";return}
-  var nm=tg.data().name;
-  $("qpay").innerHTML='<p><b>Zaplatit: '+esc(nm)+'</b></p><input id="qpa" type="number" min="1" placeholder="Částka (Sh)" value="'+(amt>0?amt:"")+'"'+(amt>0?' readonly':'')+'><p style="margin-top:12px"><button class="btn" id="qpb">Zaplatit</button></p>';
-  $("qpb").onclick=async function(){
-    var v=parseFloat($("qpa").value);r.className="msg err";
-    if(!(v>0)){r.textContent="Zadej částku.";return}
-    try{var er=await sendMoney(to,v,"QR platba");if(er){r.textContent=er;return}
-      r.className="msg ok";r.textContent="Zaplaceno: "+kc(v)+" → "+nm;$("qpay").innerHTML=""}catch(x){r.textContent="Platba se nepovedla."}
-  };
-}
 document.addEventListener("click",function(e){
   var b=e.target.closest("button[data-cd]");if(!b)return;
   var w=b.getAttribute("data-who"),m=$("cm"+w),id=b.getAttribute("data-cd");
@@ -875,7 +832,7 @@ $("go").onclick=async function(){
   if(!mail(n)||!pw){e.textContent="Nesprávné jméno nebo heslo.";return}
   manualAuth=true;try{await persistenceReady;var em=await emailFor(n);var c=await signInWithEmailAndPassword(auth,em,pw);await enter(c.user,n,false);$("p").value=""}catch(x){e.textContent=aerr(x.code)}finally{manualAuth=false}
 };
-function clearSession(){stopScan();uid=null;loadTheme();stop();reqs=[];apps={};msgsIn=[];msgsOut=[];anns=[];myDoc={};accts=[];myRole="zakaznik";["team","ann","qr","set","loan","rr","ppl","design","activity","invest","history"].forEach(function(x){$(x).classList.add("hidden")});$("reqcard").classList.add("hidden");$("p").value="";show("login")}
+function clearSession(){uid=null;loadTheme();stop();reqs=[];apps={};msgsIn=[];msgsOut=[];anns=[];myDoc={};accts=[];myRole="zakaznik";["team","ann","set","loan","rr","ppl","design","activity","invest","history"].forEach(function(x){$(x).classList.add("hidden")});$("reqcard").classList.add("hidden");$("p").value="";show("login")}
 $("logout").onclick=async()=>{try{await signOut(auth);clearSession()}catch(e){alert("Odhlášení se nezdařilo. Zkus to znovu.")}};
 function adoptAccount(id,o){var ix=accts.findIndex(x=>x.id===id),a={...o,id};if(ix<0)accts.push(a);else accts[ix]=a;if(!isAdmin)return;var p=S.people.find(x=>x.uid===id);if(!p){p={id:id===uid?1:S.nid++,uid:id};S.people.push(p)}Object.assign(p,{name:o.name||'Bez jména',bal:o.bal||0,tx:o.tx||[],sav:o.sav||0,savAt:o.savAt,card:o.card,casinoChips:o.casinoChips||0,role:o.role||'zakaznik'});S.people.sort((a,b)=>a.id===1?-1:b.id===1?1:a.id-b.id);}
 async function refreshOne(id){var sn=await getDoc(fdoc(fdb,'accounts',id));if(sn.exists()){adoptAccount(id,sn.data());if(isAdmin)render();renderTeam();if(curTab==='history')renderAllHistory();}}
