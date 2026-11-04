@@ -219,8 +219,8 @@ textarea{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--
   <section id="loan" class="hidden">
     <div class="card"><h2>Půjčky</h2><p>Půjč si od banky až <b>100 000 Sh</b>. Vrátíš o 10 % víc. Najednou můžeš mít jen jednu půjčku.</p>
       <small>Dluh k zaplacení</small><div class="big" style="font-size:1.8rem" id="lvdebt">0,00 Sh</div>
-      <label for="lamt">Kolik si chceš půjčit (Sh)</label><input id="lamt" type="number" min="1" max="100000" step="0.01" placeholder="10000">
-      <label for="lautoamount">Automatická splátka (Sh)</label><input id="lautoamount" type="number" min="0.01" step="0.01" placeholder="1000">
+      <label for="lamt">Kolik si chceš půjčit (Sh)</label><input id="lamt" type="number" min="1" max="10000" step="0.01" placeholder="10000">
+      <label for="lautoamount">Automatická splátka (Sh)</label><input id="lautoamount" type="number" min="0.01" step="0.01" placeholder="100">
       <label for="lautodate">Datum první splátky (ve 20:00 českého času)</label><input id="lautodate" type="date">
       <label for="lautofreq">Jak často splácet</label><select id="lautofreq"><option value="monthly">Každý měsíc</option><option value="weekly">Každý týden</option><option value="daily">Každý den</option></select>
       <p style="margin-top:12px"><button class="btn ghost" id="lschedule">Uložit plán ke stávající půjčce</button></p>
@@ -329,6 +329,7 @@ function savCard(el,w){
   if(el.getAttribute("data-n"))return;el.setAttribute("data-n","1");
   el.innerHTML='<div class="card"><h2>Spořicí účet</h2><p>Každé pondělí dostaneš úrok 5 % z peněz na spoření. Z úroku se odečte poplatek 2 % pro majitele.</p><div class="big" style="font-size:1.8rem" id="sv'+w+'">0,00 Sh</div><small id="sn'+w+'"></small><label for="sa'+w+'">Částka (Sh)</label><input id="sa'+w+'" type="number" min="1" placeholder="100"><div class="row2"><button class="btn" data-sv="in" data-who="'+w+'">Vložit na spoření</button><button class="btn ghost" data-sv="out" data-who="'+w+'">Vybrat ze spoření</button></div><div class="msg" id="sm'+w+'" role="status"></div></div>';
 }
+
 function updSav(w,o){
   var sv=o.sav||0,nx=new Date(lastMon()+7*86400000+3600000);
   $("sv"+w).textContent=kc(sv);
@@ -362,7 +363,19 @@ function gallery(el,w,o){
   function buttons(list){return list.map(function(d){var lock=!cardUnlocked(o,d);return '<button class="gi'+(d.id===sel?' on':'')+'" data-cd="'+d.id+'" data-who="'+w+'"'+(lock?' data-lock="1"':'')+'><span class="sw" style="background:'+esc(d.css)+(lock?';opacity:.35':'')+'"></span><b>'+esc(d.n)+'</b><small>'+(d.owner?'jen majitel':lock?'🔒 od '+cardLimitLabel(d):d.staff?'jen tým':(d.min||d.minChips)?'odemčeno':'základní')+'</small></button>'}).join('')}
   el.innerHTML='<div class="card"><h2>Bankovní karty</h2><p>Odemčení podle zůstatku na běžném a spořicím účtu v Sh.</p><div class="gal">'+buttons(available.filter(d=>!d.custom&&!d.id.startsWith('casino_')))+'</div><h2 style="margin-top:24px">Kasino karty · za žetony</h2><p>Odemčení podle aktuálního zůstatku žetonů. Žetony se neodečítají. Při poklesu pod limit se použije základní karta; po doplnění žetonů se vybraný motiv vrátí.</p><div class="gal">'+buttons(available.filter(d=>d.id.startsWith('casino_')))+'</div><h2 style="margin-top:24px">Karty od grafika</h2><div class="gal">'+buttons(available.filter(d=>d.custom))+'</div><div class="msg" id="cm'+w+'"></div></div>';
 }
-
+function updateDate() {
+    const date = new Date();
+    date.setMonth(date.getMonth() + 6);
+    const maxDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    const input = document.getElementById("lautodate");
+    input.max = maxDate
+    input.addEventListener("change", () => {
+        if (input.value > maxDate) {
+            input.value = maxDate;
+        }
+    });
+}
+updateDate();
 function render(){
   if(!S.people[0])return;
   setCard($("cardA"),S.people[0].name,effCard(S.people[0]));gallery($("cgA"),"A",S.people[0]);savCard($("savA"),"A");updSav("A",S.people[0]);
@@ -563,7 +576,7 @@ $("spsave").onclick=async function(){
   try{var u=auth.currentUser;await reauthenticateWithCredential(u,EmailAuthProvider.credential(u.email,op));await updatePassword(u,np);$("sop").value="";$("snp").value="";m.className="msg ok";m.textContent="Heslo změněno."}
   catch(x){m.textContent=(x.code==="auth/invalid-credential"||x.code==="auth/wrong-password")?"Staré heslo není správně.":aerr(x.code)}
 };
-var LOAN_MAX=100000,LOAN_FEE=0.1,REDS=[1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36],RRC={red:"#c62828",black:"#222",green:"#1b7a4b"},RRN={red:"červená",black:"černá",green:"zelená"},rrHist=[],spinning=false;
+var LOAN_MAX=10000,LOAN_FEE=0.1,REDS=[1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36],RRC={red:"#c62828",black:"#222",green:"#1b7a4b"},RRN={red:"červená",black:"černá",green:"zelená"},rrHist=[],spinning=false;
 var quotaUntil=0;
 function errt(x){var code=String(x&&(x.code||x.message)||'');if(code.includes('resource-exhausted')){quotaUntil=Date.now()+300000;return 'Databáze má vyčerpaný limit požadavků. Obchod ani změnu nelze nyní potvrdit. Zkus to po obnovení limitu Firebase; opakované klikání nepomůže.'}return 'Nepovedlo se: '+code;}
 function renderLoan(){$("lvdebt").textContent=kc(myDoc.loan||0);var p=myDoc.loanPlan;$('lplanstatus').textContent=!(myDoc.loan>0)?'Nemáš žádný dluh.':p?'Plán: '+kc(p.amount)+' · '+({daily:'denně',weekly:'týdně',monthly:'měsíčně'}[p.frequency])+' · další splátka '+p.nextDate+' ve 20:00.':'U této půjčky ještě není nastavený plán splácení.';}
@@ -572,7 +585,7 @@ async function myAcct(){return (await db.doc("accounts/"+uid).get()).data()}
 function dueTime(date){return roundAt(Date.parse(date+'T12:00:00Z')).closesAt}
 function readLoanPlan(){
   var amount=Number($('lautoamount').value),date=$('lautodate').value,frequency=$('lautofreq').value;
-  if(!Number.isFinite(amount)||amount<=0||amount>110000||r2(amount)!==amount)throw Error('Zadej automatickou splátku od 0,01 do 110 000 Sh.');
+  if(!Number.isFinite(amount)||amount<=0||amount>110000||r2(amount)!==amount)throw Error('Zadej automatickou splátku od 0,01 do 11 000 Sh.');
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(Date.parse(date+'T12:00:00Z'))||dueTime(date)<=Date.now())throw Error('Vyber datum první splátky, jehož 20:00 ještě nenastalo.');
   if(!['daily','weekly','monthly'].includes(frequency))throw Error('Vyber četnost splácení.');
   return {amount,frequency,nextDate:date,anchorDay:Number(date.slice(8))};
@@ -613,7 +626,6 @@ async function payDueLoans(){
   })}}catch(e){$('lmsg').className='msg err';$('lmsg').textContent=errt(e)}finally{payingLoans=false}
 }
 function startLoanPayments(){var timer=setInterval(payDueLoans,60000);unsubs.push(()=>clearInterval(timer));}
-
 function amount(v){return Number.isSafeInteger(v)&&v>0&&v<=1000000000}
 function ownerId(){var o=accts.find(x=>x.role==='majitel');if(!o)throw Error('Účet majitele ještě není načtený. Zkus to za chvíli.');return o.id}
 function txlog(o,t,v){return [{id:crypto.randomUUID(),t:t,d:now(),a:v}].concat(o.tx||[]).slice(0,30)}
@@ -625,7 +637,7 @@ async function loanChange(mode){
       var ref=fdoc(fdb,'accounts',uid),sn=await tr.get(ref),me=sn.data(),debt=me.loan||0,v=mode==='all'?debt:entered;
       if(!Number.isFinite(v)||v<=0||r2(v)!==v)throw Error('Zadej kladnou částku, nejvýše na dvě desetinná místa.');
       if(mode==='take'){
-        if(v>LOAN_MAX)throw Error('Maximum půjčky je 100 000 Sh.');if(debt>0)throw Error('Nejdřív splať stávající půjčku.');
+        if(v>LOAN_MAX)throw Error('Maximum půjčky je 10 000 Sh.');if(debt>0)throw Error('Nejdřív splať stávající půjčku.');
         tr.update(ref,{bal:r2(me.bal+v),loan:r2(v*1.1),loanPlan:plan,loanAt:Date.now(),tx:txlog(me,'Půjčka od banky',v)});
       }else{
         if(debt<=0)throw Error('Nemáš žádnou půjčku.');v=Math.min(v,debt);if(v>me.bal)throw Error('Na účtu není dost peněz.');
