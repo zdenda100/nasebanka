@@ -1849,7 +1849,8 @@ document.addEventListener('submit',e=>{if(e.target.id==='nblogf'){e.preventDefau
    žádosti o peníze jdou přes kolekci messages. */
 const X=()=>me().nbx||{};
 let nbxLocal=null;const NBX=()=>Object.assign({},X(),nbxLocal||{});
-async function saveX(patch){var n=Object.assign({},NBX(),patch);nbxLocal=n;try{await updateDoc(fdoc(fdb,'accounts',uid),{nbx:n})}catch(e){toast('Nepodařilo se uložit: '+errt(e),false)}render(true)}
+/* ukládá jen změněné klíče (nbx.klíč), aby stará kopie z jiného okna nebo z mezipaměti nepřepsala zbytek */
+async function saveX(patch){var id=uid,up={};nbxLocal=Object.assign({},nbxLocal||{},patch);for(var k in patch)up['nbx.'+k]=patch[k]===undefined?null:patch[k];try{await updateDoc(fdoc(fdb,'accounts',id),up);if(nbxLocal&&id===uid)for(var k2 in patch)if(nbxLocal[k2]===patch[k2])delete nbxLocal[k2]}catch(e){toast('Nepodařilo se uložit: '+errt(e),false)}render(true)}
 let AUTO=false;{const c0=window.confirm;window.confirm=function(m){if(AUTO)return true;return c0(m)}}
 const nickOf=id=>((accts.find(a=>a.id===id)||{}).nbx||{}).nick||(id===uid?NBX().nick:'');
 /* --- formulářové okno --- */
