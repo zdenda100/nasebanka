@@ -2331,6 +2331,50 @@ Object.assign(A,{
  async regNo(b){var a=pendAcc.find(x=>x.id===b.dataset.v),v=await formModal('Zamítnout registraci'+(a?' · '+a.name:''),'<label class="field">Důvod (uvidí ho)<input name="why" maxlength="100" placeholder="Neznám tě, ozvi se mi ve škole"></label>','Zamítnout');if(!v)return;try{await setDoc(fdoc(fdb,'approvals',b.dataset.v),{ok:false,why:v.why.trim(),by:uid,byName:myN(),at:Date.now()});alog('Zamítl registraci · '+(a?a.name:''));toast('Registrace zamítnuta.')}catch(e){toast(errt(e),false)}render(true)}
 });
 
+/* ===================== ŠIROKÉ MONITORY + SERVIS ===================== */
+document.head.insertAdjacentHTML('beforeend','<style>'+
+'@media(min-width:1600px){#nbmain{max-width:1560px}}'+
+'@media(min-width:2000px){#nbmain{max-width:2000px;padding:32px 40px}#nb .g2{grid-template-columns:repeat(auto-fit,minmax(440px,1fr))}#nb .g3{grid-template-columns:repeat(auto-fit,minmax(380px,1fr))}#nb .r1{grid-template-columns:minmax(0,1fr) minmax(0,600px)}}'+
+'@media(min-width:2600px){#nbmain{max-width:none;zoom:1.1}#nb .g2{grid-template-columns:repeat(auto-fit,minmax(480px,1fr))}}'+
+'#nb .nbservis{position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:61;display:flex;gap:10px;align-items:center;padding:8px 16px;border-radius:999px;font-weight:800;font-size:13px;box-shadow:0 6px 24px rgba(0,0,0,.35);white-space:nowrap;max-width:calc(100vw - 24px);overflow:hidden;text-overflow:ellipsis}#nb .nbservis.on{background:linear-gradient(90deg,#ef4444,#f59e0b);color:#fff}#nb .nbservis.plan{background:linear-gradient(90deg,#3b82f6,#22d3ee);color:#06121f}#nb .nbservis svg{width:16px;height:16px;flex-shrink:0}#nb .nbservis~.nbdemo{top:52px}@media(max-width:700px){#nb .nbservis{top:auto;bottom:130px;font-size:12px}}#nb .servann{border-color:#f59e0b!important}'+
+'</style>');
+(function(){var m=document.querySelector('symbol#i-menu');if(m&&!document.getElementById('i-wrench'))m.insertAdjacentHTML('beforebegin','<symbol id="i-wrench" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.1L3.6 17.1a1.5 1.5 0 0 0 0 2.1l1.2 1.2a1.5 1.5 0 0 0 2.1 0l5.7-5.7a4 4 0 0 0 5.1-5.4l-2.6 2.6-2.4-.5-.5-2.4 2.5-2.7z"/></symbol>')})();
+const isStaff=()=>isAdmin||['banka','vyvojar'].includes(myRole);
+ADM.splice(ADM.findIndex(x=>x[0]==='zadosti')+1,0,['servis','Servis','wrench',()=>isStaff()]);
+let servis=[],servUid=null,servUn=null;
+setInterval(()=>{if(servUid===uid)return;servUn&&servUn();servUn=null;servis=[];servUid=uid;if(!uid)return;servUn=fsnap(query(fcol(fdb,'announcements'),where('servis','==',true)),s=>{servis=s.docs.map(d=>({...d.data(),id:d.id}));servTick(true);if(['servis','oznameni'].includes(route()))render(true)},()=>{})},1000);
+const hm=t=>new Date(t).toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'});
+const dhm=t=>{var d=new Date(t),n=new Date(),tm=new Date();tm.setDate(n.getDate()+1);return (d.toDateString()===n.toDateString()?'dnes':d.toDateString()===tm.toDateString()?'zítra':d.toLocaleDateString('cs-CZ',{day:'numeric',month:'numeric'}))+' v '+hm(t)};
+const inMin=t=>{var m=Math.round((t-Date.now())/60000);return m<60?m+' min':Math.floor(m/60)+' h'+(m%60?' '+m%60+' min':'')};
+const servNow=()=>servis.filter(s=>s.from<=Date.now()&&(!s.to||s.to>Date.now())).sort((a,b)=>a.from-b.from)[0];
+const servNext=()=>servis.filter(s=>s.from>Date.now()).sort((a,b)=>a.from-b.from)[0];
+const servSeen=new Set();
+function servTick(){var now=servNow(),nx=servNext(),b=document.querySelector('#nb .nbservis'),html='',cls='';
+ if(now){cls='on';html=I('wrench')+'<span>Probíhá servis'+(now.to?' · končí v '+hm(now.to)+' (za '+inMin(now.to)+')':'')+(now.text?' · '+esc(now.text):'')+'</span>'}
+ else if(nx&&nx.from-Date.now()<48*36e5){cls='plan';html=I('wrench')+'<span>Plánovaný servis '+dhm(nx.from)+(nx.to?'–'+hm(nx.to):'')+' · za '+inMin(nx.from)+'</span>'}
+ if(!html||!uid){b&&b.remove()}else{if(!b){$('nb').insertAdjacentHTML('afterbegin','<div class="nbservis"></div>');b=document.querySelector('#nb .nbservis')}b.className='nbservis '+cls;if(b.innerHTML!==html)b.innerHTML=html}
+ /* připomínky: když začne, den předem, hodinu, 15 a 5 minut předem */
+ if(now&&!servSeen.has(now.id+'on')){servSeen.add(now.id+'on');if(!isStaff())askModal('Právě probíhá servis banky'+(now.to?', skončí v '+hm(now.to):'')+'. Banka funguje, ale něco může chvíli zlobit.'+(now.text?' ('+now.text+')':''),'Probíhá servis')}
+ if(nx){var left=nx.from-Date.now();for(var [k,lim] of [['d',24*36e5],['h',36e5],['15',15*6e4],['5',5*6e4]])if(left<=lim&&!servSeen.has(nx.id+k)){[['d',24*36e5],['h',36e5],['15',15*6e4],['5',5*6e4]].forEach(([k2,l2])=>{if(l2>=lim)servSeen.add(nx.id+k2)});toast('Připomínka: servis banky začne '+dhm(nx.from)+' (za '+inMin(nx.from)+').');break}}}
+setInterval(servTick,15000);
+/* Oznámení: servis nahoře, v seznamu se neopakuje */
+{const oz=P.oznameni;P.oznameni=()=>{var keep=anns;anns=anns.filter(a=>!a.servis);var h;try{h=oz()}finally{anns=keep}var l=servis.filter(s=>!s.to||s.to>Date.now()).sort((a,b)=>a.from-b.from);if(!l.length)return h;
+ return afterTop(h,l.map(s=>{var on=s.from<=Date.now();return '<section class="glass box servann"><div class="sec"><h3>'+I('wrench')+' '+(on?'Probíhá servis':'Plánovaný servis')+'</h3><span class="role">'+(on?(s.to?'končí v '+hm(s.to):'do odvolání'):dhm(s.from))+'</span></div><p class="sm" style="margin:0">'+(on?'Banka funguje, ale něco může chvíli zlobit.':'Servis proběhne '+dhm(s.from)+(s.to?' až '+hm(s.to):'')+'. Připomeneme ti ho předem.')+(s.text?' '+esc(s.text):'')+'</p></section>'}).join(''))}}
+/* stránka Servis (majitel, Banka, vývojář) */
+const dtl=t=>{var d=new Date(t-new Date(t).getTimezoneOffset()*6e4);return d.toISOString().slice(0,16)};
+P.servis=()=>{if(!isStaff())return P.ucet();var now=servNow(),l=servis.filter(s=>!s.to||s.to>Date.now()).sort((a,b)=>a.from-b.from);
+ return topbar('Servis',now?'Právě probíhá':'Údržba banky')+
+ '<section class="glass box'+(now?' servann':'')+'"><div class="sec"><h3>'+I('wrench')+' '+(now?'Servis právě probíhá':'Spustit servis hned')+'</h3>'+(now?'<button class="cta sm" data-act="servEnd" data-v="'+esc(now.id)+'">Ukončit servis</button>':'')+'</div>'+
+ (now?'<p class="sm" style="margin:0">Lidé se můžou připojit, ale všude vidí „Probíhá servis“'+(now.to?' a že končí v '+hm(now.to):'')+'.</p>':'<p class="mute sm">Lidé se pořád můžou připojit, jen všude uvidí pruh „Probíhá servis“ a kdy skončí.</p><div class="g2" style="gap:12px"><label class="field">Jak dlouho<select id="nbsvd"><option value="15">15 minut</option><option value="30">30 minut</option><option value="60" selected>1 hodinu</option><option value="120">2 hodiny</option><option value="0">do odvolání</option></select></label><label class="field">Proč (nepovinné)<input id="nbsvt" maxlength="80" placeholder="Opravujeme kasino"></label></div><button class="cta" data-act="servStart">'+I('wrench')+'Spustit servis</button>')+'</section>'+
+ '<div class="g2"><section class="glass box"><h3>Naplánovat servis</h3><p class="mute sm">Všem se ukáže upozornění dopředu a připomene se den, hodinu, 15 a 5 minut předem.</p><div class="g2" style="gap:12px"><label class="field">Začátek<input id="nbsvf" type="datetime-local" value="'+dtl(Date.now()+36e5)+'"></label><label class="field">Konec<input id="nbsvto" type="datetime-local" value="'+dtl(Date.now()+2*36e5)+'"></label></div><label class="field">Proč (nepovinné)<input id="nbsvt2" maxlength="80" placeholder="Velká aktualizace"></label><button class="gbtn" data-act="servPlan">'+I('clock')+'Naplánovat</button></section>'+
+ '<section class="glass box"><div class="sec"><h3>Naplánované</h3><small class="mute">'+l.length+'</small></div>'+(l.map(s=>'<div class="trow"><div class="ic">'+I('wrench')+'</div><div class="m"><b>'+dhm(s.from)+(s.to?' – '+hm(s.to):' · do odvolání')+'</b><small>'+(s.from<=Date.now()?'probíhá':'za '+inMin(s.from))+(s.text?' · '+esc(s.text):'')+(s.byName?' · '+esc(s.byName):'')+'</small></div><button class="gbtn sm" data-act="servEnd" data-v="'+esc(s.id)+'">'+(s.from<=Date.now()?'Ukončit':'Zrušit')+'</button></div>').join('')||'<div class="emp">Nic naplánováno.</div>')+'</section></div>'};
+async function servAdd(from,to,text){try{await addDoc(fcol(fdb,'announcements'),{servis:true,from,to:to||null,text:text||'',at:Date.now(),by:uid,byName:myN()});alog('Servis '+dhm(from)+(to?'–'+hm(to):''));return true}catch(e){toast(errt(e),false);return false}}
+Object.assign(A,{
+ async servStart(){var m=Number($('nbsvd').value),t=$('nbsvt').value.trim();if(!await askModal('Spustit servis'+(m?' na '+(m<60?m+' minut':m/60+' h'):' do odvolání')+'? Všichni uvidí „Probíhá servis“.','Servis'))return;if(await servAdd(Date.now(),m?Date.now()+m*6e4:null,t))toast('Servis běží.')},
+ async servPlan(){var f=new Date($('nbsvf').value).getTime(),to=new Date($('nbsvto').value).getTime(),t=$('nbsvt2').value.trim();if(!f||f<Date.now()-6e4)return toast('Začátek musí být v budoucnu.',false);if(!to||to<=f)return toast('Konec musí být po začátku.',false);if(await servAdd(f,to,t))toast('Servis naplánován na '+dhm(f)+'.')},
+ async servEnd(b){var s=servis.find(x=>x.id===b.dataset.v);if(!s)return;var on=s.from<=Date.now();if(!await askModal(on?'Ukončit servis teď?':'Zrušit naplánovaný servis?','Servis'))return;try{await deleteDoc(fdoc(fdb,'announcements',s.id));alog((on?'Ukončil':'Zrušil')+' servis');toast(on?'Servis ukončen.':'Servis zrušen.')}catch(e){toast(errt(e),false)}}
+});
+
 render(true);
 })();
 
