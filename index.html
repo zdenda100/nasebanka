@@ -432,6 +432,25 @@ body.nbon{background:radial-gradient(900px 520px at 90% -10%,var(--g1),transpare
 #nb #designmsg{margin-top:10px;font-weight:600}
 #nb #allhistory{max-height:620px}
 @media(max-width:899px){#nb .chat{grid-template-columns:1fr}#nb .chat.open .clist{display:none}#nb .chat:not(.open) .thread{display:none}}
+#nb .nbmodal{position:fixed;inset:0;z-index:98;background:rgba(0,0,0,.55);display:grid;place-items:center;padding:16px;backdrop-filter:blur(3px)}
+#nb .nbmodal[hidden]{display:none}
+#nb .nbmodal .in{width:min(420px,100%);padding:24px;border-radius:22px;background:var(--bg);border:1px solid var(--line);box-shadow:0 24px 60px rgba(0,0,0,.5)}
+#nb .nbmodal p{color:var(--ink);font-size:15px;margin:0 0 18px}
+/* převzaté ovládací prvky (studio karet, stírací los, dialogy) v novém stylu */
+#nb input[type=file]{width:100%;padding:8px;border-radius:12px;border:1px solid var(--line);background:var(--input);color:var(--mute);font-size:13px}
+#nb input[type=file]::file-selector-button{border:1px solid var(--line);background:var(--card2);color:var(--ink);border-radius:10px;padding:8px 12px;margin-right:10px;font-weight:600;cursor:pointer;font-family:inherit}
+#nb #designpreview{max-width:340px;border-radius:20px;box-shadow:0 10px 40px var(--glow);margin:0 auto}
+#nb #designsave{width:100%;padding:13px;border-radius:14px;margin-top:6px}
+#nb .field label,#nb label:has(#designdark){display:flex;align-items:center;gap:8px;color:var(--ink);font-weight:600;font-size:13px;margin:4px 0 8px}
+#nb #designdark{width:auto}
+#nb #dsearch{width:100%;padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:var(--input);color:var(--ink);margin:0 0 8px}
+#nb .btn{background:linear-gradient(90deg,var(--a1),var(--a2));color:var(--onbrand);border:0;border-radius:14px;padding:12px 16px;font-weight:700;cursor:pointer;box-shadow:0 6px 22px var(--glow)}
+#nb .btn.ghost{background:var(--card2);color:var(--ink);border:1px solid var(--line);box-shadow:none}
+#nb #scratchticket{margin-top:12px}
+#nb #scratchticket .btn{width:100%}
+#nb #scratchcaption{color:var(--mute);font-size:13px;text-align:center;margin:8px 0}
+dialog .btn{border-radius:14px!important}
+dialog input{width:100%}
 </style>
 </head>
 <body>
@@ -1494,6 +1513,16 @@ const st={pre:null,stake:1,sel:null,cat:'all',q:'',sheet:false};
 let tt;function toast(m,ok=true){var t=$('nbtoast');t.className='nbtoast show '+(ok?'ok':'err');t.textContent=m;clearTimeout(tt);tt=setTimeout(()=>t.className='nbtoast',3200)}
 function watchMsg(id,timeout){return new Promise(res=>{var el=$(id);if(!el)return res(null);var done=false,ob=new MutationObserver(()=>{var t=el.textContent.trim();if(!t||/…$|\.\.\.$/.test(t))return;done=true;ob.disconnect();res({t,ok:!/err/.test(el.className)})});ob.observe(el,{childList:true,characterData:true,subtree:true});setTimeout(()=>{if(!done){ob.disconnect();res(null)}},timeout||25000)})}
 async function proxy(btn,msg,setup){if(setup)setup();var w=watchMsg(msg);var b=$(btn);if(!b||b.disabled){toast('Teď to nejde, zkus to za chvilku.',false);return}b.click();var r=await w;if(r)toast(r.t,r.ok);setTimeout(()=>render(true),250);return r}
+/* potvrzovací okno v novém vzhledu místo okna prohlížeče: původní kód zavolá confirm(),
+   my akci na chvíli zastavíme, ukážeme vlastní okno a po potvrzení ji spustíme znovu (už schválenou) */
+$('nb').insertAdjacentHTML('beforeend','<div class="nbmodal" id="nbmodal" hidden><div class="in"><div class="gi3">'+I('check')+'</div><h3 id="nbmt">Potvrdit</h3><p id="nbmx" class="mute"></p><div class="r2"><button class="gbtn" id="nbmno" type="button">Zrušit</button><button class="cta" id="nbmok" type="button">Potvrdit</button></div></div></div>');
+let CUR=null,lastBtn=null,pendingConfirm=false;const approved=new Map();
+document.addEventListener('click',e=>{var b=e.target.closest&&e.target.closest('button');if(b&&!b.closest('#nbmodal'))lastBtn=b},true);
+function askModal(msg,title){return new Promise(res=>{var m=$('nbmodal');$('nbmx').textContent=msg;$('nbmt').textContent=title||(/heslo/i.test(msg)?'Reset hesla':/reset|všem|všech/i.test(msg)?'Opravdu?':'Potvrdit');m.hidden=false;const done=v=>{m.hidden=true;$('nbmok').onclick=$('nbmno').onclick=m.onclick=null;res(v)};$('nbmok').onclick=()=>done(true);$('nbmno').onclick=()=>done(false);m.onclick=e=>{if(e.target===m)done(false)};setTimeout(()=>$('nbmok').focus(),30)})}
+window.confirm=function(msg){msg=String(msg);var t=approved.get(msg);if(t&&Date.now()-t<20000)return true;var b=lastBtn,rerun=CUR||(()=>b&&b.click());pendingConfirm=true;setTimeout(()=>askModal(msg).then(ok=>{pendingConfirm=false;if(ok){approved.set(msg,Date.now());rerun()}}),0);return false};
+window.alert=m=>toast(String(m),false);
+function oldList(id,limit){var e=$(id),rows=e?[...e.querySelectorAll('.tx')].slice(0,limit||999):[];if(!rows.length)return '<div class="emp">'+esc(e&&e.textContent.trim()||'Zatím nic.')+'</div>';
+ return rows.map(r=>{var b=r.querySelector('b'),sm=r.querySelector('small'),am=r.children.length>1?r.lastElementChild:null,neg=!!am&&(am.classList.contains('neg')||/^[-−]/.test(am.textContent.trim())||!!am.querySelector('.neg'));return '<div class="trow"><div class="ic '+(neg?'n':'p')+'">'+I(neg?'send':'recv')+'</div><div class="m"><b>'+esc(b?b.textContent:r.textContent)+'</b><small>'+esc(sm?sm.textContent:'')+'</small></div><div class="a '+(neg?'neg':'pos')+'">'+esc(am?am.textContent:'')+'</div></div>'}).join('')}
 function setVal(id,v){var e=$(id);if(!e)return;e.value=v;e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}))}
 const me=()=>myDoc&&Object.keys(myDoc).length?myDoc:(accts.find(a=>a.id===uid)||{});
 const myN=()=>myName||me().name||'';
@@ -1566,7 +1595,7 @@ P.kasino=()=>{var d=me(),c=chipBalance(d);
  return topbar('Kasino',chips(c))+'<div class="g2">'+
  '<section class="glass box center"><small class="mute">Tvoje žetony</small><div class="bnum gtext">'+chips(c)+'</div><small class="mute">= '+kc(c*10)+' · 1 žeton = 10 Sh · směna s poplatkem 2 %</small><label class="field" style="margin-top:16px;text-align:left">Počet žetonů<input id="nbcx" type="number" min="1" value="10" inputmode="numeric"></label><div class="r2"><button class="gbtn" data-act="cxbuy">Koupit</button><button class="gbtn" data-act="cxsell">Prodat</button></div><small class="mute sm" style="display:block;margin-top:10px">Na účtu máš '+kc(d.bal||0)+'</small></section>'+
  '<section class="glass box"><h3>Automat</h3><div class="reels '+($('slotspin').disabled?'spin':'')+'" id="nbreels">'+reelsHtml()+'</div><div class="stake">'+[1,5,10,25,50].map(v=>'<button data-act="stake" data-v="'+v+'" class="'+(st.stake==v?'on':'')+'">'+v+' ž.</button>').join('')+'</div><button class="cta" data-act="spin" '+($('slotspin').disabled?'disabled':'')+'>Zatočit · '+st.stake+' ž.</button><p class="mute sm center" style="margin:10px 0 0">3 stejné až ×20 · 2 stejné ×2 · výplata zahrnuje sázku</p></section>'+
- '<section class="glass box"><div class="gi3">'+I('ticket')+'</div><h3 style="margin:0">Večerní loterie</h3><small class="mute">Losování ve 20:00 · los 2 ž.</small><div class="cd gtext" id="nbcd">--:--:--</div><p class="mute sm">'+esc($('lotinfo').textContent)+'</p><button class="gbtn" data-act="lot" '+($('lotbuy').disabled?'disabled':'')+'>Koupit los</button><div class="lg" style="margin-top:12px">'+$('lotresults').innerHTML+'</div></section>'+
+ '<section class="glass box"><div class="gi3">'+I('ticket')+'</div><h3 style="margin:0">Večerní loterie</h3><small class="mute">Losování ve 20:00 · los 2 ž.</small><div class="cd gtext" id="nbcd">--:--:--</div><p class="mute sm">'+esc($('lotinfo').textContent)+'</p><button class="gbtn" data-act="lot" '+($('lotbuy').disabled?'disabled':'')+'>Koupit los</button><div style="margin-top:10px">'+oldList('lotresults',5)+'</div></section>'+
  '<section class="glass box"><div class="gi3">'+I('spark')+'</div><h3 style="margin:0">Stírací los · Zlatá šance</h3><small class="mute">Výhra až 60 žetonů · los 3 ž.</small>'+slot('#scratchticket')+'<button class="cta" data-act="scratchBuy" style="margin-top:12px" '+($('scratchbuy').disabled?'disabled':'')+'>'+esc($('scratchbuy').textContent)+'</button><p class="mute sm" style="margin:10px 0 0">Bez výhry 60 % · 3 ž. 20 % · 6 ž. 12 % · 12 ž. 6 % · 30 ž. 1,5 % · 60 ž. 0,5 %</p></section>'+
  '<section class="glass box" style="grid-column:1/-1"><div class="sec"><h3>Pohyby žetonů</h3><small class="mute sm">'+(d.casinoTx||[]).length+'</small></div>'+((d.casinoTx||[]).slice(0,12).map(t=>trow(t,1)).join('')||'<div class="emp">Zatím nic.</div>')+'</section>'+
  '</div>'};
@@ -1579,7 +1608,7 @@ P.burza=()=>{var A=INVEST_ASSETS,a=investAsset(st.sel||investSelected)||A[0],p=n
  '<section class="glass box"><small class="mute">'+esc(CATS[a.category]||'')+' · '+esc(a.symbol)+'</small><h3 style="font-size:22px;margin:2px 0 0">'+esc(a.name)+'</h3><div class="bnum md">'+kc(p)+'</div><small class="'+(ch>=0?'pos':'neg')+'" style="font-weight:700">'+(ch>=0?'+':'')+ch.toFixed(2).replace('.',',')+' % za poslední krok</small>'+chart(h)+'<p class="mute sm">Vlastníš '+(own?own.qty:0)+' ks'+(own?' · '+kc(own.qty*p):'')+' · na účtu '+kc(me().bal||0)+'</p>'+
  '<label class="field">Počet kusů<input id="nbqty" type="number" min="1" value="1" inputmode="numeric"></label><div class="r2"><button class="cta" data-act="buy" '+(a.category==='fiction'?'disabled title="Vymyšlené firmy už nejde kupovat"':'')+'>Koupit</button><button class="gbtn" data-act="sell">Prodat</button></div></section></div>'+
  '<div class="g2"><section class="glass box"><div class="sec"><h3>Moje portfolio</h3><b class="'+($('investgain')&&/-/.test($('investgain').textContent)?'neg':'pos')+'">'+esc($('investgain')?$('investgain').textContent:'')+'</b></div><div class="bnum md">'+kc(pv())+'</div>'+chart(pfHist())+holdings()+'</section>'+
- '<section class="glass box"><h3>Poslední obchody</h3><div class="lg">'+$('investhistory').innerHTML+'</div></section></div>'};
+ '<section class="glass box"><h3>Poslední obchody</h3>'+oldList('investhistory',12)+'</section></div>'};
 P.tym=()=>{var ord={majitel:0,zastupce:1,vyvojar:2,grafik:3,zakaznik:4},l=accts.slice().sort((a,b)=>((ord[a.role]??4)-(ord[b.role]??4))||String(a.name).localeCompare(b.name,'cs'));
  return topbar('Tým',l.length+' lidí v bance')+'<section class="glass box"><div class="sec" style="margin-bottom:12px"><div class="psearch" style="flex:1;margin:0">'+I('search')+'<input id="nbts" placeholder="Hledej jméno nebo roli" autocomplete="off"></div><small class="mute sm" id="nbtc" style="white-space:nowrap">'+l.length+' lidí</small></div><div class="people">'+
  l.map(a=>'<div class="person" data-q="'+esc(nrm(a.name+' '+lbl(a.role)))+'"><span class="avt">'+esc((a.name[0]||'?').toUpperCase())+'</span><div class="m"><b>'+esc(a.name)+(a.id===uid?' <small class="mute">(ty)</small>':'')+'</b><span class="role k-'+esc(a.role||'zakaznik')+'">'+lbl(a.role||'zakaznik')+'</span></div>'+(a.id!==uid?'<button class="gbtn sm" data-act="payTo" data-v="'+esc(a.id)+'">'+I('send')+'Poslat</button>':'')+'</div>').join('')+'</div></section>'};
@@ -1630,7 +1659,7 @@ P['studio-karet']=()=>{if(!vis('tdesign'))return P.ucet();var dark=$('designdark
 const reqRow=r=>'<div class="person"><span class="avt">'+esc((r.name||'?')[0].toUpperCase())+'</span><div class="m"><b>'+esc(r.name)+'</b><small class="mute" style="display:block;font-size:12px">'+(r.type==='register'?'Registrace':'Přihlášení')+' · '+new Date(r.at).toLocaleString('cs-CZ')+'</small></div>'+(r.type==='register'?'<span class="role">nový</span>':'')+'</div>';
 P.zadosti=()=>{if(!isAdmin)return P.ucet();var l=reqs.filter(r=>r.type==='register').sort((a,b)=>b.at-a.at);return topbar('Žádosti','Nové registrace')+'<section class="glass box"><p class="mute sm">Noví lidé, kteří se zaregistrovali. Účet se jim zatím vytvoří hned; schvalování přijde s dalším krokem (pravidla Firebase).</p><div class="people">'+(l.map(reqRow).join('')||'<div class="emp">Žádné registrace.</div>')+'</div></section>'};
 P.prihlaseni=()=>{if(!vis('tactivity'))return P.ucet();var l=reqs.slice().sort((a,b)=>b.at-a.at);return topbar('Přihlášení','Poslední aktivita každého')+'<section class="glass box"><div class="people">'+(l.map(reqRow).join('')||'<div class="emp">Zatím žádná aktivita.</div>')+'</div></section>'};
-P.historie=()=>{if(!vis('thistory'))return P.ucet();if(typeof renderAllHistory==='function')setTimeout(renderAllHistory,30);return topbar('Historie všech','Všechny uložené pohyby')+'<section class="glass box"><div class="g2" style="gap:12px"><label class="field">Člověk'+slot('#historyperson')+'</label><label class="field">Typ pohybů'+slot('#historykind')+'</label></div><button class="gbtn sm" data-act="oldClick" data-v="refreshhistory">Obnovit historii</button><div style="margin-top:12px">'+slot('#allhistory')+'</div></section>'};
+P.historie=()=>{if(!vis('thistory'))return P.ucet();if(typeof renderAllHistory==='function')setTimeout(renderAllHistory,30);return topbar('Historie všech','Všechny uložené pohyby')+'<section class="glass box"><div class="g2" style="gap:12px"><label class="field">Člověk'+slot('#historyperson')+'</label><label class="field">Typ pohybů'+slot('#historykind')+'</label></div><button class="gbtn sm" data-act="oldClick" data-v="refreshhistory">Obnovit historii</button><div style="margin-top:12px;max-height:640px;overflow-y:auto;padding-right:6px">'+oldList('allhistory',300)+'</div></section>'};
 
 /* ---------- Zprávy (Firebase: kolekce messages) ---------- */
 let chIn=[],chOut=[],chUns=[],chUid=null;st.chat=null;
@@ -1684,7 +1713,7 @@ const A={
  pickToggle(){pickOpen(!$('nbpicker').classList.contains('open'))},
  pick(b){st.pre=b.dataset.v;pickOpen(false);render(true);setTimeout(()=>$('nbamt')&&$('nbamt').focus(),50)},
  payTo(b){st.pre=b.dataset.v;go('platby')},
- async pay(b){var v=Number($('nbamt').value),note=$('nbnote').value.trim();if(!st.pre){pickOpen(true);return toast('Vyber příjemce.',false)}if(!(v>0))return toast('Zadej částku.',false);b.disabled=true;try{var e=await sendMoney(st.pre,v,note);if(e)toast(e,/zrušena/.test(e)?true:false);else{toast('Platba odeslána: '+kc(v));$('nbamt').value='';$('nbnote').value='';if(typeof refreshOne==='function')refreshOne(st.pre).catch(()=>{})}}catch(x){toast(errt(x),false)}finally{b.disabled=false;setTimeout(()=>render(true),300)}},
+ async pay(b){var v=Number($('nbamt').value),note=$('nbnote').value.trim();if(!st.pre){pickOpen(true);return toast('Vyber příjemce.',false)}if(!(v>0))return toast('Zadej částku.',false);b.disabled=true;CUR=()=>A.pay(b);try{var e=await sendMoney(st.pre,v,note);CUR=null;if(e){if(!(pendingConfirm&&/zrušena/.test(e)))toast(e,false)}else{toast('Platba odeslána: '+kc(v));$('nbamt').value='';$('nbnote').value='';if(typeof refreshOne==='function')refreshOne(st.pre).catch(()=>{})}}catch(x){toast(errt(x),false)}finally{b.disabled=false;setTimeout(()=>render(true),300)}},
  cxbuy(){var v=$('nbcx').value;proxy('cxbuy','cxmsg',()=>setVal('cxamount',v))},
  cxsell(){var v=$('nbcx').value;proxy('cxsell','cxmsg',()=>setVal('cxamount',v))},
  stake(b){st.stake=Number(b.dataset.v);render(true)},
@@ -1719,7 +1748,7 @@ const A={
  async chatSend(){var i=$('nbchat'),t=i.value.trim();if(!t||!st.chat)return;i.value='';try{await addDoc(fcol(fdb,'messages'),{from:uid,to:st.chat,text:t.slice(0,500),at:Date.now(),fromName:myN(),read:false});setTimeout(()=>{render(true);var m=$('nbmsgs');if(m)m.scrollTop=m.scrollHeight;$('nbchat')&&$('nbchat').focus()},250)}catch(x){i.value=t;toast('Zprávu se nepodařilo poslat: '+errt(x),false)}},
 };
 ['bankresetdialog','resetdialog'].forEach(id=>{var d=$(id);if(d)document.body.appendChild(d)});
-async function sav(dir){var v=Number($('nbsavamt').value);if(!(v>0))return toast('Zadej částku.',false);if(!confirm((dir==='in'?'Vložit na spoření ':'Vybrat ze spoření ')+kc(v)+'? Poplatek '+kc(isAdmin?0:feeAmount(v))+'.'))return;try{await moveSavings(dir,v);toast((dir==='in'?'Vloženo na spoření: ':'Vybráno ze spoření: ')+kc(v))}catch(x){toast(errt(x),false)}setTimeout(()=>render(true),300)}
+async function sav(dir){var v=Number($('nbsavamt').value);if(!(v>0))return toast('Zadej částku.',false);if(!await askModal((dir==='in'?'Vložit na spoření ':'Vybrat ze spoření ')+kc(v)+'? Poplatek '+kc(isAdmin?0:feeAmount(v))+'.','Spoření'))return;try{await moveSavings(dir,v);toast((dir==='in'?'Vloženo na spoření: ':'Vybráno ze spoření: ')+kc(v))}catch(x){toast(errt(x),false)}setTimeout(()=>render(true),300)}
 document.addEventListener('click',e=>{
  if(e.target.id==='nbsheet'){$('nbsheet').classList.remove('open');return}
  var pk=$('nbpicker');if(pk&&pk.classList.contains('open')&&!pk.contains(e.target))pickOpen(false);
@@ -1736,7 +1765,7 @@ document.addEventListener('input',e=>{var t=e.target;
 document.addEventListener('change',e=>{var t=e.target;if(t.id==='nbcat'){st.cat=t.value;render(true)}
  if(t.id==='nbnewchat'&&t.value){st.chat=t.value;render(true);setTimeout(()=>$('nbchat')&&$('nbchat').focus(),50)}
  if(t.classList.contains('nbrole')){var row=document.querySelectorAll('#'+t.dataset.l+' .prow')[+t.dataset.ri],os=row&&row.querySelector('select.rs');if(os){var w=watchMsg(t.dataset.l==='plist'?'amsg':'dmsg');os.value=t.value;os.dispatchEvent(new Event('change',{bubbles:true}));w.then(r=>{if(r)toast(r.t,r.ok);setTimeout(()=>render(true),300)})}}if(t.id==='nbsee'){$('nbp').type=t.checked?'text':'password'}});
-document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='nbchat'){e.preventDefault();A.chatSend()}if(e.key==='Escape'){$('nbsheet').classList.remove('open');pickOpen(false)}if(e.key==='Enter'&&e.target.id==='nbps'){var f=document.querySelector('#nbpl .prw');if(f){e.preventDefault();A.pick(f)}}});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='nbchat'){e.preventDefault();A.chatSend()}if(e.key==='Escape'&&!$('nbmodal').hidden){$('nbmno').click();return}if(e.key==='Escape'){$('nbsheet').classList.remove('open');pickOpen(false)}if(e.key==='Enter'&&e.target.id==='nbps'){var f=document.querySelector('#nbpl .prw');if(f){e.preventDefault();A.pick(f)}}});
 document.addEventListener('submit',e=>{if(e.target.id==='nblogf'){e.preventDefault();setVal('u',$('nbu').value);setVal('p',$('nbp').value);$('nblerr').textContent='';$('go').click()}if(e.target.id==='nbregf'){e.preventDefault();setVal('rn',$('nbrn').value);setVal('rp',$('nbrp').value);$('nbrerr').textContent='';$('doreg').click()}});
 render(true);
 })();
