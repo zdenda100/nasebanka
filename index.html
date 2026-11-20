@@ -7,7 +7,10 @@
 <link rel="icon" href="ikona.svg" type="image/svg+xml">
 <meta name="theme-color" content="#0a0b14">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script>/* adresy typu /nasebanka/nastaveni: 404.html sem přesměruje a tady se adresa vrátí */(function(){try{var r=sessionStorage.getItem('nb-redirect');if(r){sessionStorage.removeItem('nb-redirect');history.replaceState(null,'',r)}}catch(e){}})();</script>
+<script>/* adresy typu /nasebanka/nastaveni: 404.html sem přesměruje a tady se adresa vrátí */(function(){try{var r=sessionStorage.getItem('nb-redirect');if(r){sessionStorage.removeItem('nb-redirect');history.replaceState(null,'',r)}}catch(e){}
+/* GitHub drží starou verzi až 10 minut: když je na serveru novější, načte se sama */
+try{var u=new URL(location.href);if(u.searchParams.has('v')){u.searchParams.delete('v');history.replaceState(null,'',u.pathname+u.search+u.hash)}}catch(e){}
+if(location.protocol==='https:')fetch(location.pathname.replace(/[^/]*$/,'')+'index.html?nocache='+Date.now(),{method:'HEAD',cache:'no-store'}).then(r=>{var lm=Date.parse(r.headers.get('last-modified')||''),mine=Date.parse(document.lastModified);if(lm&&mine&&lm-mine>5000&&!sessionStorage.getItem('nb-reload-'+lm)){sessionStorage.setItem('nb-reload-'+lm,'1');location.replace(location.pathname+'?v='+lm+location.hash)}}).catch(()=>{})})();</script>
 <style>
 :root,:root[data-theme="dark"]{--a1:#22d3ee;--a2:#a855f7;--bg:#0a0b14;--g1:#3b1d6e;--g2:#0b4a5e;--card:rgba(255,255,255,.05);--card2:rgba(255,255,255,.08);--line:rgba(255,255,255,.1);--ink:#ecedf6;--mute:#9aa0b8;--brand:#a855f7;--onbrand:#0a0b14;--acc:#facc15;--neg:#f472b6;--pos:#4ade80;--glow:rgba(168,85,247,.32);--hi:#c4b5fd;--input:rgba(0,0,0,.3);--nav:rgba(12,13,24,.86);color-scheme:dark;box-sizing:border-box}
 @media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--a1:#0891b2;--a2:#9333ea;--bg:#f6f4ff;--g1:#e2d4ff;--g2:#c9f1fa;--card:rgba(255,255,255,.75);--card2:#fff;--line:rgba(83,60,170,.14);--ink:#17142b;--mute:#6b6889;--brand:#9333ea;--onbrand:#fff;--acc:#ca8a04;--neg:#db2777;--pos:#059669;--glow:rgba(147,51,234,.16);--hi:#7e22ce;--input:#fff;--nav:rgba(255,255,255,.9);color-scheme:light}}

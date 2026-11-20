@@ -6,5 +6,5 @@
 (function(){var p=location.pathname,m=p.match(/^(.*?\/nasebanka\/)/i),base=m?m[1]:'/';
  if(/\/prototyp\//.test(p)){document.write('Stránka nenalezena.');return}
  try{sessionStorage.setItem('nb-redirect',p+location.search+location.hash)}catch(e){}
- location.replace(base)})();
+ location.replace(base+'?v='+Date.now())})();
 </script></head><body></body></html>
