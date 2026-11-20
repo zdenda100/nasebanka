@@ -754,10 +754,10 @@ html.hc{--mute:#cfd3e6;--line:rgba(255,255,255,.35)}
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,EmailAuthProvider,reauthenticateWithCredential,updatePassword,onAuthStateChanged,setPersistence,browserLocalPersistence} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {runTransaction as _fbTx,getFirestore,initializeFirestore,persistentLocalCache,persistentMultipleTabManager,getDocsFromServer as _getDocsFromServer,writeBatch as _writeBatch,deleteField,doc as fdoc,getDoc as _getDoc,getDocs as _getDocs,setDoc as _setDoc,updateDoc as _updateDoc,deleteDoc as _deleteDoc,addDoc as _addDoc,query,where,orderBy,limit,onSnapshot as _fsnap,collection as fcol} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {runTransaction as _fbTx,getFirestore,initializeFirestore,persistentLocalCache,persistentMultipleTabManager,memoryLocalCache,getDocsFromServer as _getDocsFromServer,writeBatch as _writeBatch,deleteField,doc as fdoc,getDoc as _getDoc,getDocs as _getDocs,setDoc as _setDoc,updateDoc as _updateDoc,deleteDoc as _deleteDoc,addDoc as _addDoc,query,where,orderBy,limit,onSnapshot as _fsnap,collection as fcol} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const CFG={apiKey:"AIzaSyCnPWMK6Wpsc0HcMDINp4PMAFqR66UCqC4",authDomain:"nasebanka-bd9b3.firebaseapp.com",projectId:"nasebanka-bd9b3",storageBucket:"nasebanka-bd9b3.firebasestorage.app",messagingSenderId:"164586585177",appId:"1:164586585177:web:4bfcc69af9d16ce99d0548"};
 const fbApp=initializeApp(CFG);
-const auth=getAuth(fbApp),fdb=initializeFirestore(fbApp,{localCache:persistentLocalCache({tabManager:persistentMultipleTabManager()})});
+const auth=getAuth(fbApp),fdb=initializeFirestore(fbApp,{localCache:memoryLocalCache()});
 /* ===== DEMO MÓD: všechny zápisy zůstanou jen v tomto prohlížeči, do banky se nic neuloží ===== */
 const DEMO=(()=>{try{return !!localStorage.getItem('nb-demo')}catch(e){return false}})();
 const dOn=()=>{if(!DEMO||!uid)return false;try{return localStorage.getItem('nb-demo')===uid}catch(e){return false}};
