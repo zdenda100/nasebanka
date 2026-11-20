@@ -2169,8 +2169,8 @@ let demoSeeded=false;const demoT0=Date.now();setInterval(async()=>{if(!dOn()||de
  if(!NBX().firm)await saveX({firm:DEMO_FIRM()})},700);
 
 /* ---------- graf HokaidoCoinu (historie z obchodů všech hráčů) ---------- */
-{const sx=saveX;saveX=async function(p){if(p&&p.hkc!==undefined){var x=NBX(),s=hkSup()-(x.hkc||0)+Number(p.hkc);p=Object.assign({},p,{hkh:[...(x.hkh||[]),[Date.now(),s]].slice(-40)})}return sx(p)}}
-function hkHist(){var pts=[];accts.forEach(a=>{var x=a.id===uid?NBX():(a.nbx||{});(x.hkh||[]).forEach(h=>pts.push(h))});pts.sort((a,b)=>a[0]-b[0]);return [hp(2000),...pts.slice(-30).map(h=>hp(h[1])),hp(hkSup())]}
+{const sx=saveX;saveX=async function(p){if(p&&p.hkc!==undefined){var x=NBX(),s=hkSup()-(x.hkc||0)+Number(p.hkc);p=Object.assign({},p,{hkh:[...(x.hkh||[]).filter(h=>h&&!Array.isArray(h)),{t:Date.now(),s}].slice(-40)})}return sx(p)}}
+function hkHist(){var pts=[];accts.forEach(a=>{var x=a.id===uid?NBX():(a.nbx||{});(x.hkh||[]).forEach(h=>{if(h&&h.t)pts.push(h)})});pts.sort((a,b)=>a.t-b.t);return [hp(2000),...pts.slice(-30).map(h=>hp(h.s)),hp(hkSup())]}
 {const kr=P.krypto;P.krypto=()=>{var h=kr(),price=hp(hkSup()),mk='<div class="bnum md">'+kc(price)+'</div>',hs=hkHist(),ch=(price/hs[0]-1)*100;return h.replace(mk,mk+'<small class="'+(ch>=0?'pos':'neg')+'" style="font-weight:700">'+(ch>=0?'+':'')+ch.toFixed(1).replace('.',',')+' % od spuštění</small>'+chart(hs))}}
 
 /* ---------- Správa: nové přidávání a odebírání peněz (účet i spoření) ---------- */
