@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0a0b14">
+<link rel="icon" href="ikona.svg" type="image/svg+xml">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>NašeBanka</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+:root,:root[data-theme="dark"]{--a1:#22d3ee;--a2:#a855f7;--bg:#0a0b14;--g1:#3b1d6e;--g2:#0b4a5e;--panel:rgba(255,255,255,.05);--panel2:rgba(255,255,255,.08);--line:rgba(255,255,255,.09);--ink:#ecedf6;--mute:#9aa0b8;--input:rgba(0,0,0,.3);--pos:#4ade80;--neg:#f472b6;--nav:rgba(12,13,24,.85);--glow:rgba(168,85,247,.32);--hi:#c4b5fd;--onacc:#0a0b14;--shadow:none}
+:root[data-theme="light"]{--a1:#0891b2;--a2:#9333ea;--bg:#f6f4ff;--g1:#e2d4ff;--g2:#c9f1fa;--panel:rgba(255,255,255,.72);--panel2:#fff;--line:rgba(83,60,170,.13);--ink:#17142b;--mute:#6b6889;--input:#fff;--pos:#059669;--neg:#db2777;--nav:rgba(255,255,255,.88);--glow:rgba(147,51,234,.16);--hi:#7e22ce;--onacc:#fff;--shadow:0 8px 30px rgba(83,60,170,.08)}
+html{color-scheme:dark}:root[data-theme="light"]{color-scheme:light}
+body{margin:0;min-height:100vh;font-family:"Space Grotesk",system-ui,sans-serif;color:var(--ink);background:radial-gradient(900px 520px at 90% -10%,var(--g1),transparent 65%),radial-gradient(700px 480px at -10% 105%,var(--g2),transparent 60%),var(--bg);background-attachment:fixed;-webkit-tap-highlight-color:transparent}
+a{color:inherit}
+button,input,select{font:inherit;color:inherit}
+.ico{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.glass{background:var(--panel);border:1px solid var(--line);border-radius:22px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:var(--shadow)}
+.box{padding:22px}
+.gtext{background:linear-gradient(90deg,var(--ink) 30%,var(--hi));-webkit-background-clip:text;background-clip:text;color:transparent}
+h1{margin:0;font-size:26px;font-weight:700;letter-spacing:-.01em}
+h3{margin:0 0 12px;font-size:16px;font-weight:600}
+.mute{color:var(--mute)}.sm{font-size:13px}.center{text-align:center}
+p{margin:0 0 12px}
+.pos{color:var(--pos)}.neg{color:var(--neg)}
+
+/* layout */
+.app{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100vh}
+.side{position:sticky;top:0;height:100vh;padding:22px 14px;border-right:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;gap:2px;backdrop-filter:blur(16px)}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;padding:0 8px 24px;text-decoration:none}
+.logo i{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;font-style:normal;color:#0a0b14;background:linear-gradient(135deg,#22d3ee,#a855f7)}
+.side a.nl{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;color:var(--mute);text-decoration:none;font-weight:600;font-size:14px;position:relative}
+.side a.nl:hover{color:var(--ink);background:var(--panel2)}
+.side a.nl.on{color:var(--ink);background:linear-gradient(90deg,var(--glow),transparent);box-shadow:inset 3px 0 var(--a2)}
+.side a.nl.on .ico{color:var(--hi)}
+.side hr{border:0;border-top:1px solid var(--line);margin:10px 8px;width:calc(100% - 16px)}
+.nbdg{margin-left:auto;background:var(--neg);color:#fff;border-radius:999px;font-size:11px;padding:1px 7px;font-weight:700}
+main{padding:28px;display:flex;flex-direction:column;gap:20px;width:100%;max-width:1240px}
+.topb{display:flex;align-items:center;gap:12px}
+.topb .tt{margin-right:auto;min-width:0}.topb .tt small{display:block;color:var(--mute);font-size:13px}
+.ibtn{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--panel);border:1px solid var(--line);position:relative;text-decoration:none;cursor:pointer}
+.ibtn .dot{position:absolute;top:8px;right:9px;width:8px;height:8px;border-radius:50%;background:var(--neg);box-shadow:0 0 8px var(--neg)}
+.av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:700;color:#0a0b14;background:linear-gradient(135deg,#22d3ee,#a855f7);text-decoration:none;flex-shrink:0}
+.r1{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:start}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;align-items:start}
+.bn{display:none}
+
+/* components */
+.bal small{color:var(--mute);font-size:13px}
+.num{font-size:44px;font-weight:700;letter-spacing:-.03em;line-height:1.1;margin:6px 0 2px}
+.num.md{font-size:28px}
+.pills{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.pill{padding:8px 12px;border-radius:12px;background:var(--panel2);border:1px solid var(--line);font-size:12px;color:var(--mute);text-decoration:none;flex:1 1 90px}
+.pill:hover{border-color:var(--a2)}
+.pill b{display:block;color:var(--ink);font-size:15px;white-space:nowrap}
+.qbox{padding:16px 18px}
+.qa{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.q{min-width:0;background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:7px;font-size:12px;font-weight:600;text-decoration:none;cursor:pointer;padding:0}
+.q span{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:var(--panel2);border:1px solid var(--line);color:var(--hi);transition:.15s}
+.q:hover span{border-color:var(--a2);box-shadow:0 0 18px var(--glow)}
+.q.p span{background:linear-gradient(135deg,var(--a1),var(--a2));color:var(--onacc);border:0;box-shadow:0 6px 22px var(--glow)}
+.pc{aspect-ratio:1.586;border-radius:20px;padding:20px;display:flex;flex-direction:column;justify-content:space-between;color:#fff;box-shadow:0 10px 40px var(--glow);border:1px solid rgba(255,255,255,.18);position:relative;overflow:hidden;background-size:cover;background-position:center}
+.pc::after{content:"";position:absolute;inset:-40% -20% auto auto;width:70%;aspect-ratio:1;border-radius:50%;background:radial-gradient(rgba(255,255,255,.22),transparent 70%)}
+.pc>*{position:relative;z-index:1}
+.pc .t{display:flex;justify-content:space-between;align-items:center;font-weight:700}
+.chip{width:40px;height:29px;border-radius:6px;background:linear-gradient(135deg,#e2e8f0,#94a3b8)}
+.pc .n{font-size:18px;letter-spacing:.12em;font-variant-numeric:tabular-nums}
+.pc .b{display:flex;justify-content:space-between;font-size:12px;opacity:.85;gap:8px}
+.pc .tag{font-size:10px;font-weight:700;letter-spacing:.08em;padding:2px 7px;border-radius:6px;background:rgba(255,255,255,.18)}
+.sec{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.sec a{font-size:13px;color:var(--hi);text-decoration:none;font-weight:600}
+.tx{display:flex;align-items:center;gap:12px;padding:11px 0}
+.tx+.tx{border-top:1px solid var(--line)}
+.tx .ic{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;background:var(--panel2);border:1px solid var(--line);color:var(--hi);flex-shrink:0}
+.tx .ic.p{color:var(--pos)}.tx .ic.n{color:var(--neg)}
+.tx .m{flex:1;min-width:0}.tx .m b{display:block;font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tx .m small{font-size:12px;color:var(--mute)}
+.tx .a{font-weight:700;font-size:14px;white-space:nowrap}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;font-size:13px;font-weight:600;color:var(--mute)}
+.field input,.field select{width:100%;min-width:0;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--input);color:var(--ink);font-weight:500;font-size:14px}
+.field input:focus,.field select:focus{outline:none;border-color:var(--a2);box-shadow:0 0 0 3px var(--glow)}
+.field select option{background:var(--bg)}
+input[type=range]{width:100%;accent-color:var(--a2);margin:10px 0 14px}
+.cta{width:100%;padding:13px;border:0;border-radius:14px;font-weight:700;font-size:14px;color:var(--onacc);background:linear-gradient(90deg,var(--a1),var(--a2));box-shadow:0 6px 24px var(--glow);cursor:pointer;display:inline-flex;justify-content:center;align-items:center;gap:8px}
+.cta:active,.ghost:active{transform:scale(.98)}
+.ghost{width:100%;padding:12px;border-radius:14px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);font-weight:600;font-size:14px;cursor:pointer;display:inline-flex;justify-content:center;align-items:center;gap:8px}
+.ghost:hover{border-color:var(--a2)}
+.ghost.sm{width:auto;padding:8px 12px;font-size:13px;border-radius:11px}
+button:disabled{opacity:.5;cursor:not-allowed}
+.row2{display:flex;gap:8px}
+.kv{display:flex;justify-content:space-between;padding:9px 0;font-size:14px}
+.kv+.kv{border-top:1px solid var(--line)}
+.kv span{color:var(--mute)}
+.seg{display:flex;background:var(--input);border:1px solid var(--line);border-radius:14px;padding:4px;gap:4px;margin-bottom:12px}
+.seg button{flex:1;border:0;background:transparent;padding:9px 6px;border-radius:10px;font-weight:600;font-size:13px;color:var(--mute);cursor:pointer}
+.seg button.on{background:linear-gradient(90deg,var(--a1),var(--a2));color:var(--onacc)}
+.chart{width:100%;height:110px;display:block;margin:6px 0 4px}
+.stock{display:flex;justify-content:space-between;align-items:center;padding:9px 0;font-size:14px;gap:8px}
+.stock+.stock{border-top:1px solid var(--line)}
+.stock small{display:block;color:var(--mute);font-size:12px}
+.prog{height:10px;border-radius:99px;background:var(--input);border:1px solid var(--line);overflow:hidden;margin:10px 0}
+.prog i{display:block;height:100%;background:linear-gradient(90deg,var(--a1),var(--a2))}
+.empty{color:var(--mute);font-size:14px;padding:10px 0}
+/* recipient */
+.acctok{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:var(--panel2);border:1px solid var(--line);margin:-4px 0 12px;font-size:13px}
+.acctok.bad{border-color:var(--neg);color:var(--neg)}
+.acctok .av{width:28px;height:28px;font-size:12px}
+.picker{position:relative}
+.pick-btn{width:100%;display:flex;align-items:center;gap:10px;padding:8px 12px 8px 8px;border-radius:12px;border:1px solid var(--line);background:var(--input);color:var(--ink);cursor:pointer;text-align:left;min-height:50px;font-weight:500}
+.pick-btn .pm{flex:1;min-width:0;line-height:1.25}.pick-btn .pm b{display:block;font-size:14px}.pick-btn .pm small{font-size:12px;color:var(--mute)}
+.pick-btn .ph{color:var(--mute);font-size:14px}
+.ghostav{background:var(--panel2)!important;color:var(--mute)!important;border:1px solid var(--line)}
+.ghostav .ico{width:16px;height:16px}
+.chev{transition:transform .2s;color:var(--mute)}
+.picker.open .pick-btn{border-color:var(--a2);box-shadow:0 0 0 3px var(--glow)}
+.picker.open .chev{transform:rotate(180deg)}
+.pick-pop{display:none;position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:40;background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:8px;box-shadow:0 24px 60px rgba(0,0,0,.45)}
+.picker.open .pick-pop{display:block}
+.pick-search{display:flex;align-items:center;gap:8px;padding:0 12px;border-radius:11px;background:var(--panel2);border:1px solid var(--line);margin-bottom:6px;color:var(--mute)}
+.pick-search input{border:0;background:none;outline:none;padding:11px 0;width:100%;color:var(--ink);font-size:14px;font-weight:500}
+.pick-list{max-height:290px;overflow-y:auto;overscroll-behavior:contain}
+.pick-h{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);padding:10px 8px 4px}
+.pick-row{width:100%;display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:11px;border:0;background:none;cursor:pointer;text-align:left;color:var(--ink)}
+.pick-row:hover,.pick-row.act{background:var(--panel2)}
+.pick-row .m{flex:1;min-width:0;line-height:1.25}.pick-row .m b{display:block;font-size:14px;font-weight:600}.pick-row small{color:var(--mute);font-size:12px}
+.pick-row .acct{font-variant-numeric:tabular-nums;color:var(--mute);font-size:13px;font-weight:600}
+.pick-row.on .acct,.pick-row .ok{color:var(--hi)}
+.av.s{width:34px;height:34px;font-size:13px}
+.pick-empty{padding:14px 10px;font-size:13px;color:var(--mute)}
+.pchip{display:flex;align-items:center;gap:8px;padding:6px 12px 6px 6px;border-radius:999px;border:1px solid var(--line);background:var(--panel2);cursor:pointer;white-space:nowrap;font-size:13px;font-weight:600}
+.pchip .av{width:26px;height:26px;font-size:11px}
+.pchip.on{border-color:var(--a2);box-shadow:0 0 14px var(--glow)}
+/* casino */
+.reels{display:flex;gap:10px;justify-content:center;margin:4px 0 14px}
+.reel{width:min(84px,26%);aspect-ratio:.85;border-radius:16px;display:grid;place-items:center;background:var(--input);border:1px solid var(--line);overflow:hidden}
+.reel svg{width:56%;height:56%}
+.reel.win{box-shadow:0 0 0 2px var(--a2),0 0 24px var(--glow)}
+.reel.spin svg{animation:jit .09s linear infinite;filter:blur(1.5px)}
+@keyframes jit{0%{transform:translateY(-14%)}100%{transform:translateY(14%)}}
+.stake{display:flex;gap:8px;margin-bottom:12px}
+.stake button{flex:1;padding:8px 0;border-radius:12px;border:1px solid var(--line);font-weight:600;font-size:13px;background:var(--panel2);cursor:pointer}
+.stake button.on{border-color:var(--a2);color:var(--hi);box-shadow:0 0 14px var(--glow)}
+.gi{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--glow);color:var(--hi);margin-bottom:10px}
+.cd{font-size:26px;font-weight:700;margin:6px 0 10px;font-variant-numeric:tabular-nums}
+.scratch{height:92px;border-radius:16px;display:grid;place-items:center;margin:10px 0 12px;font-weight:700;font-size:22px;border:1px dashed var(--line);color:var(--mute);font-size:14px}
+.scratch.cover{border:0;cursor:pointer;color:#1a1b22;font-size:15px;background:repeating-linear-gradient(135deg,#cbd5e1 0 10px,#e2e8f0 10px 20px);box-shadow:inset 0 0 0 2px rgba(255,255,255,.5)}
+.scratch.won{border:1px solid var(--a2);color:var(--ink);font-size:26px;box-shadow:0 0 24px var(--glow)}
+/* market */
+.mkt{display:flex;flex-direction:column;gap:6px;max-height:430px;overflow:auto}
+.mi{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 12px;border-radius:14px;border:1px solid var(--line);background:var(--panel2);cursor:pointer;text-align:left}
+.mi span:last-child{text-align:right}
+.mi small{display:block;font-size:12px;color:var(--mute)}
+.mi.on{border-color:var(--a2);box-shadow:inset 3px 0 var(--a2)}
+/* team */
+.people{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px}
+.person{display:flex;align-items:center;gap:12px;padding:12px;border-radius:16px;background:var(--panel2);border:1px solid var(--line)}
+.person .m{flex:1;min-width:0}.person .m b{display:block;font-size:14px}
+.person small{color:var(--mute);font-size:12px}
+.role{display:inline-block;font-size:11px;font-weight:700;padding:1px 8px;border-radius:7px;margin-top:3px;background:var(--glow);color:var(--hi)}
+.role.k-own{background:rgba(250,204,21,.18);color:#eab308}
+.acctin{width:74px;padding:6px 8px;border-radius:9px;border:1px solid var(--a2);background:var(--input);color:var(--ink);font-size:13px}
+/* announcements */
+.ann{padding:16px 18px;border-radius:18px;background:var(--panel2);border:1px solid var(--line)}
+.ann.new{border-color:var(--a2);box-shadow:0 0 18px var(--glow)}
+.ann small{color:var(--mute);font-size:12px}
+.ann p{margin:6px 0 0;font-size:14px}
+/* cards gallery */
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+.gc{border:2px solid var(--line);border-radius:14px;padding:6px;background:var(--panel2);cursor:pointer;text-align:left;font-size:12px;font-weight:600}
+.gc .sw{display:block;aspect-ratio:1.586;border-radius:9px;margin-bottom:6px;background-size:cover}
+.gc.on{border-color:var(--a2);box-shadow:0 0 14px var(--glow)}
+/* toast, sheet, login */
+.toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,30px);opacity:0;transition:.25s;z-index:80;padding:12px 18px;border-radius:14px;background:var(--panel2);border:1px solid var(--line);backdrop-filter:blur(16px);font-weight:600;font-size:14px;box-shadow:0 10px 30px rgba(0,0,0,.3);max-width:90vw;display:flex;gap:8px;align-items:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast.ok .ico{color:var(--pos)}.toast.err .ico{color:var(--neg)}
+.sheet{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.45);display:none;align-items:flex-end}
+.sheet.open{display:flex}
+.sheet .in{width:100%;padding:10px 16px 34px;border-radius:26px 26px 0 0;background:var(--bg);border-top:1px solid var(--line)}
+.sheet .grab{width:40px;height:5px;border-radius:9px;background:var(--line);margin:4px auto 14px}
+.sheet .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.sheet a{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 6px;border-radius:16px;background:var(--panel2);border:1px solid var(--line);text-decoration:none;font-size:13px;font-weight:600;position:relative}
+.sheet a .ico{color:var(--hi);width:24px;height:24px}
+.sheet a .nbdg{position:absolute;top:8px;right:8px}
+.login{position:fixed;inset:0;z-index:90;display:none;place-items:center;padding:16px;background:radial-gradient(800px 500px at 80% -10%,var(--g1),transparent 65%),radial-gradient(700px 480px at -10% 105%,var(--g2),transparent 60%),var(--bg)}
+.login.open{display:grid}
+.login .glass{width:min(400px,100%);padding:28px}
+.login .logo{padding:0 0 22px;justify-content:center}
+.login h1{margin-bottom:4px}
+
+/* ===== TABLET ===== */
+@media (max-width:1099px){
+  .app{grid-template-columns:84px minmax(0,1fr)}
+  .side{padding:20px 0;align-items:center}
+  .side .logo{padding:0 0 22px}.side .logo span{display:none}
+  .side a.nl{width:62px;flex-direction:column;gap:4px;padding:10px 0;font-size:10.5px;text-align:center}
+  .side a.nl.on{box-shadow:none;background:var(--glow)}
+  .side .nbdg{position:absolute;top:4px;right:6px;margin:0;font-size:10px;padding:0 5px}
+  .side hr{width:40px}
+  main{padding:24px 22px}
+  .r1{grid-template-columns:minmax(0,1fr) minmax(0,290px);align-items:center}
+  .g3{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .g3>:last-child{grid-column:1/-1}
+}
+/* ===== PHONE ===== */
+@media (max-width:699px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{display:none}
+  main{padding:14px 16px 120px;gap:16px}
+  h1{font-size:22px}
+  html{scrollbar-width:none}
+  .r1,.g2,.g3{grid-template-columns:minmax(0,1fr);gap:16px}
+  .g3>:last-child{grid-column:auto}
+  .r1 .pc{width:100%;max-width:380px;justify-self:center}
+  .num{font-size:36px}
+  .box{padding:18px}
+  .pills{display:grid;grid-template-columns:1fr 1fr}
+  .qbox{padding:0;background:none;border:0;box-shadow:none;backdrop-filter:none}
+  .bn{display:grid;position:fixed;left:0;right:0;bottom:0;z-index:60;grid-template-columns:repeat(5,1fr);align-items:end;padding:10px 8px calc(14px + env(safe-area-inset-bottom));background:var(--nav);border-top:1px solid var(--line);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+  .bn a,.bn button{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--mute);text-decoration:none;background:none;border:0;cursor:pointer;padding:0;position:relative}
+  .bn .on{color:var(--hi)}
+  .bn .nbdg{position:absolute;top:-4px;right:calc(50% - 20px);font-size:10px;padding:0 5px}
+  .fab{width:58px;height:58px;border-radius:20px;display:grid;place-items:center;margin-top:-34px;color:var(--onacc);background:linear-gradient(135deg,var(--a1),var(--a2));box-shadow:0 8px 28px var(--glow),0 0 0 6px var(--bg)}
+  .fab .ico{width:26px;height:26px;stroke-width:2.2}
+  .toast{bottom:104px}
+  .people{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+<linearGradient id="gg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#a855f7"/></linearGradient>
+<linearGradient id="fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a855f7" stop-opacity=".35"/><stop offset="1" stop-color="#a855f7" stop-opacity="0"/></linearGradient>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/><path d="M10 20v-5h4v5"/></symbol>
+<symbol id="i-send" viewBox="0 0 24 24"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></symbol>
+<symbol id="i-recv" viewBox="0 0 24 24"><path d="M17 7 7 17"/><path d="M16 17H7V8"/></symbol>
+<symbol id="i-save" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="3"/><path d="M8 7V5a4 4 0 0 1 8 0v2"/><path d="M12 12v3"/></symbol>
+<symbol id="i-dice" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><circle cx="8.5" cy="8.5" r="1.2"/><circle cx="15.5" cy="15.5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="15.5" cy="8.5" r="1.2"/><circle cx="8.5" cy="15.5" r="1.2"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 20h18"/><path d="m4 15 5-5 4 3 7-7"/><path d="M15 6h5v5"/></symbol>
+<symbol id="i-loan" viewBox="0 0 24 24"><path d="M3 9 12 4l9 5"/><path d="M5 9v9M9.5 9v9M14.5 9v9M19 9v9"/><path d="M3 20h18"/></symbol>
+<symbol id="i-team" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7"/><path d="M18 14a6 6 0 0 1 3.5 6"/></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 21h4"/></symbol>
+<symbol id="i-cog" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></symbol>
+<symbol id="i-gift" viewBox="0 0 24 24"><rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8h14v-8"/><path d="M12 8v12"/><path d="M12 8c-2-4-6-3-5 0M12 8c2-4 6-3 5 0"/></symbol>
+<symbol id="i-swap" viewBox="0 0 24 24"><path d="M4 8h14l-3-3"/><path d="M20 16H6l3 3"/></symbol>
+<symbol id="i-card" viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="3"/><path d="M2.5 10h19"/><path d="M6 15h4"/></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></symbol>
+<symbol id="i-ticket" viewBox="0 0 24 24"><path d="M3 8a2 2 0 0 0 0 4 2 2 0 0 1 0 4v2h18v-2a2 2 0 0 1 0-4 2 2 0 0 1 0-4V6H3z"/><path d="M14 6v12" stroke-dasharray="2 2"/></symbol>
+<symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/></symbol>
+<symbol id="i-qr" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="6" height="6" rx="1"/><rect x="14.5" y="3.5" width="6" height="6" rx="1"/><rect x="3.5" y="14.5" width="6" height="6" rx="1"/><path d="M14.5 14.5h2v2M20.5 14.5v6h-6v-2"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/></symbol>
+<symbol id="i-out" viewBox="0 0 24 24"><path d="M15 4h4v16h-4"/><path d="M10 8l-4 4 4 4M6 12h10"/></symbol>
+<symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13 7 4 4"/></symbol>
+<symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></symbol>
+<symbol id="i-vault" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="15" rx="2"/><circle cx="12" cy="11.5" r="3.5"/><path d="M12 8v1M12 14v1M8.5 11.5h1M14.5 11.5h1M6 19v2M18 19v2"/></symbol>
+<symbol id="i-inbox" viewBox="0 0 24 24"><path d="M3 13h5l1.5 3h5L16 13h5"/><path d="M5 5h14l2 8v6H3v-6z"/></symbol>
+<symbol id="i-hash" viewBox="0 0 24 24"><path d="M5 9h15M4 15h15M10 3 8 21M16 3l-2 18"/></symbol>
+<symbol id="s-dia" viewBox="0 0 48 48"><path d="M24 5 41 20 24 43 7 20z" fill="url(#gg)" stroke="none"/><path d="M7 20h34M17 20l7 23 7-23M17 20l7-15 7 15" stroke="rgba(255,255,255,.55)" stroke-width="1.5" fill="none"/></symbol>
+<symbol id="s-star" viewBox="0 0 48 48"><path d="M24 5l5.6 12 13 1.4-9.7 8.8 2.7 12.8L24 33.6 12.4 40l2.7-12.8L5.4 18.4l13-1.4z" fill="url(#gg)" stroke="none"/></symbol>
+<symbol id="s-seven" viewBox="0 0 48 48"><path d="M10 8h28v6L22 42h-9l15-27H10z" fill="url(#gg)" stroke="none"/></symbol>
+<symbol id="s-bell" viewBox="0 0 48 48"><path d="M24 6a3 3 0 0 1 3 3v1.5A13 13 0 0 1 37 23v9l4 5H7l4-5v-9a13 13 0 0 1 10-12.5V9a3 3 0 0 1 3-3z" fill="url(#gg)" stroke="none"/><circle cx="24" cy="41" r="4" fill="url(#gg)"/></symbol>
+<symbol id="s-cherry" viewBox="0 0 48 48"><circle cx="15" cy="33" r="9" fill="url(#gg)"/><circle cx="33" cy="35" r="8" fill="url(#gg)"/><path d="M15 24c2-9 8-15 16-18M33 27c-1-8-1-15-2-21" stroke="url(#gg)" stroke-width="3" fill="none" stroke-linecap="round"/></symbol>
+</defs>
+</svg>
+
+<div class="app">
+  <nav class="side" id="side"></nav>
+  <main id="main"></main>
+</div>
+<nav class="bn" id="bn"></nav>
+<div class="sheet" id="sheet"><div class="in"><div class="grab"></div><div class="grid" id="sheetGrid"></div></div></div>
+<div class="toast" id="toast"></div>
+<div class="login" id="login">
+  <form class="glass" id="loginForm">
+    <div class="logo"><i>N</i><span>NašeBanka</span></div>
+    <div id="lgBody"></div>
+  </form>
+</div>
+
+<script>
+/* ---------- data ---------- */
+const CARDS=[
+ {id:'neon',n:'Neon',bg:'linear-gradient(135deg,#1e1b4b,#581c87 55%,#0e7490)'},
+ {id:'aurora',n:'Aurora',bg:'linear-gradient(135deg,#064e3b,#0e7490 50%,#4c1d95)'},
+ {id:'sunset',n:'Západ slunce',bg:'linear-gradient(135deg,#7c2d12,#be185d 55%,#4c1d95)'},
+ {id:'carbon',n:'Karbon',bg:'linear-gradient(135deg,#0b0b0f,#27272a 60%,#3f3f46)'},
+ {id:'gold',n:'Zlatá · 10 000 Sh',bg:'linear-gradient(135deg,#78350f,#ca8a04 50%,#713f12)',min:10000},
+ {id:'custom-matyas',n:'Vlny · od grafika',bg:'radial-gradient(circle at 20% 120%,#22d3ee 0 18%,transparent 19%),radial-gradient(circle at 80% -20%,#f472b6 0 22%,transparent 23%),linear-gradient(135deg,#312e81,#1e1b4b)',custom:true},
+];
+const TEAM=[
+ {n:'Banka',r:'Banka',k:'bank',acct:'1000',card:'gold',hidden:true},
+ {n:'Tomáš',r:'Majitel',k:'own',acct:'1001',card:'gold'},
+ {n:'Ondra',r:'Zástupce',k:'vice',acct:'1002',card:'carbon'},
+ {n:'Matyáš',r:'Vývojář',k:'dev',acct:'1003',card:'custom-matyas'},
+ {n:'Eliška',r:'Grafička',k:'gfx',acct:'1004',card:'custom-matyas'},
+ {n:'Claude',r:'Zákazník',k:'cust',acct:'1005',card:'neon'},
+ {n:'Klára',r:'Zákazník',k:'cust',acct:'1006',card:'sunset'},
+ {n:'Petr',r:'Zákazník',k:'cust',acct:'1007',card:'aurora'},
+];
+['Adam','Anna','Barbora','David','Dominik','Ema','Filip','Hana','Jakub','Jan','Jana','Jiří','Josef','Karolína','Kateřina','Kristýna','Lucie','Lukáš','Marek','Martin','Michal','Natálie','Nikola','Pavel','Radek','Sára','Šimon','Štěpán','Tereza','Vojtěch','Adéla','Daniel','Ester','Patrik','Sofie','Viktor','Zuzana','Libor','Markéta','Roman','Veronika','Vít','Alžběta']
+ .forEach((n,i)=>TEAM.push({n:n+' '+'BDFHKLMNPRSTVZ'[i%14]+'.',r:'Zákazník',k:'cust',acct:String(1008+i),card:['neon','aurora','sunset','carbon'][i%4]}));
+function rng(seed){return()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646}}
+/* Burza: cena v Sh = základ × (skutečná cena teď / skutečná referenční cena).
+   Data dodává ceny/ceny.json (stahuje ho ceny/stahni-ceny.mjs, na GitHubu Actions každých 30 min).
+   Ve skutečné bance: PRICE_URL = 'https://raw.githubusercontent.com/zdenda100/nasebanka/data/ceny.json' */
+const PRICE_URL='ceny/ceny.json',ASSET_URL='ceny/aktiva.json';
+const mkSim=(list)=>list.map(([id,n,c,base],i)=>{const r=rng(i*977+13);const h=[];let v=base*.9;for(let k=0;k<30;k++){v*=1+(r()-.47)*.05;h.push(+v.toFixed(2))}return{id,n,c,h,p:h.at(-1),prev:h.at(-2)}});
+let ST=mkSim([['AAPL','Apple','Technologie',60],['MSFT','Microsoft','Technologie',75],['KO','Coca-Cola','Jídlo a pití',15],['NKE','Nike','Móda a sport',15],['TSLA','Tesla','Auta',45],['CEZ.PR','ČEZ','Energie',25]]),PRICES={live:false,at:null};
+const stk=id=>ST.find(x=>x.id===id);
+const chg=s=>(s.p/s.prev-1)*100;
+const pct=v=>`${v>=0?'+':''}${v.toFixed(1).replace('.',',')} %`;
+async function loadPrices(){try{const [a,c]=await Promise.all([fetch(ASSET_URL).then(r=>r.json()),fetch(PRICE_URL+'?t='+Date.now()).then(r=>{if(!r.ok)throw 0;return r.json()})]);
+ const next=a.filter(x=>c.assets[x.id]).map(x=>{const d=c.assets[x.id],k=x.base/d.ref,h=d.series.map(s=>+(s[1]*k).toFixed(2)),p=+(d.last*k).toFixed(2);if(Math.abs(h.at(-1)-p)>.005)h.push(p);return{id:x.id,n:x.n,c:x.c,h,p,prev:d.prev*k}});
+ if(next.length){ST=next;PRICES={live:true,at:new Date(c.updated)};if(!stk(S.sel))S.sel=ST[0].id}}catch(e){PRICES.live=false}
+ const a=document.activeElement;if(['burza','ucet'].includes(route())&&!(a&&/INPUT|SELECT/.test(a.tagName)))render(1)}
+const S={me:'Claude',role:'cust',bal:500,sav:0,chips:0,loan:null,lAmt:5000,plan:{amt:1000,date:(()=>{const d=new Date();d.setDate(d.getDate()+7);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')})(),freq:'weekly'},hold:{},sel:'AAPL',cat:'all',bq:'',stake:5,reels:['dia','dia','star'],lot:0,scr:null,pre:null,recent:['Matyáš','Ondra','Klára'],unread:2,theme:'dark',fund:48000,fundHist:[41000,42500,41800,44000,45200,44600,46100,47300,46900,48000],bankAccess:['Ondra'],cas:{lost:0,won:0},
+ reqs:[{n:'Vojta K.',d:'Dnes 17:40'},{n:'Bára S.',d:'Včera 21:12'}],
+ fundTx:[{t:'Poplatky z plateb',w:'za den',a:84.2,d:'Včera'},{t:'Vyplacená půjčka',w:'Petr',a:-3000,d:'Včera'},{t:'Nákup žetonů',w:'Klára',a:510,d:'Včera'},{t:'Splátka půjčky',w:'Ondra',a:1100,d:'18. 11.'}],
+ tx:[{k:'int',t:'Úrok ze spoření',d:'Pondělí · spoření',a:170},{k:'out',t:'Matyáš',d:'Včera · za oběd',a:-120},{k:'chip',t:'Směna žetonů',d:'Včera · kasino',a:-204},{k:'inv',t:'Prodej · Apple',d:'18. 11. · investice',a:312.4},{k:'in',t:'Ondra',d:'17. 11. · vrácení',a:50}],
+ ann:[{w:'Tomáš',d:'Dnes 18:02',t:'Nová verze banky! Nový vzhled, tmavý i světlý režim a bankovní adresy jako /nasebanka/nastaveni.',n:1},{w:'Ondra',d:'Včera',t:'Loterie dnes ve 20:00 – v banku je už 340 žetonů.',n:1},{w:'Tomáš',d:'15. 11.',t:'Spoření má od pondělí úrok 5 %. Peníze na spoření najdeš na kartě Účet.'}]};
+const me=()=>TEAM.find(p=>p.n===S.me);
+const ROLES={cust:'Zákazník',vice:'Zástupce',gfx:'Grafik',dev:'Vývojář',own:'Majitel',bank:'Banka'};
+/* Vývojář má skoro všechno jako majitel – jen nevidí Banku (pokud ho majitel nepřidá) a nemůže určovat, kdo Banku vidí. */
+const can={
+ approve:()=>['bank','own','vice','dev','gfx'].includes(S.role),
+ editAcct:()=>['own','dev'].includes(S.role),
+ seeBank:()=>['own','bank'].includes(S.role)||S.bankAccess.includes(S.me),
+ manageBank:()=>S.role==='own',
+ payFromBank:()=>['own','bank'].includes(S.role),
+};
+const visible=()=>TEAM.filter(p=>!p.hidden);
+function fund(a,t,who){S.fund=Math.round((S.fund+a)*100)/100;S.fundTx.unshift({t,w:who||S.me,a,d:'Teď'});S.fundHist.push(S.fund);if(S.fundHist.length>40)S.fundHist.shift()}
+
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const I=(n,c='')=>`<svg class="ico ${c}"><use href="#i-${n}"/></svg>`;
+const fN=n=>n.toLocaleString('cs-CZ',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmt=n=>fN(n)+' Sh';
+const f0=n=>Math.round(n).toLocaleString('cs-CZ')+' Sh';
+const pv=()=>Object.entries(S.hold).reduce((s,[id,q])=>s+q*((ST.find(x=>x.id===id)||{p:0}).p),0);
+const card=id=>CARDS.find(c=>c.id===id)||CARDS[0];
+function greet(){const h=new Date().getHours();return h<10?'Dobré ráno':h<18?'Dobrý den':'Dobrý večer'}
+let tt;function toast(m,ok=true){const t=$('#toast');t.className='toast show '+(ok?'ok':'err');t.innerHTML=I(ok?'check':'x')+m;clearTimeout(tt);tt=setTimeout(()=>t.className='toast',2600)}
+function addTx(k,t,d,a){S.tx.unshift({k,t,d:'Teď · '+d,a})}
+function chart(h,w=300,hh=110){const mn=Math.min(...h),mx=Math.max(...h),sx=w/(h.length-1);const pts=h.map((v,i)=>`${(i*sx).toFixed(1)} ${(hh-8-(v-mn)/(mx-mn||1)*(hh-20)).toFixed(1)}`);return `<svg class="chart" viewBox="0 0 ${w} ${hh}" preserveAspectRatio="none"><path d="M${pts.join(' L')} V${hh} H0Z" fill="url(#fill)"/><path d="M${pts.join(' L')}" fill="none" stroke="url(#gg)" stroke-width="3" vector-effect="non-scaling-stroke"/></svg>`}
+function pc(cls=''){const p=me(),c=card(p.card);return `<div class="pc ${cls}" style="background:${c.bg}"><div class="t"><span>NašeBanka</span>${c.custom?'<span class="tag">CUSTOM</span>':'<div class="chip"></div>'}</div><div class="n">Účet ${p.acct}</div><div class="b"><span>${p.n.toUpperCase()}</span><span>${c.n.replace(/ ·.*/,'')}</span></div></div>`}
+const TXI={in:['recv','p'],out:['send','n'],int:['gift','p'],chip:['swap',''],inv:['chart',''],loan:['loan','']};
+function txRow(t){const[i,c]=TXI[t.k]||['swap',''];return `<div class="tx"><div class="ic ${c}">${I(i)}</div><div class="m"><b>${t.t}</b><small>${t.d}</small></div><div class="a ${t.a>=0?'pos':'neg'}">${t.a>=0?'+':'−'}${fN(Math.abs(t.a))}</div></div>`}
+function topBar(title,sub){return `<div class="topb"><div class="tt">${sub?`<small>${sub}</small>`:''}<h1>${title}</h1></div><a class="ibtn" href="#/oznameni" aria-label="Oznámení">${I('bell')}${S.unread?'<span class="dot"></span>':''}</a><a class="av" href="#/nastaveni" aria-label="Profil">${S.me[0]}</a></div>`}
+function pfHist(){const e=Object.entries(S.hold).filter(([id,q])=>q>0&&stk(id));if(!e.length)return [0,0];const L=Math.min(...e.map(([id])=>stk(id).h.length));return Array.from({length:L},(_,i)=>e.reduce((s,[id,q])=>{const h=stk(id).h;return s+q*h[h.length-L+i]},0))}
+function holdings(){const e=Object.entries(S.hold).filter(([,q])=>q>0);if(!e.length)return '<div class="empty">Zatím nic nevlastníš.</div>';return e.map(([id,q])=>{const s=stk(id);if(!s)return '';const ch=chg(s);return `<div class="stock"><span>${s.n}<small>${q} ks · ${fmt(q*s.p)}</small></span><b class="${ch>=0?'pos':'neg'}">${pct(ch)}</b></div>`}).join('')}
+
+/* ---------- pages ---------- */
+function navList(){const L=S.role==='bank'?[['banka','Banka','vault'],['zadosti','Žádosti','inbox'],null,['tym','Tým','team'],['oznameni','Oznámení','bell'],['nastaveni','Nastavení','cog']]:NAV.slice();
+ if(S.role!=='bank'){const extra=[];if(can.seeBank())extra.push(['banka','Banka','vault']);if(can.approve())extra.push(['zadosti','Žádosti','inbox']);if(extra.length)L.push(null,...extra)}return L}
+const NAV=[['ucet','Účet','home'],['platby','Platby','send'],['pujcky','Půjčky','loan'],['kasino','Kasino','dice'],['burza','Burza','chart'],null,['tym','Tým','team'],['oznameni','Oznámení','bell'],['nastaveni','Nastavení','cog']];
+const P={};
+P.ucet=()=>`${topBar(S.me,greet())}
+<div class="r1"><section class="glass box bal"><small>Zůstatek na účtu ${me().acct}</small><div class="num gtext">${fmt(S.bal)}</div>
+<div class="pills"><a class="pill" href="#/ucet" data-act="focusSav">Spoření<b>${f0(S.sav)}</b></a><a class="pill" href="#/kasino">Žetony<b>${S.chips} ž.</b></a><a class="pill" href="#/burza">Portfolio<b>${f0(pv())}</b></a><a class="pill" href="#/pujcky">Půjčka<b>${S.loan?f0(S.loan.debt):'0 Sh'}</b></a></div></section>${pc('home')}</div>
+<section class="glass qbox"><div class="qa">
+<a class="q p" href="#/platby"><span>${I('send')}</span>Poslat</a><button class="q" data-act="focusSav"><span>${I('save')}</span>Spořit</button><a class="q" href="#/pujcky"><span>${I('loan')}</span>Půjčit</a><a class="q" href="#/kasino"><span>${I('dice')}</span>Kasino</a><a class="q" href="#/burza"><span>${I('chart')}</span>Burza</a></div></section>
+<div class="g3">
+<section class="glass box"><div class="sec"><h3>Poslední pohyby</h3><a href="#/platby">Vše</a></div>${S.tx.slice(0,5).map(txRow).join('')}</section>
+<section class="glass box"><div class="sec"><h3>Portfolio</h3><a href="#/burza">Burza</a></div><div class="num md">${fmt(pv())}</div>${chart(pfHist())}${holdings()}</section>
+<section class="glass box" id="sav"><h3>Spořicí účet</h3><p class="mute sm">Každé pondělí úrok ${S.cfg.sav} %.</p><div class="num md">${fmt(S.sav)}</div><label class="field" style="margin-top:12px">Částka (Sh)<input id="savAmt" type="number" min="1" placeholder="100" inputmode="decimal"></label><div class="row2"><button class="cta" data-act="savIn">Vložit</button><button class="ghost" data-act="savOut">Vybrat</button></div></section>
+</div>`;
+
+function pickBtnInner(){const p=TEAM.find(x=>x.n===S.pre);return (p?`<span class="av s">${p.n[0]}</span><span class="pm"><b>${p.n}</b><small>${p.r}</small></span>`:`<span class="av s ghostav">${I('team')}</span><span class="pm ph">Vyber příjemce</span>`)+I('chev','chev')}
+const norm=s=>s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+function pickRow(p,act){return `<button type="button" class="pick-row ${S.pre===p.n?'on':''} ${act?'act':''}" data-act="pick" data-v="${p.n}" role="option"><span class="av s">${p.n[0]}</span><span class="m"><b>${p.n}</b><small>${p.r}${card(p.card).custom?' · custom karta':''}</small></span>${S.pre===p.n?I('check','ok'):''}</button>`}
+function pickRows(q=''){q=norm(q.trim());const others=visible().filter(p=>p.n!==S.me);
+ if(!q){const rec=S.recent.map(n=>others.find(p=>p.n===n)).filter(Boolean);
+  return (rec.length?`<div class="pick-h">Nedávné</div>${rec.map(p=>pickRow(p)).join('')}`:'')+`<div class="pick-h">Všichni · ${others.length}</div>${others.map(p=>pickRow(p)).join('')}`}
+ const list=others.filter(p=>norm(p.n).includes(q)||p.acct.startsWith(q)||norm(p.r).includes(q));
+ if(!list.length){const digits=/^\d+$/.test(q);return `<div class="pick-empty">${digits?(q===me().acct?'To je tvůj vlastní účet.':`Účet ${q} neexistuje.`):'Nikoho takového nemáme.'}</div>`}
+ return `<div class="pick-h">Nalezeno · ${list.length}</div>`+list.map((p,i)=>pickRow(p,i===0)).join('')}
+function recipient(){
+ return `<div class="field">Příjemce<div class="picker" id="picker">
+  <button type="button" class="pick-btn" data-act="pickToggle" aria-haspopup="listbox" aria-expanded="false">${pickBtnInner()}</button>
+  <div class="pick-pop"><div class="pick-search">${I('search')}<input id="pSearch" placeholder="Jméno nebo číslo účtu" autocomplete="off"></div><div class="pick-list" id="pList" role="listbox">${pickRows()}</div></div>
+ </div></div>`;
+}
+function pickOpen(o){const pk=$('#picker');if(!pk)return;pk.classList.toggle('open',o);pk.querySelector('.pick-btn').setAttribute('aria-expanded',o);if(o){const s=$('#pSearch');s.value='';$('#pList').innerHTML=pickRows();setTimeout(()=>s.focus(),20)}}
+P.platby=()=>`${topBar('Platby')}
+<div class="g2"><section class="glass box" style="position:relative;z-index:5"><h3>Nová platba</h3>${recipient()}
+<label class="field">Částka (Sh)<input id="pAmt" type="number" min="1" placeholder="100" inputmode="decimal"></label>
+<label class="field">Zpráva pro příjemce<input id="pMsg" maxlength="60" placeholder="Za oběd"></label>
+<p class="mute sm">Poplatek 2 % · k dispozici ${fmt(S.bal)}</p><button class="cta" data-act="pay">${I('send')}Odeslat platbu</button></section>
+<section class="glass box"><div class="sec"><h3>Historie</h3><small class="mute">${S.tx.length} pohybů</small></div>${S.tx.map(txRow).join('')}</section></div>`;
+
+/* půjčky – podle Mátyho opravy (commit 285ac7a): max 10 000 Sh, automatické splátky, první splátka nejpozději za 6 měsíců */
+const LF=()=>1+S.cfg.loanFee/100,FREQ={monthly:'Každý měsíc',weekly:'Každý týden',daily:'Každý den'};
+const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const cz=s=>new Date(s+'T12:00:00').toLocaleDateString('cs-CZ');
+function dateMin(){const d=new Date();if(d.getHours()>=20)d.setDate(d.getDate()+1);return iso(d)}
+function dateMax(){const d=new Date();d.setMonth(d.getMonth()+6);return iso(d)}
+function nextDate(s,f,anchor){const d=new Date(s+'T12:00:00');if(f==='monthly'){d.setDate(1);d.setMonth(d.getMonth()+1);const last=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();d.setDate(Math.min(anchor,last))}else d.setDate(d.getDate()+(f==='weekly'?7:1));return iso(d)}
+function schedule(debt,amt,date,f){const rows=[];if(!(amt>0)||!date)return rows;const anchor=+date.slice(8);let left=Math.round(debt*100)/100,d=date;while(left>0&&rows.length<400){const a=Math.min(amt,left);left=Math.round((left-a)*100)/100;rows.push({d,a,left});d=nextDate(d,f,anchor)}return rows}
+function schedHtml(debt,p){const r=schedule(debt,p.amt,p.date,p.freq);if(!r.length)return '<div class="empty">Vyplň splátku a datum, ukážu ti plán.</div>';
+ return `<div class="kv"><span>Počet splátek</span><b>${r.length}×</b></div><div class="kv"><span>Poslední splátka</span><b>${cz(r[r.length-1].d)}</b></div>
+ <div class="pick-h" style="padding-left:0">Splátky</div>${r.slice(0,6).map((x,i)=>`<div class="stock"><span>${cz(x.d)} · 20:00<small>${i===0?'první splátka':'zbývá potom '+fmt(x.left)}</small></span><b>${fmt(x.a)}</b></div>`).join('')}${r.length>6?`<p class="mute sm" style="margin:8px 0 0">… a dalších ${r.length-6} splátek</p>`:''}`}
+function planFields(p){return `<label class="field">Automatická splátka (Sh)<input id="plAmt" type="number" min="0.01" step="0.01" value="${p.amt}" inputmode="decimal"></label>
+<div class="g2" style="gap:12px"><label class="field">První splátka (ve 20:00)<input id="plDate" type="date" min="${dateMin()}" max="${dateMax()}" value="${p.date}"></label>
+<label class="field">Jak často<select id="plFreq">${Object.entries(FREQ).map(([k,v])=>`<option value="${k}" ${p.freq===k?'selected':''}>${v}</option>`).join('')}</select></label></div>`}
+function readPlan(debt){const amt=num('#plAmt'),date=$('#plDate').value,freq=$('#plFreq').value;
+ if(!(amt>0))throw 'Zadej automatickou splátku.';if(amt>debt)throw 'Splátka nemůže být větší než dluh ('+fmt(debt)+').';
+ if(!date||date<dateMin())throw 'Datum první splátky už proběhlo.';if(date>dateMax())throw 'První splátka může být nejpozději '+cz(dateMax())+' (za 6 měsíců).';return {amt,date,freq}}
+P.pujcky=()=>{if(!S.loan){const p=S.plan;return `${topBar('Půjčky')}
+<div class="g2"><section class="glass box"><h3>Nová půjčka</h3><p class="mute sm">Půjč si až ${f0(loanMax())}. Vrátíš o ${S.cfg.loanFee} % víc. Najednou můžeš mít jen jednu půjčku.</p>
+<div class="num md gtext" id="lV">${fmt(S.lAmt)}</div><input type="range" id="lAmt" min="100" max="${loanMax()}" step="100" value="${S.lAmt}" aria-label="Výše půjčky">
+<div class="kv"><span>Dostaneš</span><b id="lGet">${fmt(S.lAmt)}</b></div><div class="kv"><span>Vrátíš celkem</span><b id="lRet">${fmt(S.lAmt*LF())}</b></div>
+<h3 style="margin:18px 0 10px">Automatické splácení</h3>${planFields(p)}
+<button class="cta" data-act="loan">Vzít půjčku</button></section>
+<section class="glass box"><h3>Plán splátek</h3><div id="plPrev">${schedHtml(S.lAmt*LF(),p)}</div><p class="mute sm" style="margin:12px 0 0">Splátky se strhnou ve 20:00. Když na účtu nemáš dost peněz, splátka počká a dožene se později.</p></section></div>`}
+ const L=S.loan,paid=L.total-L.debt,nx=schedule(L.debt,L.plan.amt,L.plan.date,L.plan.freq)[0];return `${topBar('Půjčky')}
+<div class="g2"><section class="glass box"><small class="mute">Zbývá splatit</small><div class="num gtext">${fmt(L.debt)}</div><div class="prog"><i style="width:${paid/L.total*100}%"></i></div><p class="mute sm">Splaceno ${fmt(paid)} z ${fmt(L.total)}</p>
+${nx?`<div class="acctok" style="margin:0 0 14px">${I('loan')}<span>Další splátka <b>${fmt(nx.a)}</b> · ${cz(nx.d)} ve 20:00</span></div>`:''}
+<label class="field">Splatit navíc (Sh)<input id="rAmt" type="number" min="1" placeholder="${Math.min(1000,L.debt)}" inputmode="decimal"></label>
+<div class="row2"><button class="cta" data-act="repay">Splatit</button><button class="ghost" data-act="repayAll">Splatit vše</button></div>
+<button class="ghost" data-act="simDue" style="margin-top:10px">${I('spark')}Simulovat další splátku (jen prototyp)</button></section>
+<section class="glass box"><h3>Plán splátek</h3>${planFields(L.plan)}<button class="ghost" data-act="savePlan">Uložit plán</button><div id="plPrev" style="margin-top:12px">${schedHtml(L.debt,L.plan)}</div></section></div>`};
+
+const SYM={dia:20,seven:15,star:10,bell:8,cherry:5};
+const sym=s=>`<svg><use href="#s-${s}"/></svg>`;
+function scratchHtml(){if(!S.scr)return `<div class="scratch">Kup si los a setři ho</div>`;if(!S.scr.open)return `<div class="scratch cover" data-act="scratch">Klikni a setři</div>`;return S.scr.prize?`<div class="scratch won"><span class="gtext">+${S.scr.prize} ž.</span></div>`:`<div class="scratch">Tentokrát nic</div>`}
+P.kasino=()=>`${topBar('Kasino',S.chips+' žetonů')}
+<div class="g2">
+<section class="glass box center"><small class="mute">Tvoje žetony</small><div class="num gtext">${S.chips} ž.</div><small class="mute">= ${fmt(S.chips*10)} · 1 žeton = 10 Sh</small>
+<label class="field" style="margin-top:16px;text-align:left">Počet žetonů<input id="cQty" type="number" min="1" value="10" inputmode="numeric"></label><div class="row2"><button class="ghost" data-act="chipBuy">Koupit</button><button class="ghost" data-act="chipSell">Prodat</button></div></section>
+<section class="glass box"><h3>Automat</h3><div class="reels">${S.reels.map((s,i)=>`<div class="reel" id="r${i}">${sym(s)}</div>`).join('')}</div>
+<div class="stake">${[1,5,10,25].map(v=>`<button data-act="stake" data-v="${v}" class="${S.stake==v?'on':''}">${v} ž.</button>`).join('')}</div>
+<button class="cta" data-act="spin" id="spinBtn">Zatočit · ${S.stake} ž.</button><p class="mute sm center" style="margin:10px 0 0">3 stejné až ×20 · 2 stejné ×2</p></section>
+<section class="glass box"><div class="gi">${I('ticket')}</div><h3 style="margin:0">Večerní loterie</h3><small class="mute">Losování ve 20:00 · los 2 ž.</small><div class="cd gtext" data-cd>--:--:--</div><p class="mute sm">Tvoje losy v tomto kole: <b>${S.lot}</b></p><button class="ghost" data-act="lot">Koupit los</button></section>
+<section class="glass box"><div class="gi">${I('spark')}</div><h3 style="margin:0">Stírací los</h3><small class="mute">Výhra až 60 žetonů · los 3 ž.</small>${scratchHtml()}<button class="ghost" data-act="scrBuy">Koupit los</button></section>
+</div>`;
+
+P.burza=()=>{const s=stk(S.sel)||ST[0],own=S.hold[s.id]||0,cats=[...new Set(ST.map(x=>x.c))],list=ST.filter(x=>S.cat==='all'||x.c===S.cat),c=chg(s),m=(s.h.at(-1)/s.h[0]-1)*100,canBuy=Math.floor(S.bal/s.p);
+return `${topBar('Burza','Portfolio '+f0(pv()))}
+<div class="g2"><section class="glass box"><div class="sec"><h3>Trh · ${ST.length} značek</h3><small class="mute">${PRICES.live?`podle skutečného trhu · ${PRICES.at.toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'})}`:'simulované ceny'}</small></div>
+<div class="pick-search" style="margin:4px 0 10px">${I('search')}<input id="bSearch" placeholder="Hledej značku" autocomplete="off" value="${S.bq}"></div>
+<label class="field"><select id="bCat" aria-label="Kategorie"><option value="all">Všechny kategorie</option>${cats.map(k=>`<option ${S.cat===k?'selected':''}>${k}</option>`).join('')}</select></label>
+<div class="mkt">${list.map(x=>{const ch=chg(x);return `<button class="mi ${x.id===s.id?'on':''}" data-act="sel" data-v="${x.id}" data-q="${norm(x.n+' '+x.c)}" ${S.bq&&!norm(x.n+' '+x.c).includes(norm(S.bq))?'style="display:none"':''}><span><b>${x.n}</b><small>${x.c}</small></span><span><b>${fmt(x.p)}</b><small class="${ch>=0?'pos':'neg'}">${pct(ch)} dnes</small></span></button>`}).join('')}</div></section>
+<section class="glass box"><small class="mute">${s.c}</small><h3 style="font-size:22px;margin:2px 0 0">${s.n}</h3><div class="num md">${fmt(s.p)}</div><small class="${c>=0?'pos':'neg'}" style="font-weight:700">${pct(c)} dnes</small> <small class="mute">· ${pct(m)} za ${s.h.length} dní</small>${chart(s.h)}<p class="mute sm">Vlastníš ${own} ks · ${fmt(own*s.p)} · za svých ${f0(S.bal)} koupíš až ${canBuy} ks</p>
+<label class="field">Počet kusů<input id="bQty" type="number" min="1" value="1" inputmode="numeric"></label><div class="row2"><button class="cta" data-act="buy">Koupit</button><button class="ghost" data-act="sell">Prodat</button></div></section></div>
+<section class="glass box"><h3>Moje portfolio</h3>${holdings()}</section>`};
+
+P.tym=()=>`${topBar('Tým',visible().length+' lidí v bance')}
+${can.editAcct()?`<section class="glass box"><p class="sm" style="margin:0">${I('edit')} <b>${ROLES[S.role]}</b> může měnit čísla účtů. Klikni na číslo, přepiš ho a potvrď Enterem.</p></section>`:''}
+<section class="glass box"><div class="sec" style="margin-bottom:12px"><div class="pick-search" style="flex:1;margin:0">${I('search')}<input id="tSearch" placeholder="Hledej jméno, roli nebo číslo účtu" autocomplete="off"></div><small class="mute" id="tCount" style="white-space:nowrap">${visible().length} lidí</small></div><div class="people">${visible().map(p=>`<div class="person" data-q="${norm(p.n+' '+p.r+' '+p.acct)}"><span class="av">${p.n[0]}</span><div class="m"><b>${p.n}${p.n===S.me?' <small>(ty)</small>':''}</b><span class="role k-${p.k}">${p.r}</span> <small>${can.editAcct()?`· účet <input class="acctin" data-acct="${p.n}" value="${p.acct}" inputmode="numeric" maxlength="6" aria-label="Číslo účtu ${p.n}">`:""}</small>${card(p.card).custom?' <small>· custom karta</small>':''}</div>${p.n!==S.me?`<button class="ghost sm" data-act="payTo" data-v="${p.n}">${I('send')}Poslat</button>`:''}</div>`).join('')}</div></section>`;
+
+P.banka=()=>{if(!can.seeBank())return topBar('Banka')+'<section class="glass box"><p class="mute" style="margin:0">Sem nemáš přístup.</p></section>';
+ const inn=S.fundTx.filter(t=>t.d==='Teď'&&t.a>0).reduce((x,t)=>x+t.a,0),out=S.fundTx.filter(t=>t.d==='Teď'&&t.a<0).reduce((x,t)=>x-t.a,0),cas=S.cas.lost-S.cas.won;
+ return `${topBar('Banka','Fond banky · účet 1000')}
+<section class="glass box bal"><small>Peníze ve fondu</small><div class="num gtext">${fmt(S.fund)}</div>
+<div class="pills"><div class="pill">Teď přišlo<b class="pos">+${f0(inn)}</b></div><div class="pill">Teď odešlo<b class="neg">−${f0(out)}</b></div><div class="pill">Půjčky venku<b>${f0((S.loan?S.loan.debt:0)+12400)}</b></div><div class="pill">Kasino pro banku<b class="${cas>=0?'pos':'neg'}">${cas>=0?'+':''}${cas} ž.</b></div></div>${chart(S.fundHist)}</section>
+<div class="g2"><section class="glass box"><div class="sec"><h3>Pohyby fondu</h3><small class="mute">${S.fundTx.length}</small></div>${S.fundTx.slice(0,12).map(t=>`<div class="tx"><div class="ic ${t.a>=0?'p':'n'}">${I(t.a>=0?'recv':'send')}</div><div class="m"><b>${t.t}</b><small>${t.w} · ${t.d}</small></div><div class="a ${t.a>=0?'pos':'neg'}">${t.a>=0?'+':'−'}${fN(Math.abs(t.a))}</div></div>`).join('')}</section>
+<div style="display:flex;flex-direction:column;gap:20px">
+${can.payFromBank()?`<section class="glass box"><h3>Výplata z fondu</h3><label class="field">Komu<select id="fTo">${visible().map(p=>`<option>${p.n}</option>`).join('')}</select></label><label class="field">Částka (Sh)<input id="fAmt" type="number" min="1" placeholder="500" inputmode="decimal"></label><label class="field">Důvod<input id="fWhy" maxlength="40" placeholder="Odměna za soutěž"></label><button class="cta" data-act="fundPay">Vyplatit z fondu</button>
+<button class="ghost" data-act="interest" style="margin-top:10px">${I('gift')}Vyplatit pondělní úroky ze spoření</button></section>`:''}
+${can.manageBank()?`<section class="glass box"><h3>Kdo vidí Banku</h3><p class="mute sm">Majitel a Banka ji vidí vždy. Ostatním ji zapneš tady.</p>${visible().filter(p=>p.k!=='own'&&p.k!=='cust').concat(visible().filter(p=>p.k==='cust').slice(0,4)).map(p=>`<label class="kv" style="cursor:pointer"><span><b style="color:var(--ink)">${p.n}</b> · ${p.r}</span><input type="checkbox" data-bacc="${p.n}" ${S.bankAccess.includes(p.n)?'checked':''} style="width:20px;height:20px;accent-color:var(--a2)"></label>`).join('')}</section>`:''}
+</div></div>`};
+P.zadosti=()=>{if(!can.approve())return topBar('Žádosti')+'<section class="glass box"><p class="mute" style="margin:0">Sem nemáš přístup.</p></section>';
+ return `${topBar('Žádosti o registraci',S.reqs.length?S.reqs.length+' čeká':'nic nečeká')}
+<section class="glass box"><p class="mute sm">Nové účty musí někdo schválit. Žádosti vidí Banka, Majitel, Zástupce, Vývojář a Grafik.</p>
+${S.reqs.length?S.reqs.map((r,i)=>`<div class="person" style="margin-top:10px"><span class="av">${r.n[0]}</span><div class="m"><b>${r.n}</b><small>žádost · ${r.d}</small></div><div class="row2" style="margin:0"><button class="ghost sm" data-act="reqNo" data-v="${i}">${I('x')}Zamítnout</button><button class="cta" style="width:auto;padding:9px 14px" data-act="reqOk" data-v="${i}">${I('check')}Schválit</button></div></div>`).join(''):'<div class="empty">Všechno vyřízeno.</div>'}</section>`};
+
+P.oznameni=()=>{const h=`${topBar('Oznámení')}<div style="display:flex;flex-direction:column;gap:12px">${S.ann.map(a=>`<div class="ann ${a.n?'new':''}"><small>${a.w} · ${a.d}${a.n?' · <b class="gtext">nové</b>':''}</small><p>${a.t}</p></div>`).join('')}</div>`;setTimeout(()=>{if(S.unread){S.unread=0;S.ann.forEach(a=>a.n=0);navs()}},1500);return h};
+
+P.nastaveni=()=>{const p=me(),mine=CARDS.filter(c=>!c.custom||c.id===p.card);return `${topBar('Nastavení')}
+<div class="g2">
+<section class="glass box"><h3>Vzhled</h3><div class="seg"><button data-act="theme" data-v="dark" class="${S.theme==='dark'?'on':''}">Tmavý</button><button data-act="theme" data-v="light" class="${S.theme==='light'?'on':''}">Světlý</button><button data-act="theme" data-v="system" class="${S.theme==='system'?'on':''}">Podle zařízení</button></div><p class="mute sm" style="margin:0">Pamatuje se v tomto prohlížeči.</p></section>
+<section class="glass box"><h3>Profil</h3><label class="field">Jméno<input id="nm" value="${p.n}" maxlength="20"></label><div class="kv"><span>Číslo účtu</span><b>${p.acct}</b></div><div class="kv"><span>Role</span><b>${p.r}</b></div><button class="ghost" data-act="rename" style="margin-top:10px">Uložit jméno</button></section>
+${S.role==='bank'?'':`<section class="glass box"><h3>Moje karta</h3><div style="max-width:320px;margin-bottom:14px">${pc()}</div><div class="gal">${mine.map(c=>{const lock=c.min&&S.bal+S.sav<c.min;return `<button class="gc ${p.card===c.id?'on':''}" data-act="card" data-v="${c.id}" ${lock?'disabled':''}><span class="sw" style="background:${c.bg}"></span>${c.n}${c.custom?' · custom':''}</button>`}).join('')}</div></section>`}
+<section class="glass box"><h3>Prototyp · role</h3><p class="mute sm">Přepni roli a vyzkoušej, co kdo vidí. Do Banky se přihlásíš přes Odhlásit → jméno <b>Banka</b>.</p>${S.role==='bank'?'':`<div class="seg" style="flex-wrap:wrap">${['cust','vice','gfx','dev','own'].map(k=>`<button data-act="role" data-v="${k}" class="${S.role===k?'on':''}">${ROLES[k]}</button>`).join('')}</div>`}
+<div class="kv"><span>Schvaluje registrace</span><b>${can.approve()?'ano':'ne'}</b></div><div class="kv"><span>Mění čísla účtů</span><b>${can.editAcct()?'ano':'ne'}</b></div><div class="kv"><span>Vidí Banku</span><b>${can.seeBank()?'ano':'ne'}</b></div><div class="kv" style="margin-bottom:12px"><span>Vyplácí z fondu</span><b>${can.payFromBank()?'ano':'ne'}</b></div><button class="ghost" data-act="logout">${I('out')}Odhlásit se</button></section>
+</div>`};
+
+/* ---------- render ---------- */
+const route=()=>{const r=(location.hash.replace(/^#\/?/,'')||'ucet').split('?')[0];return P[r]?r:'ucet'};
+function navs(){const r=route(),b=S.unread?`<span class="nbdg">${S.unread}</span>`:'';
+ const rq=S.reqs.length&&can.approve()?`<span class="nbdg">${S.reqs.length}</span>`:'',bd=k=>k==='oznameni'?b:k==='zadosti'?rq:'';
+ $('#side').innerHTML=`<a class="logo" href="#/${S.role==='bank'?'banka':'ucet'}"><i>N</i><span>NašeBanka</span></a>`+navList().map(n=>n?`<a class="nl ${n[0]===r?'on':''}" href="#/${n[0]}">${I(n[2])}<span>${n[1]}</span>${bd(n[0])}</a>`:'<hr>').join('');
+ const more=['pujcky','tym','oznameni','nastaveni','banka','zadosti','sprava','krypto','kviz','noviny','zpravy','studio'].includes(r);
+ if(S.role==='bank'){$('#bn').innerHTML=`<a href="#/banka" class="${r==='banka'?'on':''}">${I('vault')}Banka</a><a href="#/zadosti" class="${r==='zadosti'?'on':''}">${I('inbox')}Žádosti${rq}</a><a href="#/sprava" class="${r==='sprava'?'on':''}">${I('shield')}Správa</a><a href="#/tym" class="${r==='tym'?'on':''}">${I('team')}Tým</a><a href="#/nastaveni" class="${r==='nastaveni'?'on':''}">${I('cog')}Více</a>`}else
+ $('#bn').innerHTML=`<a href="#/ucet" class="${r==='ucet'?'on':''}">${I('home')}Účet</a><a href="#/burza" class="${r==='burza'?'on':''}">${I('chart')}Burza</a><a href="#/platby" aria-label="Poslat platbu"><span class="fab">${I('send')}</span></a><a href="#/kasino" class="${r==='kasino'?'on':''}">${I('dice')}Kasino</a><button data-act="more" class="${more?'on':''}">${I('menu')}Více${b||rq}</button>`;
+ $('#sheetGrid').innerHTML=[['platby','Platby','send'],['pujcky','Půjčky','loan'],['tym','Tým','team'],['oznameni','Oznámení','bell'],['nastaveni','Nastavení','cog'],['burza','Burza','chart'],['krypto','Krypto','coin'],['noviny','Noviny','news'],['zpravy','Zprávy','chat'],['kviz','Kvíz','quiz'],...navList().filter(n=>n&&['banka','sprava','studio','zadosti'].includes(n[0]))].map(n=>`<a href="#/${n[0]}">${I(n[2])}${n[1]}${bd(n[0])}</a>`).join('');
+ document.querySelectorAll('.ibtn .dot').forEach(d=>{if(!S.unread)d.remove()});
+}
+function render(keepScroll){if(S.role==='bank'&&['ucet','platby','pujcky','kasino','burza','krypto','kviz'].includes(route())){location.hash='#/banka';return}const y=scrollY;navs();$('#main').innerHTML=P[route()]();document.title='NašeBanka · '+((navList().concat(NAV)).find(n=>n&&n[0]===route())||[0,''])[1];tick();keepScroll?scrollTo(0,y):scrollTo(0,0)}
+addEventListener('hashchange',()=>{$('#sheet').classList.remove('open');render()});
+
+/* ---------- actions ---------- */
+const num=id=>{const v=parseFloat(($(id)||{}).value);return isFinite(v)?Math.round(v*100)/100:NaN};
+const A={
+ focusSav(e){e&&e.preventDefault&&e.preventDefault();if(route()!=='ucet'){location.hash='#/ucet';setTimeout(A.focusSav,50);return}const s=$('#sav');s.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>$('#savAmt').focus({preventScroll:true}),350)},
+ savIn(){const a=num('#savAmt');if(!(a>0))return toast('Zadej částku.',false);if(a>S.bal)return toast('Na účtu nemáš dost peněz.',false);S.bal-=a;S.sav+=a;addTx('int','Vklad na spoření','spoření',-a);toast('Vloženo '+fmt(a)+' na spoření.');render(1)},
+ savOut(){const a=num('#savAmt');if(!(a>0))return toast('Zadej částku.',false);if(a>S.sav)return toast('Na spoření tolik nemáš.',false);S.sav-=a;S.bal+=a;addTx('int','Výběr ze spoření','spoření',a);toast('Vybráno '+fmt(a)+'.');render(1)},
+ pickToggle(){pickOpen(!$('#picker').classList.contains('open'))},
+ pick(b){S.pre=b.dataset.v;$('#picker .pick-btn').innerHTML=pickBtnInner();pickOpen(false);$('#pAmt').focus()},
+ payTo(b){S.pre=b.dataset.v;location.hash='#/platby'},
+ pay(){const to=TEAM.find(p=>p.n===S.pre);
+  if(!to){pickOpen(true);return toast('Vyber příjemce.',false)}if(to.n===S.me)return toast('Sám sobě poslat nemůžeš.',false);
+  const a=num('#pAmt');if(!(a>0))return toast('Zadej částku.',false);const fee=Math.round(a*S.cfg.fee)/100,tot=a+fee;if(tot>S.bal)return toast('Nemáš dost peněz (i s poplatkem '+fmt(fee)+').',false);
+  fund(fee,'Poplatek z platby');S.bal-=tot;addTx('out',to.n+' · účet '+to.acct,$('#pMsg').value.trim()||'platba',-tot);S.recent=[to.n,...S.recent.filter(n=>n!==to.n)].slice(0,3);S.pre=null;toast('Odesláno '+fmt(a)+' → '+to.n);render(1)},
+ loan(){const a=S.lAmt;if(!(a>0)||a>loanMax())return toast('Maximum půjčky je '+f0(loanMax())+'.',false);let plan;try{plan=readPlan(a*LF())}catch(m){return toast(m,false)}if(a>S.fund)return toast('Banka teď nemá dost peněz na takovou půjčku.',false);S.plan=plan;S.loan={amt:a,total:a*LF(),debt:a*LF(),plan};S.bal+=a;fund(-a,'Vyplacená půjčka');addTx('loan','Půjčka od banky','půjčka',a);toast('Půjčka '+fmt(a)+' je na účtu.');render(1)},
+ repay(x,all){const L=S.loan;let a=all?L.debt:num('#rAmt');if(!(a>0))return toast('Zadej splátku.',false);a=Math.min(a,L.debt);if(a>S.bal)return toast('Na účtu nemáš dost peněz.',false);S.bal-=a;fund(a,'Splátka půjčky');L.debt=Math.round((L.debt-a)*100)/100;addTx('loan','Splátka půjčky','půjčka',-a);if(L.debt<=0){S.loan=null;toast('Půjčka je splacená!')}else toast('Splaceno '+fmt(a)+'.');render(1)},
+ repayAll(){A.repay(null,1)},
+ savePlan(){const L=S.loan;try{L.plan=readPlan(L.debt)}catch(m){return toast(m,false)}toast('Plán splátek uložen.');render(1)},
+ simDue(){const L=S.loan,p=L.plan,a=Math.min(p.amt,L.debt);if(a>S.bal)return toast('Na účtu není dost peněz – splátka počká.',false);S.bal-=a;fund(a,'Automatická splátka');L.debt=Math.round((L.debt-a)*100)/100;addTx('loan','Automatická splátka','půjčka',-a);p.date=nextDate(p.date,p.freq,+p.date.slice(8));if(L.debt<=0){S.loan=null;toast('Půjčka je splacená!')}else toast('Strženo '+fmt(a)+'. Další splátka '+cz(p.date)+'.');render(1)},
+ chipBuy(){const q=Math.floor(num('#cQty'));if(!(q>0))return toast('Zadej počet žetonů.',false);const c=q*10*(1+S.cfg.fee/100);if(c>S.bal)return toast('Nemáš dost Sh.',false);S.bal-=c;S.chips+=q;fund(c,'Nákup žetonů');addTx('chip','Nákup žetonů',q+' ž.',-c);toast('Koupeno '+q+' žetonů.');render(1)},
+ chipSell(){const q=Math.floor(num('#cQty'));if(!(q>0))return toast('Zadej počet žetonů.',false);if(q>S.chips)return toast('Tolik žetonů nemáš.',false);const g=q*10*(1-S.cfg.fee/100);if(g>S.fund)return toast('Banka teď nemá dost peněz na výkup.',false);S.chips-=q;S.bal+=g;fund(-g,'Výkup žetonů');addTx('chip','Prodej žetonů',q+' ž.',g);toast('Prodáno '+q+' žetonů.');render(1)},
+ stake(b){S.stake=+b.dataset.v;render(1)},
+ spin(){if(S.chips<S.stake)return toast('Nemáš dost žetonů.',false);S.chips-=S.stake;const keys=Object.keys(SYM),res=[0,1,2].map(()=>keys[Math.floor(Math.random()*keys.length)]);$('#spinBtn').disabled=true;
+  const els=[0,1,2].map(i=>$('#r'+i));els.forEach(e=>{e.classList.remove('win');e.classList.add('spin')});const iv=setInterval(()=>els.forEach(e=>{if(e.classList.contains('spin'))e.innerHTML=sym(keys[Math.floor(Math.random()*keys.length)])}),70);
+  els.forEach((e,i)=>setTimeout(()=>{e.classList.remove('spin');e.innerHTML=sym(res[i]);if(i===2){clearInterval(iv);S.reels=res;let m=0;if(res[0]===res[1]&&res[1]===res[2])m=SYM[res[0]];else if(res[0]===res[1]||res[1]===res[2]||res[0]===res[2])m=2;const w=S.stake*m;S.chips+=w;S.cas.lost+=S.stake;S.cas.won+=w;
+   if(m){els.forEach((x,j)=>{if(res.filter(r=>r===res[j]).length>1)x.classList.add('win')});toast('Výhra '+w+' žetonů (×'+m+')!')}else toast('Tentokrát nic. Zkus to znovu.',false);
+   setTimeout(()=>{const wins=els.map(x=>x.classList.contains('win'));render(1);wins.forEach((w,j)=>w&&$('#r'+j).classList.add('win'))},700)}},600+i*350))},
+ lot(){if(S.chips<2)return toast('Los stojí 2 žetony.',false);S.chips-=2;S.lot++;S.cas.lost+=2;toast('Máš los do dnešního losování.');render(1)},
+ scrBuy(){if(S.scr&&!S.scr.open)return toast('Nejdřív setři ten, co máš.',false);if(S.chips<3)return toast('Los stojí 3 žetony.',false);S.chips-=3;S.cas.lost+=3;const r=Math.random();S.scr={open:0,prize:r<.02?60:r<.1?15:r<.3?6:r<.5?3:0};render(1)},
+ scratch(){S.scr.open=1;S.chips+=S.scr.prize;S.cas.won+=S.scr.prize;S.scr.prize?toast('Vyhrál jsi '+S.scr.prize+' žetonů!'):toast('Tentokrát nic.',false);render(1)},
+ sel(b){S.sel=b.dataset.v;render(1)},
+ buy(){const s=stk(S.sel),q=Math.floor(num('#bQty'));if(!(q>0))return toast('Zadej počet kusů.',false);const c=q*s.p;if(c>S.bal)return toast('Nemáš dost Sh.',false);S.bal-=c;fund(c,'Nákup akcií · '+s.n);S.hold[s.id]=(S.hold[s.id]||0)+q;addTx('inv','Nákup · '+s.n,'investice',-c);toast('Koupeno '+q+' ks '+s.n+'.');render(1)},
+ sell(){const s=stk(S.sel),q=Math.floor(num('#bQty'));if(!(q>0))return toast('Zadej počet kusů.',false);if(q>(S.hold[s.id]||0))return toast('Tolik kusů nemáš.',false);if(q*s.p>S.fund)return toast('Banka teď nemá dost peněz na výkup.',false);S.hold[s.id]-=q;S.bal+=q*s.p;fund(-q*s.p,'Výkup akcií · '+s.n);addTx('inv','Prodej · '+s.n,'investice',q*s.p);toast('Prodáno '+q+' ks '+s.n+'.');render(1)},
+ more(){$('#sheet').classList.add('open')},
+ theme(b){setTheme(b.dataset.v);render(1)},
+ role(b){S.role=b.dataset.v;me().k=S.role;me().r=ROLES[S.role];toast('Teď jsi '+ROLES[S.role].toLowerCase()+'.');render(1)},
+ fundPay(){if(!can.payFromBank())return;const to=$('#fTo').value,a=num('#fAmt'),why=$('#fWhy').value.trim()||'výplata';if(!(a>0))return toast('Zadej částku.',false);if(a>S.fund)return toast('Ve fondu tolik není.',false);fund(-a,'Výplata · '+why,to);if(to===S.me){S.bal+=a;addTx('in','Banka','výplata · '+why,a)}toast('Vyplaceno '+fmt(a)+' → '+to);render(1)},
+ interest(){const i=Math.round(S.sav*S.cfg.sav)/100;if(!i)return toast('Nikdo teď nemá nic na spoření.',false);fund(-i,'Úroky ze spoření (5 %)','všichni');S.sav+=i;addTx('int','Úrok ze spoření','spoření',i);toast('Úroky vyplaceny: '+fmt(i));render(1)},
+ reqOk(b){const r=S.reqs.splice(+b.dataset.v,1)[0],acct=String(Math.max(...TEAM.map(p=>+p.acct))+1);TEAM.push({n:r.n,r:'Zákazník',k:'cust',acct,card:'neon'});toast(r.n+' je schválený · účet '+acct);render(1)},
+ reqNo(b){const r=S.reqs.splice(+b.dataset.v,1)[0];toast('Žádost od '+r.n+' zamítnuta.',false);render(1)},
+ regMode(){loginMode(!$('#loginForm').dataset.reg)},
+ card(b){me().card=b.dataset.v;toast('Karta změněna.');render(1)},
+ rename(){const v=$('#nm').value.trim();if(v.length<2)return toast('Jméno je moc krátké.',false);if(TEAM.some(p=>p.n===v&&p!==me()))return toast('To jméno už někdo má.',false);me().n=v;S.me=v;toast('Jméno uloženo.');render(1)},
+ logout(){loginMode(false);$('#login').classList.add('open')},
+};
+document.addEventListener('click',e=>{if(e.target.id==='sheet'){e.target.classList.remove('open');return}const pk=$('#picker');if(pk&&pk.classList.contains('open')&&!pk.contains(e.target))pickOpen(false);const a=e.target.closest('[data-act]');if(!a||a.disabled)return;const f=A[a.dataset.act];if(f){if(a.tagName==='A')e.preventDefault();f(a)}});
+document.addEventListener('input',e=>{const t=e.target;
+ if(t.id==='lAmt'){S.lAmt=+t.value;$('#lV').textContent=fmt(S.lAmt);$('#lGet').textContent=fmt(S.lAmt);$('#lRet').textContent=fmt(S.lAmt*LF())}
+ if(['lAmt','plAmt','plDate','plFreq'].includes(t.id)&&$('#plPrev')){const p={amt:num('#plAmt'),date:$('#plDate').value,freq:$('#plFreq').value};if(!S.loan)S.plan=p;$('#plPrev').innerHTML=schedHtml(S.loan?S.loan.debt:S.lAmt*LF(),p)}
+ if(t.id==='bSearch'){S.bq=t.value;const q=norm(t.value.trim());document.querySelectorAll('.mi').forEach(el=>el.style.display=!q||el.dataset.q.includes(q)?'':'none')}
+ if(t.id==='bCat'){S.cat=t.value;render(1)}
+ if(t.id==='pSearch'){$('#pList').innerHTML=pickRows(t.value);$('#pList').scrollTop=0}
+ if(t.id==='tSearch'){const q=norm(t.value.trim());let n=0;document.querySelectorAll('.person').forEach(el=>{const ok=!q||el.dataset.q.includes(q);el.style.display=ok?'':'none';n+=ok});$('#tCount').textContent=n+' z '+visible().length}
+ if(t.classList.contains('acctin'))t.value=t.value.replace(/\D/g,'');
+});
+document.addEventListener('change',e=>{const t=e.target;if(t.dataset.bacc){const n=t.dataset.bacc;S.bankAccess=t.checked?[...S.bankAccess,n]:S.bankAccess.filter(x=>x!==n);toast(n+(t.checked?' teď vidí Banku.':' už Banku nevidí.'));return}if(!t.classList.contains('acctin'))return;const p=TEAM.find(x=>x.n===t.dataset.acct),v=t.value;
+ if(v.length<3){t.value=p.acct;return toast('Číslo účtu musí mít aspoň 3 číslice.',false)}
+ if(TEAM.some(x=>x!==p&&x.acct===v)){t.value=p.acct;return toast('Číslo '+v+' už má někdo jiný.',false)}
+ const old=p.acct;p.acct=v;toast(p.n+': účet '+old+' → '+v)});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.classList.contains('acctin'))e.target.blur();if(e.key==='Escape'){$('#sheet').classList.remove('open');if($('#picker'))pickOpen(false)}if(e.target.id==='pSearch'){const rows=[...document.querySelectorAll('.pick-row')];let i=rows.findIndex(r=>r.classList.contains('act'));if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();i=e.key==='ArrowDown'?Math.min(i+1,rows.length-1):Math.max(i-1,0);rows.forEach((r,j)=>r.classList.toggle('act',j===i));rows[i]&&rows[i].scrollIntoView({block:'nearest'})}if(e.key==='Enter'&&rows.length){e.preventDefault();A.pick(rows[Math.max(i,0)])}}});
+function loginMode(reg){const f=$('#loginForm');if(reg)f.dataset.reg='1';else delete f.dataset.reg;
+ $('#lgBody').innerHTML=reg?`<h1>Registrace</h1><p class="mute sm">Účet začne fungovat, až ho někdo schválí.</p><label class="field">Jméno<input id="lgName" maxlength="20" autocomplete="username"></label><label class="field">Heslo (aspoň 6 znaků)<input id="lgPass" type="password" autocomplete="new-password"></label><button class="cta" type="submit">Poslat žádost</button><button class="ghost" type="button" data-act="regMode" style="margin-top:10px">Už mám účet</button>`
+ :`<h1>Přihlášení</h1><p class="mute sm">Internetové bankovnictví NašeBanka.</p><label class="field">Uživatelské jméno<input id="lgName" autocomplete="username" value="${S.me}"></label><label class="field">Heslo<input id="lgPass" type="password" autocomplete="current-password"></label><button class="cta" type="submit">Přihlásit se</button><button class="ghost" type="button" data-act="regMode" style="margin-top:10px">Nemáš účet? Zaregistruj se</button><p class="mute sm center" style="margin:14px 0 0">Prototyp: heslo se nekontroluje. Zkus Claude, Tomáš, Matyáš nebo Banka.</p>`}
+$('#loginForm').addEventListener('submit',e=>{e.preventDefault();const f=e.target,name=$('#lgName').value.trim();if(!name)return toast('Zadej jméno.',false);
+ if(f.dataset.reg){if(($('#lgPass').value||'').length<6)return toast('Heslo musí mít aspoň 6 znaků.',false);if(TEAM.some(p=>norm(p.n)===norm(name))||S.reqs.some(r=>norm(r.n)===norm(name)))return toast('To jméno už existuje.',false);S.reqs.push({n:name,d:'Teď'});loginMode(false);return toast('Žádost odeslána. Počkej, až ji někdo schválí.')}
+ const p=TEAM.find(x=>norm(x.n)===norm(name));if(!p)return toast(S.reqs.some(r=>norm(r.n)===norm(name))?'Tvoje registrace ještě čeká na schválení.':'Takový účet neexistuje.',false);
+ S.me=p.n;S.role=p.k;$('#login').classList.remove('open');location.hash=p.k==='bank'?'#/banka':'#/ucet';render();toast('Vítej, '+p.n+'!')});
+loginMode(false);
+
+/* ---------- theme ---------- */
+const mq=matchMedia('(prefers-color-scheme: light)');
+function setTheme(v,save=true){S.theme=v;document.documentElement.dataset.theme=v==='system'?(mq.matches?'light':'dark'):v;if(save)try{localStorage.setItem('nb-theme',v)}catch(e){}}
+mq.addEventListener('change',()=>S.theme==='system'&&setTheme('system',false));
+addEventListener('storage',e=>{if(e.key==='nb-theme'&&e.newValue){setTheme(e.newValue,false);if(route()==='nastaveni')render(1)}});
+window.setTheme=setTheme;
+try{setTheme(localStorage.getItem('nb-theme')||'dark',false)}catch(e){setTheme('dark',false)}
+
+/* ---------- lottery countdown ---------- */
+function tick(){const n=new Date(),t=new Date(n);t.setHours(20,0,0,0);if(t<=n)t.setDate(t.getDate()+1);const s=Math.floor((t-n)/1000),p=x=>String(x).padStart(2,'0');document.querySelectorAll('[data-cd]').forEach(el=>el.textContent=`${p(Math.floor(s/3600))}:${p(Math.floor(s/60)%60)}:${p(s%60)}`)}
+setInterval(tick,1000);
+/* start je na konci prototyp-funkce.js */
+</script>
+<script src="prototyp-funkce.js"></script>
+<script src="prototyp-funkce2.js"></script>
+</body>
+</html>

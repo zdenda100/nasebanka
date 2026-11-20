@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="ikona.svg" type="image/svg+xml">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NašeBanka Neon</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:"Space Grotesk",system-ui,sans-serif;background:#1a1b22;color:#eee;transition:background .2s}
+body.light{background:#d9d6e6;color:#17142b}
+.bar{position:sticky;top:0;z-index:9;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 16px;background:#111;color:#fff}
+.bar b{margin-right:auto}
+.bar a{color:#c4b5fd;font-size:13px;font-weight:600;margin-right:8px}
+.seg{display:flex;background:#222;border-radius:999px;padding:3px}
+.seg button{border:0;background:transparent;color:#bbb;font:600 13px "Space Grotesk";padding:7px 14px;border-radius:999px;cursor:pointer}
+.seg button.on{background:#fff;color:#111}
+.wrap{max-width:1300px;margin:0 auto;padding:20px 16px 60px}
+.lbl{font-weight:700;font-size:15px;margin:24px 0 10px;opacity:.85}
+.lbl small{font-weight:400;opacity:.7;margin-left:8px}
+.row{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start}
+.scroll{overflow-x:auto;padding-bottom:8px}
+iframe{border:0;display:block;background:#0a0b14}
+.desk{width:1240px;border-radius:18px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.35);border:1px solid #333}
+.desk .chrome{height:34px;background:#1f2029;display:flex;align-items:center;gap:7px;padding:0 14px}
+.desk .chrome i{width:11px;height:11px;border-radius:50%;background:#3a3b46}
+.desk .chrome span{margin-left:14px;font-size:12px;color:#9aa0b8;background:#2a2b36;padding:3px 14px;border-radius:7px}
+.tab{border:12px solid #050508;border-radius:36px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.35)}
+.ph{border:11px solid #050508;border-radius:50px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.35);background:#050508;position:relative}
+.ph .isl{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:110px;height:30px;border-radius:20px;background:#050508;z-index:2}
+.ph .sb{height:44px;background:#0a0b14;color:#fff;display:flex;justify-content:space-between;align-items:center;padding:8px 26px 0;font-size:14px;font-weight:600}
+body.light .ph .sb{background:#f6f4ff;color:#17142b}
+</style>
+</head>
+<body>
+<div class="bar">
+  <b>NašeBanka · Noční neon · klikací prototyp</b>
+  <a href="prototyp.html" target="_blank">Otevřít na celou obrazovku ↗</a>
+  <div class="seg" id="theme"><button data-v="dark" class="on">Tmavý</button><button data-v="light">Světlý</button></div>
+  <div class="seg" id="view"><button data-v="all" class="on">Vše</button><button data-v="desk">Počítač</button><button data-v="tab">Tablet</button><button data-v="ph">Telefon</button></div>
+</div>
+<div class="wrap">
+  <section data-dev="desk">
+    <div class="lbl">Počítač <small>1240 px · boční menu</small></div>
+    <div class="scroll"><div class="desk"><div class="chrome"><i></i><i></i><i></i><span>zdenda100.github.io/nasebanka/ucet</span></div><iframe src="prototyp.html?v=3#/ucet" width="1240" height="800" title="Počítač"></iframe></div></div>
+  </section>
+  <div class="row">
+    <section data-dev="tab">
+      <div class="lbl">Tablet <small>834 px · lišta s ikonami</small></div>
+      <div class="scroll"><div class="tab"><iframe src="prototyp.html?v=3#/ucet" width="834" height="1112" title="Tablet"></iframe></div></div>
+    </section>
+    <section data-dev="ph">
+      <div class="lbl">Telefon <small>390 px · spodní lišta</small></div>
+      <div class="ph"><div class="isl"></div><div class="sb"><span>9:41</span><span>● ▮</span></div><iframe src="prototyp.html?v=3#/ucet" width="390" height="800" title="Telefon"></iframe></div>
+    </section>
+  </div>
+</div>
+<script>
+function seg(id,fn){const s=document.getElementById(id);s.querySelectorAll('button').forEach(b=>b.onclick=()=>{s.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));fn(b.dataset.v)})}
+function applyTheme(v){document.body.classList.toggle('light',v==='light');document.querySelectorAll('#theme button').forEach(b=>b.classList.toggle('on',b.dataset.v===v))}
+seg('theme',v=>{try{localStorage.setItem('nb-theme',v)}catch(e){}applyTheme(v);document.querySelectorAll('iframe').forEach(f=>{try{f.contentWindow.setTheme(v,false)}catch(e){}})});
+seg('view',v=>document.querySelectorAll('[data-dev]').forEach(s=>s.style.display=(v==='all'||s.dataset.dev===v)?'':'none'));
+addEventListener('storage',e=>{if(e.key==='nb-theme'&&e.newValue)applyTheme(e.newValue==='light'?'light':'dark')});
+try{applyTheme(localStorage.getItem('nb-theme')==='light'?'light':'dark')}catch(e){}
+</script>
+</body>
+</html>

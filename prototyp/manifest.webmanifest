@@ -1,0 +1,14 @@
+{
+  "name": "NašeBanka",
+  "short_name": "NašeBanka",
+  "description": "Školní banka – účet, platby, kasino, burza a krypto.",
+  "start_url": "prototyp.html#/ucet",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0a0b14",
+  "theme_color": "#0a0b14",
+  "lang": "cs",
+  "icons": [
+    { "src": "ikona.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
