@@ -136,6 +136,36 @@ fieldset{border:1px solid var(--line)!important;border-radius:14px!important}
  h1{font-size:24px}
  .card{padding:18px}
 }
+
+/* ---- rozložení stránek (fáze 1b) ---- */
+.pills{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.pill{padding:8px 12px;border-radius:12px;background:var(--card2);border:1px solid var(--line);font-size:12px;color:var(--mute);flex:1 1 100px}
+.pill b{display:block;color:var(--ink);font-size:15px;white-space:nowrap}
+.qa{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:18px}
+.qa button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--ink);cursor:pointer;padding:0;min-width:0}
+.qa button span{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:var(--card2);border:1px solid var(--line);color:var(--hi);transition:.15s}
+.qa button:hover span{border-color:var(--a2);box-shadow:0 0 18px var(--glow)}
+.qa button:first-child span{background:linear-gradient(135deg,var(--a1),var(--a2));color:var(--onbrand);border:0;box-shadow:0 6px 22px var(--glow)}
+.tx>div:first-child{flex:1;min-width:0}
+.tx>div:first-child b{display:block;overflow:hidden;text-overflow:ellipsis}
+.tx:has(>span.neg)::before,.tx:has(>span.pos)::before{content:"↗";width:40px;height:40px;border-radius:13px;display:grid;place-items:center;background:var(--card2);border:1px solid var(--line);flex-shrink:0;font-weight:700;font-size:17px;color:var(--neg)}
+.tx:has(>span.pos)::before{content:"↙";color:var(--pos)}
+#cardM,#cardA{margin:0}
+@media (min-width:900px){
+ #member,#user{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:0 18px;align-items:start}
+ #member>*,#user>*{grid-column:1/-1;order:5}
+ #member>.hero,#user>.hero{grid-column:1;grid-row:1;order:1;margin-bottom:18px}
+ #cardM,#cardA{grid-column:2!important;grid-row:1;order:2;justify-content:center;align-self:center;margin-bottom:18px}
+ #user>.grid{display:contents}
+ #user>.grid>.card,#member>.card:not(.hero){grid-column:auto;order:3}
+ #member>#deputy{grid-column:1/-1;order:3}
+ #savM,#savA{grid-column:1;order:4}
+ #cgM,#cgA{order:6}
+ #set,#loan,#rr,#invest,#team,#ann,#ppl,#design,#history,#activity,#admin{columns:2 340px;column-gap:18px}
+ #set>*,#loan>*,#rr>*,#invest>*,#team>*,#ann>*,#ppl>*,#design>*,#history>*,#activity>*,#admin>*{break-inside:avoid}
+ #set .hero,#loan .hero,#rr .hero,#invest .hero,#team .hero,#ann .hero{column-span:all}
+}
+@media (max-width:699px){.qa{grid-template-columns:repeat(5,minmax(0,1fr))}.qa button span{width:46px;height:46px;border-radius:14px}.qa button{font-size:11px}}
 </style>
 </head>
 <body>
@@ -151,6 +181,8 @@ fieldset{border:1px solid var(--line)!important;border-radius:14px!important}
 <symbol id="i-card" viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="3"/><path d="M2.5 10h19"/><path d="M6 15h4"/></symbol>
 <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
 <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></symbol>
+<symbol id="i-send" viewBox="0 0 24 24"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></symbol>
+<symbol id="i-save" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="3"/><path d="M8 7V5a4 4 0 0 1 8 0v2"/><path d="M12 12v3"/></symbol>
 <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></symbol>
 </defs></svg>
 <div class="wrap">
@@ -1112,6 +1144,15 @@ function navSync(t){var n=NAVI[t]||NAVI.acc;$('ptitle').textContent=n[2];documen
  var url=BASE+n[1];if(!routePop&&location.pathname!==url)history.pushState({t},'',url);routePop=false}
 addEventListener('popstate',()=>{if($('tabs').classList.contains('hidden'))return;routePop=true;tab(slugToT(location.pathname))});
 new MutationObserver(()=>{var nba=$('nba');if(nba)$('nbmore').classList.toggle('hidden',nba.classList.contains('hidden')),$('nbmore').textContent=nba.textContent}).observe($('nba'),{attributes:true,childList:true,characterData:true,subtree:true});
+
+/* ---------- účet: přehled spoření/žetonů/investic a rychlá tlačítka (fáze 1b) ---------- */
+document.querySelectorAll('#member>.hero,#user>.hero').forEach(h=>h.insertAdjacentHTML('beforeend','<div class="pills"><div class="pill">Spoření<b data-mirror="sav">–</b></div><div class="pill">Žetony<b data-mirror="chips">–</b></div><div class="pill">Investice<b data-mirror="inv">–</b></div></div><div class="qa">'+[['pay','send','Poslat'],['sav','save','Spořit'],['rr','dice','Kasino'],['invest','chart','Investice'],['loan','loan','Půjčky']].map(q=>'<button type="button" data-qa="'+q[0]+'"><span>'+ICO(q[1])+'</span>'+q[2]+'</button>').join('')+'</div>'));
+function mirror(){var vis=id=>{var e=$(id);return e&&!e.closest('.hidden')?e:null},sv=vis('svA')||vis('svM')||$('svA')||$('svM'),t={sav:sv?sv.textContent:'–',chips:$('rrbal')?$('rrbal').textContent:'–',inv:$('investvalue')?$('investvalue').textContent:'–'};document.querySelectorAll('[data-mirror]').forEach(b=>{var v=t[b.dataset.mirror];if(v&&b.textContent!==v)b.textContent=v})}
+setInterval(mirror,1500);setTimeout(mirror,300);
+document.addEventListener('click',e=>{var q=e.target.closest('[data-qa]');if(!q)return;var k=q.dataset.qa,adm=!$('app').classList.contains('hidden');
+ if(k==='pay'){var i=$(adm?'amt':'mamt');i.closest('.card').scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>i.focus({preventScroll:true}),350)}
+ else if(k==='sav'){var i2=$(adm?'saA':'saM');if(i2){i2.closest('.card').scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>i2.focus({preventScroll:true}),350)}}
+ else tab(k)});
 
 onAuthStateChanged(auth,async user=>{setTimeout(showMcLinks,3000);if(manualAuth)return;if(!user){clearSession();return}if(uid===user.uid)return;try{await enter(user,user.displayName||user.email.split('@')[0],false)}catch(e){stop();uid=null;show('login');$('lerr').textContent='Obnovení přihlášení se nezdařilo. '+errt(e)}});
 </script>
