@@ -2193,7 +2193,7 @@ A.money=async b=>{var a=accts.find(x=>x.id===b.dataset.v);if(!a)return;if(!canTo
 
 /* ---------- Firma ---------- */
 const FCOL=['#a855f7','#22d3ee','#f472b6','#f59e0b','#22c55e','#3b82f6','#ef4444','#64748b'],FEMO=['💻','🍕','🎨','🍋','🎮','📚','⚽','🎧','🚀','🛠️','📸','🍪'];
-const fFix=f=>f&&typeof f==='object'?Object.assign({emoji:'🏢',color:'#a855f7',n:'Firma',tk:'',desc:''},f,{emoji:f.emoji||'🏢',color:f.color||'#a855f7'}):f;
+const fFix=f=>f&&typeof f==='object'&&f.n?Object.assign({emoji:'🏢',color:'#a855f7',n:'Firma',tk:'',desc:''},f,{emoji:f.emoji||'🏢',color:f.color||'#a855f7'}):null;
 const firmOf=a=>fFix((a.id===uid?NBX():(a.nbx||{})).firm);
 const allFirms=()=>accts.map(a=>({a,f:firmOf(a)})).filter(x=>x.f&&x.f.n);
 const myFirm=()=>fFix(NBX().firm)||null;
@@ -2210,7 +2210,7 @@ P.firma=()=>{var f=myFirm(),w=workFirm();
  if(f.status!=='ok')return topbar('Firma','Čeká na schválení')+pendingHTML()+'<section class="glass box"><div class="fhead"><div class="flogo" style="background:'+esc(f.color)+'">'+esc(f.emoji)+'</div><div><h3 style="margin:0">'+esc(f.n)+'</h3><p>'+(f.status==='rejected'?'Firma byla zamítnuta.':'Žádost čeká na schválení majitelem banky.')+'</p></div></div><button class="gbtn" style="margin-top:14px" data-act="fCancel">'+(f.status==='rejected'?'Zkusit znovu':'Zrušit žádost')+'</button></section>'+shopHTML();
  return firmView(f,true)+pendingHTML()+shopHTML()};
 function firmView(f,boss,ownerAcct){var days=days7(),sd=days.map(d=>(f.sales||{})[d]||0),mx=Math.max(...sd,1),week=sd.reduce((a,b)=>a+b,0),total=Object.values(f.sales||{}).reduce((a,b)=>a+b,0),orders=f.orders||[],newO=orders.filter(o=>o.st==='new'),sale=f.sale&&f.sale.until>=todayK(),emp=f.employees||[],inv=f.invoices||[];
- return topbar('Firma',boss?'Jsi majitel':'Jsi zaměstnanec')+
+ return topbar('Firma',(boss?'Jsi majitel firmy ':'Pracuješ ve firmě ')+f.n)+
  '<section class="glass box bal"><div class="fhead"><div class="flogo" style="background:'+esc(f.color)+'">'+esc(f.emoji)+'</div><div style="flex:1;min-width:0"><h2 style="margin:0;font-size:24px">'+esc(f.n)+' <small class="mute" style="font-size:14px">'+esc(f.tk||'')+'</small></h2><p>'+esc(f.desc||'')+'</p></div>'+(boss?'<button class="gbtn sm" data-act="fEdit">Logo a popis</button>':'')+'</div><small style="display:block;margin-top:16px">Tržby celkem</small><div class="bnum gtext">'+kc(total)+'</div><div class="pls"><div class="pl">Tento týden<b>'+f0(week)+'</b></div><div class="pl">Produkty<b>'+(f.products||[]).length+'</b></div><div class="pl">Čeká objednávek<b>'+newO.length+'</b></div><div class="pl">Zaměstnanci<b>'+emp.length+'</b></div></div><p class="mute sm" style="margin:10px 0 0">Peníze za objednávky chodí rovnou na účet majitele firmy'+(ownerAcct?' ('+esc(ownerAcct.name)+')':'')+'.</p></section>'+
  '<div class="g2"><div class="stack">'+
  '<section class="glass box"><div class="sec"><h3>Statistiky tržeb</h3><small class="mute">týden '+f0(week)+'</small></div><div class="bars7">'+days.map((d,i)=>'<div><b style="color:var(--ink);font-size:11px">'+(sd[i]?Math.round(sd[i]):'')+'</b><i style="height:'+sd[i]/mx*85+'%"></i>'+['Ne','Po','Út','St','Čt','Pá','So'][new Date(d+'T12:00').getDay()]+'</div>').join('')+'</div></section>'+
@@ -2384,6 +2384,14 @@ Object.assign(A,{
 const txKey=t=>t.id||(t.d+'|'+t.t+'|'+t.a);
 const chartSkip=()=>new Set(NBX().chartSkip||[]);
 A.chartReset=async()=>{if(!await askModal('Vynulovat grafy „Kam mi tečou peníze“ a „Odkud mi chodí peníze“? Historie plateb zůstane, grafy začnou počítat od teď.','Vynulovat grafy'))return;await saveX({chartSkip:(me().tx||[]).map(txKey)});toast('Grafy vynulované.')};
+
+/* ---------- po přepnutí účtu se nesmí přenést data předchozího člověka ---------- */
+let nbxUid=null;setInterval(()=>{if(nbxUid!==uid){nbxUid=uid;nbxLocal=null;if(uid)render(true)}},300);
+/* ---------- Burza: firmy spolužáků ---------- */
+{const bz=P.burza;P.burza=()=>{var h=bz(),l=allFirms().filter(x=>x.f.status==='ok');if(!l.length)return h;var days=days7();
+ var sec='<section class="glass box"><div class="sec"><h3>'+I('building')+' Firmy spolužáků</h3><small class="mute">'+l.length+' firem</small></div><div class="mkt" style="max-height:none">'+l.map(({a,f})=>{var week=days.reduce((t,d)=>t+((f.sales||{})[d]||0),0),tot=Object.values(f.sales||{}).reduce((t,v)=>t+v,0);return '<button class="mi" data-act="goFirm" data-v="'+esc(a.id)+'" style="align-items:center"><span style="display:flex;gap:10px;align-items:center;min-width:0"><span class="flogo" style="width:38px;height:38px;font-size:19px;border-radius:11px;background:'+esc(f.color)+'">'+esc(f.emoji)+'</span><span style="min-width:0"><b>'+esc(f.n)+'</b><small>'+esc(f.tk||'')+' · '+esc(a.name)+(a.id===uid?' (ty)':'')+' · '+(f.products||[]).length+' produktů</small></span></span><span><b>'+kc(tot)+'</b><small class="mute">tržby · týden '+f0(week)+'</small></span></button>'}).join('')+'</div><p class="mute sm" style="margin:10px 0 0">Klikni na firmu a nakoupíš u ní na stránce Firma.</p></section>';
+ return h+sec}}
+A.goFirm=()=>go('firma');
 
 render(true);
 })();
