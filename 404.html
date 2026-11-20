@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="cs"><head><meta charset="utf-8"><title>NašeBanka</title>
+<script>
+// GitHub Pages: adresy jako /nasebanka/nastaveni neexistují jako soubory, tak se tady zapamatují
+// a banka (index.html) si po načtení stránku sama otevře.
+(function(){var p=location.pathname,m=p.match(/^(.*?\/nasebanka\/)/i),base=m?m[1]:'/';
+ if(/\/prototyp\//.test(p)){document.write('Stránka nenalezena.');return}
+ try{sessionStorage.setItem('nb-redirect',p+location.search+location.hash)}catch(e){}
+ location.replace(base)})();
+</script></head><body></body></html>

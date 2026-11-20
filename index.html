@@ -4,50 +4,67 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>NašeBanka – internetové bankovnictví</title>
+<link rel="icon" href="ikona.svg" type="image/svg+xml">
+<meta name="theme-color" content="#0a0b14">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>/* adresy typu /nasebanka/nastaveni: 404.html sem přesměruje a tady se adresa vrátí */(function(){try{var r=sessionStorage.getItem('nb-redirect');if(r){sessionStorage.removeItem('nb-redirect');history.replaceState(null,'',r)}}catch(e){}})();</script>
 <style>
-:root{--bg:#f2f5f3;--card:#fff;--ink:#14231f;--mute:#5d6e68;--brand:#0f4c45;--onbrand:#fff;--acc:#f2b705;--line:#dbe4e0;--neg:#b3261e;--pos:#1b7a4b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1816;--card:#16251f;--ink:#e6efeb;--mute:#93a69f;--brand:#3fb8a5;--onbrand:#06100d;--line:#26382f;--neg:#ff8a80;--pos:#6fd49b}}
-:root[data-theme="dark"]{--bg:#0e1816;--card:#16251f;--ink:#e6efeb;--mute:#93a69f;--brand:#3fb8a5;--onbrand:#06100d;--line:#26382f;--neg:#ff8a80;--pos:#6fd49b}
+:root,:root[data-theme="dark"]{--a1:#22d3ee;--a2:#a855f7;--bg:#0a0b14;--g1:#3b1d6e;--g2:#0b4a5e;--card:rgba(255,255,255,.05);--card2:rgba(255,255,255,.08);--line:rgba(255,255,255,.1);--ink:#ecedf6;--mute:#9aa0b8;--brand:#a855f7;--onbrand:#0a0b14;--acc:#facc15;--neg:#f472b6;--pos:#4ade80;--glow:rgba(168,85,247,.32);--hi:#c4b5fd;--input:rgba(0,0,0,.3);--nav:rgba(12,13,24,.86);color-scheme:dark;box-sizing:border-box}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--a1:#0891b2;--a2:#9333ea;--bg:#f6f4ff;--g1:#e2d4ff;--g2:#c9f1fa;--card:rgba(255,255,255,.75);--card2:#fff;--line:rgba(83,60,170,.14);--ink:#17142b;--mute:#6b6889;--brand:#9333ea;--onbrand:#fff;--acc:#ca8a04;--neg:#db2777;--pos:#059669;--glow:rgba(147,51,234,.16);--hi:#7e22ce;--input:#fff;--nav:rgba(255,255,255,.9);color-scheme:light}}
+:root[data-theme="light"]{--a1:#0891b2;--a2:#9333ea;--bg:#f6f4ff;--g1:#e2d4ff;--g2:#c9f1fa;--card:rgba(255,255,255,.75);--card2:#fff;--line:rgba(83,60,170,.14);--ink:#17142b;--mute:#6b6889;--brand:#9333ea;--onbrand:#fff;--acc:#ca8a04;--neg:#db2777;--pos:#059669;--glow:rgba(147,51,234,.16);--hi:#7e22ce;--input:#fff;--nav:rgba(255,255,255,.9);color-scheme:light}
 *{box-sizing:border-box}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
-button,input,select{font:inherit;color:inherit}
-.wrap{max-width:900px;margin:0 auto;padding:16px}
-header{display:flex;align-items:center;justify-content:space-between;padding:12px 0 20px}
-.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.35rem;letter-spacing:-.02em}
-.logo i{width:34px;height:34px;border-radius:10px;background:var(--brand);display:grid;place-items:center;font-style:normal;color:var(--acc);font-size:1.1rem}
-.btn{background:var(--brand);color:var(--onbrand);border:0;border-radius:10px;padding:11px 18px;font-weight:700;cursor:pointer}
-.btn.ghost{background:transparent;color:var(--brand);border:1px solid var(--line)}
-.btn.sm{padding:8px 12px}
-:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:16px}
-h1{font-size:1.9rem;line-height:1.15;margin:0 0 8px;letter-spacing:-.03em}
-h2{font-size:1.05rem;margin:0 0 12px}
+body{margin:0;min-height:100vh;color:var(--ink);font-family:"Space Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5;background:radial-gradient(900px 520px at 90% -10%,var(--g1),transparent 65%),radial-gradient(700px 480px at -10% 105%,var(--g2),transparent 60%),var(--bg);background-attachment:fixed;padding-top:env(safe-area-inset-top,0px);-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font:inherit;color:inherit}
+.ico{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.wrap{max-width:1000px;margin:0 auto;padding:16px 20px 40px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0 20px}
+#ptitle{margin:0;font-size:26px;font-weight:700;display:none}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:20px;letter-spacing:-.01em}
+.logo i,.slogo i{width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,#22d3ee,#a855f7);display:grid;place-items:center;font-style:normal;color:#0a0b14;font-weight:700;font-size:18px;flex-shrink:0}
+.btn{background:linear-gradient(90deg,var(--a1),var(--a2));color:var(--onbrand);border:0;border-radius:12px;padding:11px 18px;font-weight:700;cursor:pointer;box-shadow:0 6px 22px var(--glow);transition:transform .1s}
+.btn:active{transform:scale(.98)}
+.btn.ghost{background:var(--card2);color:var(--ink);border:1px solid var(--line);box-shadow:none}
+.btn.ghost:hover{border-color:var(--a2)}
+.btn.sm{padding:8px 12px;font-size:14px}
+button:disabled{opacity:.5;cursor:not-allowed}
+:focus-visible{outline:3px solid var(--a2);outline-offset:2px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:22px;margin-bottom:18px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+:root[data-theme="light"] .card{box-shadow:0 8px 30px rgba(83,60,170,.08)}
+h1{font-size:28px;line-height:1.15;margin:0 0 8px;letter-spacing:-.02em}
+h2{font-size:17px;margin:0 0 12px;font-weight:600}
 p{margin:0 0 12px;color:var(--mute)}
-label{display:block;font-weight:600;font-size:.9rem;margin:12px 0 4px}
-input,select{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg)}
+label{display:block;font-weight:600;font-size:13px;margin:12px 0 6px;color:var(--mute)}
+input,select,textarea{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--input);color:var(--ink)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--a2);box-shadow:0 0 0 3px var(--glow)}
+input[type=checkbox],input[type=radio]{width:auto;accent-color:var(--a2)}
+input[type=range]{padding:0;accent-color:var(--a2)}
+select option{background:var(--bg)}
+textarea{min-height:80px}
 #login{max-width:420px;margin:6vh auto 0}
 .hidden{display:none!important}
-.hero{background:var(--brand);color:var(--onbrand);border:0}
-.hero p{color:inherit;opacity:.8;margin:0}
-.big{font-size:2.6rem;font-weight:800;letter-spacing:-.03em;line-height:1.1}
-.grid{display:grid;gap:16px;grid-template-columns:1fr 1fr}
-@media(max-width:700px){.grid{grid-template-columns:1fr}.big{font-size:2.1rem}}
-.tx{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.hero{position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;border-radius:22px;padding:1px;background:linear-gradient(135deg,var(--a1),transparent 45%,var(--a2));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+.hero p{margin:0}
+.hero .big,.big{font-size:44px;font-weight:700;letter-spacing:-.03em;line-height:1.1;margin:6px 0 4px}
+.hero .big{background:linear-gradient(90deg,var(--ink) 30%,var(--hi));-webkit-background-clip:text;background-clip:text;color:transparent}
+.grid{display:grid;gap:18px;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.tx{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
 .tx:last-child{border:0}
+.tx b{font-weight:600}
 small{color:var(--mute);display:block}
 .neg{color:var(--neg);font-weight:700;white-space:nowrap}.pos{color:var(--pos);font-weight:700;white-space:nowrap}
 .msg{margin-top:12px;font-weight:600}.msg.err{color:var(--neg)}.msg.ok{color:var(--pos)}
 .empty{color:var(--mute);margin:0}
 .prow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px 0;border-bottom:1px solid var(--line)}
 .prow:last-child{border:0}
-.badge{display:inline-block;background:var(--acc);color:#14231f;border-radius:8px;padding:1px 8px;font-size:.78rem;font-weight:800;margin-left:6px}
+.badge{display:inline-block;background:var(--glow);color:var(--hi);border-radius:8px;padding:1px 8px;font-size:12px;font-weight:700;margin-left:6px}
 .rs{width:auto}
-.cardwrap{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-bottom:16px}
-.pcard{background:linear-gradient(135deg,#0f4c45,#0a2925);color:#fff;border-radius:18px;padding:18px 20px;width:100%;max-width:340px;aspect-ratio:1.586;display:flex;flex-direction:column;justify-content:space-between}
-.pcard .top{display:flex;justify-content:space-between;align-items:center;font-weight:800}
-.chip{width:40px;height:30px;border-radius:6px;background:linear-gradient(135deg,#f2b705,#c98f00)}
-.pcard .num{font-size:1.2rem;letter-spacing:.12em;font-variant-numeric:tabular-nums}
+.cardwrap{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-bottom:18px}
+.pcard{background:linear-gradient(135deg,#1e1b4b,#581c87 55%,#0e7490);color:#fff;border-radius:20px;padding:20px;width:100%;max-width:360px;aspect-ratio:1.586;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 10px 40px var(--glow);border:1px solid rgba(255,255,255,.16)}
+.pcard .top{display:flex;justify-content:space-between;align-items:center;font-weight:700}
+.chip{width:40px;height:29px;border-radius:6px;background:linear-gradient(135deg,#e2e8f0,#94a3b8)}
+.pcard .num{font-size:1.15rem;letter-spacing:.12em;font-variant-numeric:tabular-nums}
 .pcard .bot{display:flex;justify-content:space-between;font-size:.85rem;opacity:.9}
 .wal{display:flex;flex-direction:column;gap:8px;flex:1 1 200px}
 .pn{flex:1 1 140px}
@@ -55,26 +72,90 @@ small{color:var(--mute);display:block}
 .row2{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .add{display:flex;gap:8px}
 .bottom{text-align:center;margin:8px 0}
-footer{text-align:center;color:var(--mute);font-size:.8rem;padding:20px 0}
-.tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:16px;padding-bottom:2px}
-.tabs button{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-weight:700;white-space:nowrap;cursor:pointer}
-.tabs button.on{background:var(--brand);color:var(--onbrand);border-color:var(--brand)}
-.nb{display:inline-block;background:#e5484d;color:#fff;border-radius:999px;font-size:.72rem;padding:1px 7px;margin-left:6px;font-weight:800}
-textarea{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);min-height:80px;font:inherit;color:inherit}
-.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}
-.gi{background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:8px;text-align:left;cursor:pointer;color:var(--ink)}
-.gi.on{border-color:var(--acc)}
-.sw{display:block;height:44px;border-radius:8px;margin-bottom:6px}
+footer{text-align:center;color:var(--mute);font-size:12px;padding:20px 0}
+.nb{display:inline-block;background:var(--neg);color:#fff;border-radius:999px;font-size:11px;padding:0 7px;margin-left:6px;font-weight:700}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px}
+.gi{background:var(--card2);border:2px solid var(--line);border-radius:14px;padding:6px;text-align:left;cursor:pointer;color:var(--ink);font-size:13px}
+.gi b{display:block}.gi small{font-size:11px}
+.gi.on{border-color:var(--a2);box-shadow:0 0 14px var(--glow)}
+.sw{display:block;aspect-ratio:1.586;height:auto;border-radius:9px;margin-bottom:6px}
 .pcard>*{position:relative;z-index:1}
 .pcard>svg.art{position:absolute;z-index:0;right:0;top:0;width:78%;height:100%}
 .pcard .bot span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%}
-.market-item{display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);margin-bottom:6px;cursor:pointer}.market-item[aria-pressed="true"]{border-color:var(--brand);box-shadow:inset 3px 0 var(--brand)}.market-item>span:last-child{text-align:right;flex-shrink:0}.market-item small{font-size:.75rem}.market-item b{overflow-wrap:anywhere}button:disabled{opacity:.5;cursor:not-allowed}
-.fitRow{display:flex;align-items:center;gap:8px;margin:8px 0}.fitRow input{width:auto}.fitRow label{margin:0}</style>
+.market-item{display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;width:100%;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--card2);margin-bottom:6px;cursor:pointer;color:var(--ink)}
+.market-item[aria-pressed="true"]{border-color:var(--a2);box-shadow:inset 3px 0 var(--a2)}
+.market-item>span:last-child{text-align:right;flex-shrink:0}.market-item small{font-size:.75rem}.market-item b{overflow-wrap:anywhere}
+.fitRow{display:flex;align-items:center;gap:8px;margin:8px 0}.fitRow input{width:auto}.fitRow label{margin:0}
+dialog{background:var(--bg)!important;color:var(--ink)!important;border:1px solid var(--line)!important;border-radius:20px!important;padding:24px;max-width:min(440px,calc(100vw - 32px))}
+dialog::backdrop{background:rgba(0,0,0,.55)}
+details summary{cursor:pointer;font-weight:600}
+fieldset{border:1px solid var(--line)!important;border-radius:14px!important}
+
+/* ---- navigace: počítač = boční menu, tablet = lišta s ikonami, telefon = spodní lišta ---- */
+#tabs{display:flex;gap:2px}
+#tabs button{display:flex;align-items:center;gap:12px;background:none;border:0;color:var(--mute);padding:11px 12px;border-radius:12px;font-weight:600;font-size:14px;cursor:pointer;text-align:left;width:100%;position:relative;white-space:nowrap}
+#tabs button:hover{color:var(--ink);background:var(--card2)}
+#tabs button.on{color:var(--ink);background:linear-gradient(90deg,var(--glow),transparent);box-shadow:inset 3px 0 var(--a2)}
+#tabs button.on .ico{color:var(--hi)}
+#tabs .nb{margin-left:auto}
+.slogo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;padding:4px 8px 22px}
+@media (min-width:700px){
+ #tabs:not(.hidden){position:fixed;z-index:30;left:0;top:0;bottom:0;width:232px;flex-direction:column;padding:22px 14px;background:var(--card);border-right:1px solid var(--line);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);overflow-y:auto;scrollbar-width:none}
+ body:has(#tabs:not(.hidden)) .wrap{margin-left:232px;max-width:1040px;padding:24px 28px 40px}
+ body:has(#tabs:not(.hidden)) header .logo{display:none}
+ body:has(#tabs:not(.hidden)) #ptitle{display:block}
+}
+@media (min-width:700px) and (max-width:1099px){
+ #tabs:not(.hidden){width:84px;padding:18px 0;align-items:center}
+ #tabs button{flex-direction:column;gap:4px;width:66px;padding:9px 0;font-size:10.5px;text-align:center;white-space:normal;line-height:1.15}
+ #tabs button.on{box-shadow:none;background:var(--glow)}
+ #tabs .nb{position:absolute;top:2px;right:4px;margin:0;font-size:10px;padding:0 5px}
+ .slogo span{display:none}.slogo{padding:0 0 18px}
+ body:has(#tabs:not(.hidden)) .wrap{margin-left:84px;padding:22px 22px 40px}
+}
+#bnav,#sheet{display:none}
+@media (max-width:699px){
+ #tabs{display:none!important}
+ .wrap{padding:12px 16px 40px}
+ body:has(#tabs:not(.hidden)) .wrap{padding-bottom:110px}
+ body:has(#tabs:not(.hidden)) #bnav{display:grid}
+ #bnav{position:fixed;z-index:40;left:0;right:0;bottom:0;grid-template-columns:repeat(5,1fr);align-items:end;padding:10px 6px calc(12px + env(safe-area-inset-bottom));background:var(--nav);border-top:1px solid var(--line);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+ #bnav button{display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:0;color:var(--mute);font-size:11px;font-weight:600;cursor:pointer;position:relative;padding:0}
+ #bnav button.on{color:var(--hi)}
+ #bnav .nb{position:absolute;top:-4px;right:calc(50% - 22px);font-size:10px;padding:0 5px;margin:0}
+ #sheet.open{display:flex;position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.45);align-items:flex-end}
+ #sheet .in{width:100%;padding:10px 16px calc(28px + env(safe-area-inset-bottom));border-radius:26px 26px 0 0;background:var(--bg);border-top:1px solid var(--line)}
+ #sheet .grab{width:40px;height:5px;border-radius:9px;background:var(--line);margin:4px auto 14px}
+ #sheet .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+ #sheet button{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 6px;border-radius:16px;background:var(--card2);border:1px solid var(--line);color:var(--ink);font-size:13px;font-weight:600;position:relative;cursor:pointer}
+ #sheet button.on{border-color:var(--a2)}
+ #sheet button .ico{color:var(--hi);width:24px;height:24px}
+ #sheet .nb{position:absolute;top:6px;right:8px;margin:0}
+ .grid{grid-template-columns:1fr}
+ .big,.hero .big{font-size:36px}
+ h1{font-size:24px}
+ .card{padding:18px}
+}
+</style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/><path d="M10 20v-5h4v5"/></symbol>
+<symbol id="i-team" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7"/><path d="M18 14a6 6 0 0 1 3.5 6"/></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 21h4"/></symbol>
+<symbol id="i-loan" viewBox="0 0 24 24"><path d="M3 9 12 4l9 5"/><path d="M5 9v9M9.5 9v9M14.5 9v9M19 9v9"/><path d="M3 20h18"/></symbol>
+<symbol id="i-dice" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><circle cx="8.5" cy="8.5" r="1.2"/><circle cx="15.5" cy="15.5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="15.5" cy="8.5" r="1.2"/><circle cx="8.5" cy="15.5" r="1.2"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 20h18"/><path d="m4 15 5-5 4 3 7-7"/><path d="M15 6h5v5"/></symbol>
+<symbol id="i-cog" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.5c0 4.5 3.2 8.2 7.5 9.5 4.3-1.3 7.5-5 7.5-9.5V6z"/><path d="m9 12 2 2 4-4"/></symbol>
+<symbol id="i-card" viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="3"/><path d="M2.5 10h19"/><path d="M6 15h4"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+<symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></symbol>
+</defs></svg>
 <div class="wrap">
   <header>
-    <div class="logo"><i>N</i>NašeBanka</div>
+    <div class="logo"><i>N</i>NašeBanka</div><h1 id="ptitle"></h1>
     <button class="btn ghost hidden" id="logout">Odhlásit se</button>
   </header>
   <nav id="tabs" class="tabs hidden"><button data-t="acc" class="on">Účet</button><button data-t="team">Tým</button><button data-t="ann">Oznámení<span class="nb hidden" id="nba"></span></button><button data-t="loan">Půjčky</button><button data-t="rr">Kasino</button><button data-t="invest">Investice</button><button data-t="set">Nastavení</button><button data-t="ppl" id="tppl" class="hidden">Lidé</button><button data-t="design" id="tdesign" class="hidden">Design karet</button><button data-t="activity" id="tactivity" class="hidden">Přihlášení</button><button data-t="history" id="thistory" class="hidden">Historie všech</button></nav>
@@ -146,7 +227,7 @@ textarea{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--
 
   <main id="app" class="hidden">
     <div id="reqcard" class="card hidden" style="border-color:var(--acc);border-width:2px">
-      <h2>🔔 Registrace a přihlášení</h2>
+      <h2>Registrace a přihlášení</h2>
       <div id="reqs"></div>
       <div id="reqmsg" class="msg" role="status"></div>
     </div>
@@ -201,8 +282,8 @@ textarea{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--
 
     
   </main>
-  <section id="set" class="hidden"><div class="card"><h2>Poplatky banky · 2 %</h2><p>Majitel získává 2 % z odeslaných plateb, směny žetonů, vkladů a výběrů vlastního spoření, úroků a čerpání půjček. Majitelovy vlastní operace jsou zdarma. Správcovské úpravy zůstatků a splátky půjček se tímto poplatkem nezatěžují.</p><p>U příjmů se poplatek odečte, u výdajů se přičte k platbě. Z úroků se strhává ze spoření. U kasina se platí 2 % z výplaty v Sh; chybějící Sh se rozmění z části výhry a zbytek z rozměnění zůstane hráči.</p></div>
-    <div class="card"><h2>Vzhled banky</h2><p>Vyber si svou barvu ze spektra. Nastavení se pamatuje pro tvůj účet v tomto prohlížeči.</p><label for="thememode">Režim</label><select id="thememode"><option value="system">Podle zařízení</option><option value="light">Světlý</option><option value="dark">Tmavý</option></select><label for="themehue">Barva motivu · <output id="themevalue">166°</output></label><input id="themehue" type="range" min="0" max="360" value="166" style="padding:0;height:30px;accent-color:var(--brand);background:linear-gradient(to right,red,#ff0,#0f0,#0ff,#00f,#f0f,red)"><p style="margin-top:16px"><button class="btn" id="themereset">Výchozí vzhled</button></p><div id="thememsg" class="msg" role="status"></div></div>
+  <section id="set" class="hidden"><div class="card"><h2>Poplatky banky · 2 %</h2><p>Banka si bere poplatek 2 % z odeslaných plateb, směny žetonů, vkladů a výběrů vlastního spoření, úroků a čerpání půjček. Správcovské úpravy zůstatků a splátky půjček se tímto poplatkem nezatěžují.</p><p>U příjmů se poplatek odečte, u výdajů se přičte k platbě. Z úroků se strhává ze spoření. U kasina se platí 2 % z výplaty v Sh; chybějící Sh se rozmění z části výhry a zbytek z rozměnění zůstane hráči.</p></div>
+    <div class="card"><h2>Vzhled banky</h2><p>Vyber si barvu zvýraznění. Výchozí je fialová (270°). Nastavení se pamatuje pro tvůj účet v tomto prohlížeči.</p><label for="thememode">Režim</label><select id="thememode"><option value="system">Podle zařízení</option><option value="light">Světlý</option><option value="dark">Tmavý</option></select><label for="themehue">Barva motivu · <output id="themevalue">270°</output></label><input id="themehue" type="range" min="0" max="360" value="270" style="padding:0;height:30px;accent-color:var(--brand);background:linear-gradient(to right,red,#ff0,#0f0,#0ff,#00f,#f0f,red)"><p style="margin-top:16px"><button class="btn" id="themereset">Výchozí vzhled</button></p><div id="thememsg" class="msg" role="status"></div></div>
     <div class="card"><h2>Změna jména</h2><p>Nové jméno se zobrazí všem a použiješ ho i při přihlášení.</p>
       <label for="sname">Nové jméno</label><input id="sname" maxlength="80">
       <p style="margin-top:12px"><button class="btn" id="ssave">Změnit jméno</button></p><div id="smsg1" class="msg" role="status"></div></div>
@@ -217,14 +298,14 @@ textarea{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--
   </section>
 
   <section id="loan" class="hidden">
-    <div class="card"><h2>Půjčky</h2><p>Půjč si od banky až <b>100 000 Sh</b>. Vrátíš o 10 % víc. Najednou můžeš mít jen jednu půjčku.</p>
+    <div class="card"><h2>Půjčky</h2><p>Půjč si od banky až <b>10 000 Sh</b>. Vrátíš o 10 % víc. Najednou můžeš mít jen jednu půjčku.</p>
       <small>Dluh k zaplacení</small><div class="big" style="font-size:1.8rem" id="lvdebt">0,00 Sh</div>
       <label for="lamt">Kolik si chceš půjčit (Sh)</label><input id="lamt" type="number" min="1" max="10000" step="0.01" placeholder="10000">
       <label for="lautoamount">Automatická splátka (Sh)</label><input id="lautoamount" type="number" min="0.01" step="0.01" placeholder="100">
       <label for="lautodate">Datum první splátky (ve 20:00 českého času)</label><input id="lautodate" type="date">
       <label for="lautofreq">Jak často splácet</label><select id="lautofreq"><option value="monthly">Každý měsíc</option><option value="weekly">Každý týden</option><option value="daily">Každý den</option></select>
       <p style="margin-top:12px"><button class="btn ghost" id="lschedule">Uložit plán ke stávající půjčce</button></p>
-      <p id="lplanstatus"></p><small>Splátky se zpracují, když máš banku otevřenou ty nebo majitel. Zmeškané splátky se doženou z dostupných peněz; při nedostatku peněz čekají. Poslední splátka bude nejvýše zbývající dluh.</small>
+      <p id="lplanstatus"></p><small>Splátky se zpracují, když máš banku otevřenou ty nebo správce. Zmeškané splátky se doženou z dostupných peněz; při nedostatku peněz čekají. Poslední splátka bude nejvýše zbývající dluh.</small>
       <p style="margin-top:12px"><button class="btn" id="ltake">Půjčit si</button></p>
       <label for="lpay">Splátka (Sh)</label><input id="lpay" type="number" min="1" placeholder="100">
       <div class="row2"><button class="btn ghost" id="lrepay">Splatit část</button><button class="btn ghost" id="lall">Splatit vše</button></div>
@@ -233,14 +314,14 @@ textarea{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--
 
   <section id="rr" class="hidden">
     <div class="card hero"><h2>Kasino · Žetony</h2><div class="big" id="rrbal">0 ž.</div><p id="cxvalue">Hodnota žetonů: 0 Sh</p></div>
-    <div class="card"><h2>Pokladna kasina</h2><p><b>1 žeton = 10 Sh</b> · směna oběma směry s poplatkem 2 % v Sh (majitel zdarma). Z počátečních 500 Sh si s poplatkem můžeš koupit 49 žetonů. Začínáš s 0 žetony; peníze se mění pouze tady v pokladně.</p><small>Zůstatek na bankovním účtu</small><b id="cxcash"></b>
+    <div class="card"><h2>Pokladna kasina</h2><p><b>1 žeton = 10 Sh</b> · směna oběma směry s poplatkem 2 % v Sh. Z počátečních 500 Sh si s poplatkem můžeš koupit 49 žetonů. Začínáš s 0 žetony; peníze se mění pouze tady v pokladně.</p><small>Zůstatek na bankovním účtu</small><b id="cxcash"></b>
     <label for="cxamount">Počet žetonů ke směně</label><input id="cxamount" type="number" min="1" max="1000000" step="1" value="10"><p id="cxquote">100,00 Sh</p><div class="row2"><button class="btn" id="cxbuy">Koupit žetony</button><button class="btn ghost" id="cxsell">Směnit zpět na Sh</button></div><div class="msg" id="cxmsg" role="status"></div></div>
-    <div class="card"><h2>Točící automat</h2><p>Tři stejné: 🍒 ×3, 🍋 ×5, ⭐ ×8, 🔔 ×10, 🍇 ×15, 💎 ×20. Dva stejné: ×2. Výplata zahrnuje sázku. Prohrané žetony jdou majiteli; výhry vznikají nově. Poplatek z výplaty: 2 % v Sh (majitel zdarma).</p>
+    <div class="card"><h2>Točící automat</h2><p>Tři stejné: 🍒 ×3, 🍋 ×5, ⭐ ×8, 🔔 ×10, 🍇 ×15, 💎 ×20. Dva stejné: ×2. Výplata zahrnuje sázku. Poplatek z výplaty: 2 % v Sh.</p>
     <div id="reels" aria-live="polite" style="font-size:2.6rem;letter-spacing:.15em;margin:18px 0;text-align:center;background:var(--bg);border-radius:12px;padding:18px">🍒 🍋 ⭐</div>
     <label for="rramt">Sázka (1 až 100 žetonů)</label><input id="rramt" type="number" min="1" max="100" step="1" value="1"><small>1 žeton = 10 Sh · doporučený začátek: 1–5 žetonů</small><p style="margin-top:12px"><button class="btn" id="slotspin">Roztočit automat</button></p><div id="rrmsg" class="msg" role="status"></div></div>
-    <div class="card"><h2>Večerní loterie</h2><p>Losování každý den ve <b>20:00 českého času</b>. Los stojí <b>2 žetony (20 Sh)</b>. Jeden výherní los získá dvojnásobek žetonů vložených do kola.</p><p>Losování se dokončí při prvním otevření přihlášené banky po 20:00. Nevýherní losy připadnou majiteli. Z výplaty je poplatek 2 % v Sh (majitel zdarma).</p><p id="legacyLottery"></p>
+    <div class="card"><h2>Večerní loterie</h2><p>Losování každý den ve <b>20:00 českého času</b>. Los stojí <b>2 žetony (20 Sh)</b>. Jeden výherní los získá dvojnásobek žetonů vložených do kola.</p><p>Losování se dokončí při prvním otevření přihlášené banky po 20:00. Z výplaty je poplatek 2 % v Sh.</p><p id="legacyLottery"></p>
     <div id="lotinfo">Načítání loterie…</div><p style="margin-top:12px"><button class="btn" id="lotbuy" disabled>Koupit los za 2 žetony</button></p><div id="lotmsg" class="msg" role="status"></div><div id="lotresults"></div></div>
-    <div class="card"><h2>Stírací los · Zlatá šance</h2><p>Jeden los stojí <b>3 žetony</b>. Setři los a najdi výplatu až <b>60 žetonů</b>. Výplata 3 žetony vrací cenu losu; vyšší částky už znamenají zisk. Nevýherné losy jdou majiteli a výhry se nově připíšou hráči. Z výplaty je poplatek 2 % v Sh (majitel zdarma).</p>
+    <div class="card"><h2>Stírací los · Zlatá šance</h2><p>Jeden los stojí <b>3 žetony</b>. Setři los a najdi výplatu až <b>60 žetonů</b>. Výplata 3 žetony vrací cenu losu; vyšší částky už znamenají zisk. Výhra se připíše hned. Z výplaty je poplatek 2 % v Sh.</p>
     <div id="scratchticket" hidden><div style="position:relative;max-width:480px;margin:18px auto;border:2px solid #c6a762;border-radius:16px;overflow:hidden;background:linear-gradient(135deg,#082f24,#185640);color:#f6dfa0;aspect-ratio:3/1;display:grid;place-items:center"><strong id="scratchprize" style="font-size:clamp(16px,5vw,30px)"></strong><canvas id="scratchcover" width="600" height="200" aria-label="Stírací plocha losu" style="position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair"></canvas></div><p id="scratchcaption"></p><button class="btn ghost" id="scratchreveal">Odkrýt celý los</button></div>
     <p><button class="btn" id="scratchbuy">Koupit los · 3 žetony</button></p><div id="scratchmsg" class="msg" role="status"></div><details><summary>Možné výplaty a šance</summary><p>Bez výhry: 60 % · 3 žetony: 20 % · 6 žetonů: 12 % · 12 žetonů: 6 % · 30 žetonů: 1,5 % · 60 žetonů: 0,5 %. Částky zahrnují cenu losu. Los zůstává uložený i po obnovení stránky.</p></details></div>
     <div class="card"><h2>Pohyby žetonů</h2><div id="chiptx"></div></div>
@@ -268,7 +349,8 @@ textarea{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--
   </section>
 
 
-  <footer>NašeBanka je fiktivní banka – školní projekt. Žádné skutečné peníze ani údaje. Sh = svaté hokaido. Verze 3.9</footer><dialog id="bankresetdialog"><h2>Potvrdit nový začátek</h2><p id="bankresetpreview"></p><p>Účty, role a karty zůstanou. Všem 500 Sh; spoření, žetony, půjčky, investice a finanční historie se vyčistí. Staré losy už nepřinesou výhru. Záloha umožní vrátit reset.</p><button class="btn" id="confirmbankreset">Provést reset se zálohou</button> <button class="btn ghost" id="cancelbankreset">Zrušit</button></dialog>
+  <nav id="bnav" aria-label="Hlavní menu"></nav><div id="sheet"><div class="in"><div class="grab"></div><div class="grid3" id="sheetGrid"></div></div></div>
+  <footer>NašeBanka je fiktivní banka – školní projekt. Žádné skutečné peníze ani údaje. Sh = svaté hokaido. Verze 5.0</footer><dialog id="bankresetdialog"><h2>Potvrdit nový začátek</h2><p id="bankresetpreview"></p><p>Účty, role a karty zůstanou. Všem 500 Sh; spoření, žetony, půjčky, investice a finanční historie se vyčistí. Staré losy už nepřinesou výhru. Záloha umožní vrátit reset.</p><button class="btn" id="confirmbankreset">Provést reset se zálohou</button> <button class="btn ghost" id="cancelbankreset">Zrušit</button></dialog>
 </div>
 
 <script type="module">
@@ -327,7 +409,7 @@ function intr(o){
 }
 function savCard(el,w){
   if(el.getAttribute("data-n"))return;el.setAttribute("data-n","1");
-  el.innerHTML='<div class="card"><h2>Spořicí účet</h2><p>Každé pondělí dostaneš úrok 5 % z peněz na spoření. Z úroku se odečte poplatek 2 % pro majitele.</p><div class="big" style="font-size:1.8rem" id="sv'+w+'">0,00 Sh</div><small id="sn'+w+'"></small><label for="sa'+w+'">Částka (Sh)</label><input id="sa'+w+'" type="number" min="1" placeholder="100"><div class="row2"><button class="btn" data-sv="in" data-who="'+w+'">Vložit na spoření</button><button class="btn ghost" data-sv="out" data-who="'+w+'">Vybrat ze spoření</button></div><div class="msg" id="sm'+w+'" role="status"></div></div>';
+  el.innerHTML='<div class="card"><h2>Spořicí účet</h2><p>Každé pondělí dostaneš úrok 5 % z peněz na spoření. Z úroku se odečte poplatek 2 %.</p><div class="big" style="font-size:1.8rem" id="sv'+w+'">0,00 Sh</div><small id="sn'+w+'"></small><label for="sa'+w+'">Částka (Sh)</label><input id="sa'+w+'" type="number" min="1" placeholder="100"><div class="row2"><button class="btn" data-sv="in" data-who="'+w+'">Vložit na spoření</button><button class="btn ghost" data-sv="out" data-who="'+w+'">Vybrat ze spoření</button></div><div class="msg" id="sm'+w+'" role="status"></div></div>';
 }
 
 function updSav(w,o){
@@ -488,7 +570,7 @@ $("dlist").addEventListener("click",async function(e){
   try{await db.doc("accounts/"+b.getAttribute("data-i")).delete();m.className="msg ok";m.textContent="Smazáno."}catch(x){m.className="msg err";m.textContent="Nepovedlo se."}
 });
 function tab(t){
-  curTab=t;
+  t=routeIn(t);curTab=t;
   ["team","ann","set","loan","rr","ppl","design","activity","invest","history"].forEach(function(x){$(x).classList.toggle("hidden",x!==t)});
   (isAdmin?$("app"):$("member")).classList.toggle("hidden",t!=="acc");
   document.querySelectorAll("#tabs button").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-t")===t)});
@@ -498,6 +580,7 @@ function tab(t){
   syncRoleTools();if(t==="invest")renderInvestments();
 
   if(t==="ann")markAnn();
+  navSync(t);
 }
 $("tabs").onclick=function(e){var b=e.target.closest("button");if(b)tab(b.getAttribute("data-t"))};
 var directoryBusy=false;
@@ -585,7 +668,7 @@ async function myAcct(){return (await db.doc("accounts/"+uid).get()).data()}
 function dueTime(date){return roundAt(Date.parse(date+'T12:00:00Z')).closesAt}
 function readLoanPlan(){
   var amount=Number($('lautoamount').value),date=$('lautodate').value,frequency=$('lautofreq').value;
-  if(!Number.isFinite(amount)||amount<=0||amount>110000||r2(amount)!==amount)throw Error('Zadej automatickou splátku od 0,01 do 11 000 Sh.');
+  if(!Number.isFinite(amount)||amount<=0||amount>r2(LOAN_MAX*(1+LOAN_FEE))||r2(amount)!==amount)throw Error('Zadej automatickou splátku od 0,01 do 11 000 Sh.');
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(Date.parse(date+'T12:00:00Z'))||dueTime(date)<=Date.now())throw Error('Vyber datum první splátky, jehož 20:00 ještě nenastalo.');
   if(!['daily','weekly','monthly'].includes(frequency))throw Error('Vyber četnost splácení.');
   return {amount,frequency,nextDate:date,anchorDay:Number(date.slice(8))};
@@ -1003,11 +1086,32 @@ var manualAuth=false;
 var persistenceReady=setPersistence(auth,browserLocalPersistence);
 persistenceReady.catch(()=>{$('lerr').textContent='Pro trvalé přihlášení povol ukládání dat tohoto webu.'});
 
-var themeChoice={mode:'system',hue:166},themeMedia=matchMedia('(prefers-color-scheme: dark)');
-function applyTheme(){var t=themeChoice,root=document.documentElement,dark=t.mode==='dark'||t.mode==='system'&&themeMedia.matches;root.setAttribute('data-theme',dark?'dark':'light');var h=t.hue,vars=dark?{bg:[18,7],card:[18,12],ink:[16,94],mute:[12,70],brand:[62,67],line:[15,24]}:{bg:[20,96],card:[20,100],ink:[24,12],mute:[14,37],brand:[65,27],line:[18,85]};Object.keys(vars).forEach(k=>root.style.setProperty('--'+k,'hsl('+h+' '+vars[k][0]+'% '+vars[k][1]+'%)'));root.style.setProperty('--onbrand',dark?'#07110f':'#fff');$('thememode').value=t.mode;$('themehue').value=h;$('themevalue').textContent=h+'°';}
-function loadTheme(){themeChoice={mode:'system',hue:166};try{var t=JSON.parse(localStorage.getItem('nb-theme-'+uid));if(uid&&t&&['system','light','dark'].includes(t.mode)&&Number.isFinite(t.hue)&&t.hue>=0&&t.hue<=360)themeChoice=t}catch(e){}applyTheme();$('thememsg').textContent='';}
-function saveTheme(){applyTheme();try{if(uid)localStorage.setItem('nb-theme-'+uid,JSON.stringify(themeChoice));$('thememsg').textContent='Vzhled uložen v tomto prohlížeči.'}catch(e){$('thememsg').textContent='Vzhled je změněný, ale prohlížeč jej nedovolil uložit.'}}
-$('thememode').onchange=()=>{themeChoice.mode=$('thememode').value;saveTheme()};$('themehue').oninput=()=>{themeChoice.hue=Number($('themehue').value);saveTheme()};$('themereset').onclick=()=>{themeChoice={mode:'system',hue:166};saveTheme()};themeMedia.addEventListener('change',applyTheme);
+var themeChoice={mode:'system',hue:270},themeMedia=matchMedia('(prefers-color-scheme: dark)');
+function applyTheme(){var t=themeChoice,root=document.documentElement,dark=t.mode==='dark'||t.mode==='system'&&themeMedia.matches;root.setAttribute('data-theme',dark?'dark':'light');var h=t.hue;['bg','card','ink','mute','brand','line','onbrand','a1','a2','glow','hi'].forEach(k=>root.style.removeProperty('--'+k));if(h!==270){root.style.setProperty('--a2','hsl('+h+' 85% '+(dark?65:45)+'%)');root.style.setProperty('--a1','hsl('+((h+110)%360)+' 85% '+(dark?55:38)+'%)');root.style.setProperty('--brand','hsl('+h+' 85% '+(dark?65:45)+'%)');root.style.setProperty('--glow','hsla('+h+',85%,60%,.3)');root.style.setProperty('--hi','hsl('+h+' 90% '+(dark?80:35)+'%)')}$('thememode').value=t.mode;$('themehue').value=h;$('themevalue').textContent=h+'°';}
+function loadTheme(){themeChoice={mode:'system',hue:270};try{var t=JSON.parse(localStorage.getItem('nb-theme2-'+uid));if(uid&&t&&['system','light','dark'].includes(t.mode)&&Number.isFinite(t.hue)&&t.hue>=0&&t.hue<=360)themeChoice=t}catch(e){}applyTheme();$('thememsg').textContent='';}
+function saveTheme(){applyTheme();try{if(uid)localStorage.setItem('nb-theme2-'+uid,JSON.stringify(themeChoice));$('thememsg').textContent='Vzhled uložen v tomto prohlížeči.'}catch(e){$('thememsg').textContent='Vzhled je změněný, ale prohlížeč jej nedovolil uložit.'}}
+$('thememode').onchange=()=>{themeChoice.mode=$('thememode').value;saveTheme()};$('themehue').oninput=()=>{themeChoice.hue=Number($('themehue').value);saveTheme()};$('themereset').onclick=()=>{themeChoice={mode:'system',hue:270};saveTheme()};themeMedia.addEventListener('change',applyTheme);
+
+/* ---------- navigace: ikony, nadpis stránky, spodní lišta na telefonu, adresy /nasebanka/... ---------- */
+const NAVI={acc:['home','','Účet'],team:['team','tym','Tým'],ann:['bell','oznameni','Oznámení'],loan:['loan','pujcky','Půjčky'],rr:['dice','kasino','Kasino'],invest:['chart','investice','Investice'],set:['cog','nastaveni','Nastavení'],ppl:['shield','lide','Lidé'],design:['card','design-karet','Design karet'],activity:['clock','prihlaseni','Přihlášení'],history:['list','historie','Historie všech']};
+const ICO=n=>'<svg class="ico"><use href="#i-'+n+'"/></svg>';
+const BASE=(location.pathname.match(/^(.*?\/nasebanka\/)/i)||[])[1]||'/';
+const slugToT=p=>{var sl=decodeURIComponent(p.slice(BASE.length)).replace(/\/+$/,'').replace(/^index\.html$/,'');return Object.keys(NAVI).find(k=>NAVI[k][1]===sl)||'acc'};
+let pendingRoute=slugToT(location.pathname),routePop=false;
+function routeIn(t){if(pendingRoute&&t==='acc'){var r=pendingRoute;pendingRoute=null;var bt=document.querySelector('#tabs button[data-t="'+r+'"]');if(r!=='acc'&&bt&&!bt.classList.contains('hidden'))return r}pendingRoute=null;return t}
+document.querySelectorAll('#tabs button').forEach(bt=>{var n=NAVI[bt.dataset.t];if(n)bt.insertAdjacentHTML('afterbegin',ICO(n[0]))});
+$('tabs').insertAdjacentHTML('afterbegin','<div class="slogo"><i>N</i><span>NašeBanka</span></div>');
+$('bnav').innerHTML=['acc','rr','invest','loan'].map(k=>'<button data-bt="'+k+'">'+ICO(NAVI[k][0])+NAVI[k][2]+'</button>').join('')+'<button data-bt="more">'+ICO('menu')+'Více<span class="nb hidden" id="nbmore"></span></button>';
+$('bnav').onclick=e=>{var bt=e.target.closest('button');if(!bt)return;if(bt.dataset.bt==='more'){openSheet()}else tab(bt.dataset.bt)};
+function openSheet(){$('sheetGrid').innerHTML=[...document.querySelectorAll('#tabs button')].filter(bt=>!bt.classList.contains('hidden')&&!['acc','rr','invest','loan'].includes(bt.dataset.t)).map(bt=>'<button data-st="'+bt.dataset.t+'" class="'+(bt.dataset.t===curTab?'on':'')+'">'+bt.innerHTML+'</button>').join('');$('sheet').classList.add('open')}
+$('sheet').onclick=e=>{if(e.target.id==='sheet'){$('sheet').classList.remove('open');return}var bt=e.target.closest('button[data-st]');if(bt){$('sheet').classList.remove('open');tab(bt.dataset.st)}};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')$('sheet').classList.remove('open')});
+function navSync(t){var n=NAVI[t]||NAVI.acc;$('ptitle').textContent=n[2];document.title='NašeBanka · '+n[2];
+ document.querySelectorAll('#bnav button').forEach(bt=>bt.classList.toggle('on',bt.dataset.bt===t||(bt.dataset.bt==='more'&&!['acc','rr','invest','loan'].includes(t))));
+ var nba=$('nba');$('nbmore').classList.toggle('hidden',!nba||nba.classList.contains('hidden'));if(nba&&!nba.classList.contains('hidden'))$('nbmore').textContent=nba.textContent;
+ var url=BASE+n[1];if(!routePop&&location.pathname!==url)history.pushState({t},'',url);routePop=false}
+addEventListener('popstate',()=>{if($('tabs').classList.contains('hidden'))return;routePop=true;tab(slugToT(location.pathname))});
+new MutationObserver(()=>{var nba=$('nba');if(nba)$('nbmore').classList.toggle('hidden',nba.classList.contains('hidden')),$('nbmore').textContent=nba.textContent}).observe($('nba'),{attributes:true,childList:true,characterData:true,subtree:true});
 
 onAuthStateChanged(auth,async user=>{setTimeout(showMcLinks,3000);if(manualAuth)return;if(!user){clearSession();return}if(uid===user.uid)return;try{await enter(user,user.displayName||user.email.split('@')[0],false)}catch(e){stop();uid=null;show('login');$('lerr').textContent='Obnovení přihlášení se nezdařilo. '+errt(e)}});
 </script>
