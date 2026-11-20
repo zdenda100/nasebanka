@@ -3,22 +3,46 @@ service cloud.firestore {
   match /databases/{database}/documents {
     function signedIn() { return request.auth != null; }
     function admin() { return signedIn() && request.auth.token.email == 'zdenek.buchta@nasebanka.example'; }
-    function deputy() { return signedIn() && get(/databases/$(database)/documents/accounts/$(request.auth.uid)).data.role == 'zastupce'; }
-    function role(r) { return signedIn() && get(/databases/$(database)/documents/accounts/$(request.auth.uid)).data.role == r; }
+    function myRole() { return get(/databases/$(database)/documents/accounts/$(request.auth.uid)).data.get('role', 'zakaznik'); }
+    function deputy() { return signedIn() && myRole() == 'zastupce'; }
+    function role(r) { return signedIn() && myRole() == r; }
+    // Banka umí to samé co majitel, vývojář skoro všechno
+    function staff() { return admin() || (signedIn() && myRole() in ['banka', 'vyvojar']); }
+    // registrace schvaluje Banka, majitel, zástupce, vývojář a grafik
+    function approver() { return admin() || (signedIn() && myRole() in ['banka', 'vyvojar', 'zastupce', 'grafik']); }
     match /accounts/{u} {
       allow read: if signedIn();
-      allow create: if (request.resource.data.get('card','klasik') != 'casino_ace' || (admin() && request.auth.uid == u)) && (admin() || (signedIn() && request.auth.uid == u && request.resource.data.role == 'zakaznik')); 
+      allow create: if (request.resource.data.get('card','klasik') != 'casino_ace' || (admin() && request.auth.uid == u)) && (admin() || (signedIn() && request.auth.uid == u && request.resource.data.role == 'zakaznik'));
       allow update: if (request.resource.data.get('card','klasik') != 'casino_ace' || (admin() && request.auth.uid == u) || (resource.data.role == 'majitel' && request.resource.data.card == resource.data.card)) && (admin()
-        || (signedIn() && request.auth.uid == u && request.resource.data.role == resource.data.role)
-        || (deputy() && resource.data.role != 'majitel' && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['bal','tx']))
+        || (staff() && resource.data.role != 'majitel' && request.resource.data.role != 'majitel')
+        || (signedIn() && request.auth.uid == u && request.resource.data.role == resource.data.role
+            && request.resource.data.get('pending', false) == resource.data.get('pending', false)
+            && request.resource.data.get('blocked', false) == resource.data.get('blocked', false))
+        || (deputy() && resource.data.role != 'majitel' && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['bal','tx','sav','savAt','blocked','blockWhy']))
         || (signedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['bal','tx']) && request.resource.data.bal > resource.data.bal)
         || (deputy() && u != request.auth.uid && resource.data.role != 'majitel' && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['casinoChips','casinoTx']) && request.resource.data.casinoChips is int && request.resource.data.casinoChips >= 0)
         || (signedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['casinoChips','casinoTx','bal','tx']) && request.resource.data.bal >= resource.data.bal && request.resource.data.casinoChips is int && request.resource.data.casinoChips > resource.data.get('casinoChips',0))
-        || (signedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['casinoChips','casinoTx']) && request.resource.data.casinoChips is int && request.resource.data.casinoChips > resource.data.get('casinoChips',0))); 
-      allow delete: if admin() || (deputy() && resource.data.role == 'zakaznik');
+        || (signedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['casinoChips','casinoTx']) && request.resource.data.casinoChips is int && request.resource.data.casinoChips > resource.data.get('casinoChips',0)));
+      allow delete: if admin() || (staff() && resource.data.role != 'majitel') || (deputy() && resource.data.role == 'zakaznik');
+    }
+    // schválení registrací
+    match /approvals/{u} {
+      allow read: if signedIn() && (request.auth.uid == u || approver());
+      allow write: if approver();
+    }
+    // Minecraft linking (NašeBanka mod). The page may only claim a code for its own uid;
+    // codes and links themselves are written only by the bank server (Admin SDK).
+    match /mcLinkClaims/{code} {
+      allow create: if signedIn() && code.matches('^[A-Z0-9]{6}$')
+        && request.resource.data.keys().hasOnly(['uid','at'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.at is number;
+    }
+    match /mcLinks/{mcUuid} {
+      allow read: if signedIn() && resource.data.uid == request.auth.uid;
     }
     match /requests/{u} {
-      allow read: if admin() || role('vyvojar');
+      allow read: if staff();
       allow write: if signedIn() && request.auth.uid == u;
     }
     match /cardDesigns/{id} {
@@ -33,10 +57,10 @@ service cloud.firestore {
           && d.dark is bool && d.recipients is list && d.recipients.size() > 0 && d.recipients.size() <= 200
           && d.createdBy is string && d.updatedAt is number;
       }
-      allow create: if (admin() || role('grafik')) && request.resource.data.createdBy == request.auth.uid && validDesign();
-      allow update: if (admin() || (role('grafik') && resource.data.createdBy == request.auth.uid))
+      allow create: if (staff() || role('grafik')) && request.resource.data.createdBy == request.auth.uid && validDesign();
+      allow update: if (staff() || (role('grafik') && resource.data.createdBy == request.auth.uid))
         && request.resource.data.createdBy == resource.data.createdBy && validDesign();
-      allow delete: if admin();
+      allow delete: if staff();
     }
     match /appConfig/resetRuns/items/{id} { allow read, write: if admin(); }
     match /appConfig/{id} {
@@ -49,7 +73,7 @@ service cloud.firestore {
     }
     match /announcements/{a} {
       allow read: if signedIn();
-      allow create, delete: if admin();
+      allow create, delete: if staff();
     }
     match /logins/{name} {
       allow get: if true;
