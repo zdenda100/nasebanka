@@ -3032,6 +3032,29 @@ A.goRe=()=>go('nemovitosti');
 /* Nemovitosti: u volné parcely tlačítko Koupit pro Banku */
 {const pn=P.nemovitosti;P.nemovitosti=()=>{var h=pn();if(!canBankBuy()||!bankAcct()||!st.prop)return h;var p=PLOTS.find(q=>q.id===st.prop);if(!p||reOwners()[p.id])return h;var mk='data-act="reBuy" data-v="'+p.id+'">';var i=h.indexOf(mk);if(i<0)return h;var e=h.indexOf('</button>',i)+9;return h.slice(0,e)+'<button class="gbtn" style="margin-top:8px" data-act="bankBuyPlot" data-v="'+p.id+'">'+I('vault')+'Koupit pro Banku (z fondu '+f0(bankAcct().bal||0)+')</button>'+h.slice(e)}}
 
+/* ===================== FUNKČNÍ ČÍSLA KARET + NOVÁ VERZE ZA BĚHU ===================== */
+const cardDigits=a=>cardNum(a.name).replace(/\D/g,'');
+const fmt16=d=>d.replace(/(\d{4})(?=\d)/g,'$1 ');
+/* hledání příjemce i podle čísla karty (stačí 4 a víc číslic) */
+{const pr=pickRows;pickRows=function(q){var d=String(q||'').replace(/\D/g,'');if(d.length<4)return pr(q);var l=recips().filter(a=>cardDigits(a).includes(d));if(!l.length)return '<div class="emp" style="padding:12px">Žádná karta s číslem obsahujícím '+esc(d)+'.</div>';return '<div class="ph">Podle čísla karty · '+l.length+'</div>'+l.map((a,i)=>'<button type="button" class="prw '+(i===0?'act':'')+'" data-act="pick" data-v="'+esc(a.id)+'"><span class="avt s">'+esc((a.name[0]||'?').toUpperCase())+'</span><span class="m"><b>'+esc(a.name)+'</b><small>karta '+(d.length>=16?fmt16(cardDigits(a)):'•••• '+cardDigits(a).slice(-4))+'</small></span>'+(st.pre===a.id?I('check'):'')+'</button>').join('')}}
+/* platba na číslo karty */
+A.payByCard=async()=>{var v=await formModal('Platba na číslo karty','<label class="field">Číslo karty příjemce (16 číslic)<input name="c" inputmode="numeric" maxlength="19" placeholder="0000 0000 0000 0000" required></label>','Najít');if(!v)return;var d=String(v.c||'').replace(/\D/g,'');if(d.length!==16)return toast('Číslo karty má 16 číslic.',false);var a=accts.find(x=>x.id!==uid&&cardDigits(x)===d);if(!a)return toast('Karta s tímhle číslem v bance není.',false);st.pre=a.id;st.payTab='send';if(route()!=='platby')go('platby');else render(true);toast('Příjemce podle karty: '+a.name)};
+{const pp=P.platby;P.platby=()=>{var h=pp(),mk='<div class="field">Příjemce';var i=h.indexOf(mk);if(i<0)return h;return h.slice(0,i)+'<button type="button" class="gbtn sm" style="margin:0 0 8px" data-act="payByCard">'+I('card')+'Zaplatit na číslo karty</button>'+h.slice(i)}}
+/* zamknutí karty: dokud je zamčená, nejde z ní poslat peníze */
+const cardLocked=()=>!!NBX().cardLock;
+A.cardLock=async()=>{var on=!cardLocked();if(!await askModal(on?'Zamknout kartu? Dokud ji neodemkneš, nepůjde z účtu posílat peníze ani platit.':'Odemknout kartu?','Karta'))return;await saveX({cardLock:on});toast(on?'Karta je zamčená.':'Karta je odemčená.')};
+{const p0=A.pay;A.pay=b=>cardLocked()?toast('Karta je zamčená. Odemkni ji v Nastavení → Moje karta.',false):p0(b)}
+{const q0=A.reqPay;if(q0)A.reqPay=b=>cardLocked()?toast('Karta je zamčená. Odemkni ji v Nastavení.',false):q0(b)}
+A.copyCard=b=>{var t=b.dataset.v;try{navigator.clipboard.writeText(t);toast('Číslo karty zkopírováno: '+t)}catch(e){toast(t)}};
+/* Nastavení: moje karta – číslo, zkopírovat, zamknout */
+{const ns=P.nastaveni;P.nastaveni=()=>{var h=ns(),n=cardNum(myN()),lk=cardLocked();return afterTop(h,'<section class="glass box"><div class="sec"><h3>'+I('card')+' Moje karta</h3>'+(lk?'<span class="role" style="background:rgba(244,114,182,.15);color:var(--neg)">zamčená</span>':'<span class="role">aktivní</span>')+'</div><div class="bnum md" style="letter-spacing:3px;font-variant-numeric:tabular-nums">'+esc(n)+'</div><p class="mute sm">Platnost 12/29 · Číslo můžeš poslat kamarádovi, zaplatí ti přes „Zaplatit na číslo karty“.</p><div class="r2"><button class="gbtn" data-act="copyCard" data-v="'+esc(n)+'">'+I('copy')+'Zkopírovat číslo</button><button class="'+(lk?'cta':'gbtn')+'" data-act="cardLock">'+I('lock')+(lk?'Odemknout kartu':'Zamknout kartu')+'</button></div></section>')}}
+/* Účet: klepnutím na kartu se zkopíruje číslo, zamčená karta je vidět */
+document.addEventListener('click',e=>{var c=e.target.closest&&e.target.closest('#nbmain .pc2');if(!c||e.target.closest('button'))return;var n=c.querySelector('.n');if(n&&/\d{4} \d{4} \d{4} \d{4}/.test(n.textContent)){try{navigator.clipboard.writeText(n.textContent.trim());toast('Číslo karty zkopírováno')}catch(x){}}});
+{const pu=P.ucet;P.ucet=()=>{var h=pu();if(!cardLocked())return h;return h.replace('<div class="pc2"','<div class="pc2" title="Karta je zamčená" style="filter:grayscale(.85) brightness(.8)"')}}
+/* nová verze banky i když je stránka dlouho otevřená (mobil) */
+let verLm=Date.parse(document.lastModified)||0;setInterval(()=>{if(location.protocol!=='https:'||document.hidden)return;fetch(location.pathname.replace(/[^/]*$/,'')+'index.html?nocache='+Date.now(),{method:'HEAD',cache:'no-store'}).then(r=>{var lm=Date.parse(r.headers.get('last-modified')||'');if(lm&&verLm&&lm-verLm>5000){verLm=lm;var t=document.activeElement;if(t&&/INPUT|TEXTAREA|SELECT/.test(t.tagName)){toast('Je tu nová verze banky – obnov stránku, až dopíšeš.');return}toast('Načítám novou verzi banky…');setTimeout(()=>location.replace(location.pathname+'?v='+lm+location.hash),1200)}}).catch(()=>{})},3*6e4);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&location.protocol==='https:')fetch(location.pathname.replace(/[^/]*$/,'')+'index.html?nocache='+Date.now(),{method:'HEAD',cache:'no-store'}).then(r=>{var lm=Date.parse(r.headers.get('last-modified')||'');if(lm&&verLm&&lm-verLm>5000)location.replace(location.pathname+'?v='+lm+location.hash)}).catch(()=>{})});
+
 render(true);
 })();
 
