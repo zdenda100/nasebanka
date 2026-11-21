@@ -54,6 +54,10 @@ service cloud.firestore {
     match /mcLinks/{mcUuid} {
       allow read: if signedIn() && resource.data.uid == request.auth.uid;
     }
+    // interní poznámky k lidem – vidí a píše jen vedení banky
+    match /staffNotes/{u} {
+      allow read, write: if admin() || (signedIn() && myRole() in ['banka', 'vyvojar', 'zastupce', 'urednik']);
+    }
     match /requests/{u} {
       allow read: if staff();
       allow write: if signedIn() && request.auth.uid == u;
