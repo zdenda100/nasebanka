@@ -2837,6 +2837,61 @@ A.pushOn=async()=>{if(!('Notification' in window))return toast('Tenhle prohlíž
 A.pushOff=async()=>{await saveX({push:false});toast('Oznámení vypnutá.')};
 {const ns2=P.nastaveni;P.nastaveni=()=>{var h=ns2(),perm='Notification' in window?Notification.permission:'none',on=perm==='granted'&&NBX().push!==false;return afterTop(h,'<section class="glass box"><div class="sec"><h3>'+I('bell')+' Oznámení na mobil a počítač</h3>'+(on?'<button class="gbtn sm" data-act="pushOff">Vypnout</button>':'<button class="cta sm" data-act="pushOn">Zapnout</button>')+'</div><p class="mute sm" style="margin:0">'+(on?'Zapnuto. Upozornění na platby, zprávy, schůzky, faktury a servis přijdou i do systému, když máš banku otevřenou na pozadí.':perm==='denied'?'Prohlížeč oznámení zablokoval. Povol je v nastavení webu a klikni na Zapnout.':'Po zapnutí ti přijdou upozornění, i když bude banka na pozadí.')+' Na mobilu si banku nejdřív nainstaluj (Instalace výš), pak oznámení chodí jako z aplikace.</p></section>')}}
 
+/* ===================== PRÁCE (směny s úkolem, výplata z fondu Banky) ===================== */
+(function(){var m=document.querySelector('symbol#i-menu');if(m&&!document.getElementById('i-brief'))m.insertAdjacentHTML('beforebegin','<symbol id="i-brief" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/></symbol>')})();
+NAVS.splice(NAVS.findIndex(n=>n&&n[0]==='ukoly'),0,['prace','Práce','brief']);
+const WORK_MAX=5;
+const JOBS={ucetni:{n:'Účetní',e:'🧮',pay:15,d:'Sečti účtenku a napiš, kolik je celkem.'},prog:{n:'Programátor',e:'💻',pay:20,d:'Najdi řádek s chybou v krátkém programu.'},urednik:{n:'Bankovní úředník',e:'🕵️',pay:25,d:'Projdi platby a označ všechny podezřelé.'}};
+const workToday=()=>{var w=NBX().work||{};return w.day===todayK()?w.n||0:0};
+const rnd=n=>Math.floor(Math.random()*n);
+/* --- generátory úkolů --- */
+const SHOP=[['Rohlík',3],['Mléko',24],['Sešit A4',18],['Propiska',12],['Jablko',6],['Čokoláda',29],['Džus',35],['Sýr',42],['Bageta',39],['Fixy',55],['Rýže',31],['Banán',7]];
+function genUcetni(){var items=[...Array(3+rnd(3))].map(()=>{var s=SHOP[rnd(SHOP.length)];return {n:s[0],q:1+rnd(4),p:s[1]}}),tot=items.reduce((t,i)=>t+i.q*i.p,0);return {items,ans:tot}}
+const BUGS=[
+ {c:['let cena = 100','let sleva = 20','let konec = cena + sleva','vypiš(konec)'],q:'Program má vypsat cenu po slevě.',bad:2},
+ {c:['let body = 0','pro i od 1 do 10:','  body = body - 1','vypiš(body)'],q:'Program má sečíst body (má vyjít 10).',bad:2},
+ {c:['let věk = 15','když věk > 18:','  vypiš("Smíš řídit")','jinak vypiš("Ještě ne")'],q:'Řídit se smí od 18 let včetně.',bad:1},
+ {c:['let jméno = "Ondra"','let pozdrav = "Ahoj, " + jmeno','vypiš(pozdrav)','konec'],q:'Program má pozdravit Ondru.',bad:1},
+ {c:['let zůstatek = 500','let platba = 120','zůstatek = zůstatek + platba','vypiš(zůstatek)'],q:'Po platbě má zůstatek klesnout.',bad:2},
+ {c:['let čísla = [4, 8, 15]','let součet = 0','pro x v čísla: součet = x','vypiš(součet)'],q:'Program má vypsat součet všech čísel.',bad:2},
+ {c:['let teplota = 30','když teplota < 25:','  vypiš("Je horko")','konec'],q:'Při 30 °C má vypsat „Je horko“.',bad:1},
+ {c:['let ks = 3','let cena = 25','let celkem = ks / cena','vypiš(celkem)'],q:'Celkem = počet kusů × cena.',bad:2},
+ {c:['let heslo = "1234"','když heslo = "1234":','  vypiš("Přihlášen")','konec'],q:'Porovnání se píše dvěma rovnítky ==.',bad:1},
+ {c:['pro i od 1 do 5:','vypiš(i)','  vypiš("hotovo")','konec'],q:'Čísla 1 až 5 se mají vypsat uvnitř cyklu (odsazení).',bad:1}];
+function genProg(){var b=BUGS[rnd(BUGS.length)];return {code:b.c,q:b.q,ans:b.bad}}
+const NAMES=['Ondra','Klára','Petr','Anetka','Tomáš','Eliška','Matyáš','Jana'];
+function genUrednik(){var tx=[...Array(6)].map(()=>{var bad=Math.random()<.4,kind=bad?rnd(4):-1,amt=bad&&kind===0?5000+rnd(20000):20+rnd(400),to=bad&&kind===1?'neznámý účet 9999 0000':NAMES[rnd(NAMES.length)],h=bad&&kind===2?1+rnd(4):8+rnd(12),why=bad&&kind===3?'pošli PIN a heslo':['oběd','kino','dárek','sešity','splátka','kapesné'][rnd(6)];return {amt,to,h,mi:rnd(60),why,bad}});if(!tx.some(t=>t.bad))tx[rnd(6)]=Object.assign(tx[0],{amt:9000,bad:true});return {tx,ans:tx.map(t=>t.bad)}}
+st.job=null;
+Object.assign(A,{
+ jobStart(b){if(workToday()>=WORK_MAX)return toast('Dnes už máš odpracováno '+WORK_MAX+' směn. Přijď zítra.',false);if(st.jobLock&&Date.now()<st.jobLock)return toast('Chvilku počkej, než zkusíš další směnu ('+Math.ceil((st.jobLock-Date.now())/1000)+' s).',false);var k=b.dataset.v;st.job={k,t:k==='ucetni'?genUcetni():k==='prog'?genProg():genUrednik()};render(true)},
+ jobCancel(){st.job=null;render(true)},
+ async jobSubmit(){var j=st.job;if(!j)return;var ok=false;
+  if(j.k==='ucetni')ok=Math.abs(Number(String($('nbjob').value).replace(',','.'))-j.t.ans)<.01;
+  else if(j.k==='prog'){var s=document.querySelector('#nbmain input[name=nbline]:checked');ok=!!s&&Number(s.value)===j.t.ans}
+  else{var marks=[...document.querySelectorAll('#nbmain .nbsus')].map(i=>i.checked);ok=marks.every((m,i)=>m===j.t.ans[i])}
+  if(!ok){st.jobLock=Date.now()+20000;st.job=null;toast('Tohle nebylo správně. Další směnu můžeš zkusit za 20 s.',false);return render(true)}
+  var job=JOBS[j.k],pay=job.pay;try{await myTx(o=>{var x=Object.assign({},o.nbx||{}),w=x.work&&x.work.day===todayK()?x.work:{day:todayK(),n:0};if(w.n>=WORK_MAX)throw Error('Dnes už máš odpracováno.');x.work={day:todayK(),n:w.n+1};x.wpay=[...(x.wpay||[]).filter(p=>!p.paid||p.at>Date.now()-7*864e5),{id:Date.now().toString(36),job:j.k,pay,at:Date.now(),paid:false}].slice(-40);return{upd:{nbx:x}}});nbxLocal=null;st.job=null;toast('Výborně! Směna odpracována (+'+kc(pay)+' hrubého). Výplata přijde v pondělí.')}catch(e){toast(errt(e),false)}render(true)}
+});
+/* výplaty jako normální mzda: každé pondělí za minulý týden, hrubá mzda − daň 15 % = čistá (daň zůstává ve fondu Banky) */
+const WORK_TAX=.15;const wkStart=()=>new Date(weekK()+'T00:00:00').getTime();const wkNo=t=>{var d=new Date(t);d.setHours(0,0,0,0);d.setDate(d.getDate()+3-(d.getDay()+6)%7);var w1=new Date(d.getFullYear(),0,4);return 1+Math.round(((d-w1)/864e5-3+(w1.getDay()+6)%7)/7)};
+let payrollBusy=false;setInterval(async()=>{if(payrollBusy||!uid||!(isAdmin||['banka','vyvojar'].includes(myRole)))return;var bank=bankAcct();if(!bank)return;var ws=wkStart(),due=accts.filter(a=>(a.nbx&&a.nbx.wpay||[]).some(p=>!p.paid&&p.at<ws));if(!due.length)return;payrollBusy=true;
+ try{for(const a of due){await firebaseTransaction(fdb,async tr=>{var br=fdoc(fdb,'accounts',bank.id),wr=fdoc(fdb,'accounts',a.id),bs=await tr.get(br),wsn=await tr.get(wr);if(!bs.exists()||!wsn.exists())return;var b=bs.data(),w=wsn.data(),x=Object.assign({},w.nbx||{}),todo=(x.wpay||[]).filter(p=>!p.paid&&p.at<ws);if(!todo.length)return;
+   var gross=r2(todo.reduce((t,p)=>t+p.pay,0)),tax=r2(gross*WORK_TAX),net=r2(gross-tax);if(a.id!==bank.id&&(b.bal||0)<net)return;
+   var jobs={};todo.forEach(p=>jobs[p.job]=(jobs[p.job]||0)+1);var wk=wkNo(todo[0].at);
+   x.wpay=(x.wpay||[]).map(p=>!p.paid&&p.at<ws?Object.assign({},p,{paid:true,pAt:Date.now()}):p);x.payslips=[{wk,y:new Date(todo[0].at).getFullYear(),n:todo.length,jobs,gross,tax,net,at:Date.now()},...(x.payslips||[])].slice(0,20);
+   if(a.id===bank.id){tr.update(wr,{nbx:x});return}
+   tr.update(br,{bal:r2(b.bal-net),tx:txlog(b,'Výplata '+w.name+' · týden '+wk+' (daň '+kc(tax)+' zůstává)',-net)});tr.update(wr,{bal:r2((w.bal||0)+net),tx:txlog(w,'Výplata za týden '+wk+' · '+todo.length+' směn (hrubá '+kc(gross)+', daň '+kc(tax)+')',net),nbx:x})})}}catch(e){console.warn('Výplaty:',e)}payrollBusy=false},8000);
+P.prace=()=>{var j=st.job,n=workToday(),all=NBX().wpay||[],ws=wkStart(),week=all.filter(p=>p.at>=ws),pend=all.filter(p=>!p.paid&&p.at<ws),slips=NBX().payslips||[],bank=bankAcct(),gross=r2(week.reduce((t,p)=>t+p.pay,0)),nextMon=new Date(ws+7*864e5);
+ var head=topbar('Práce','Směny s úkolem · výplata každé pondělí')+'<section class="glass box bal"><small>Tento týden vyděláno (hrubá mzda)</small><div class="bnum gtext">'+kc(gross)+'</div><div class="pls"><div class="pl">Dnes směn<b>'+n+' / '+WORK_MAX+'</b></div><div class="pl">Směn tento týden<b>'+week.length+'</b></div><div class="pl">Čistá mzda<b>'+f0(r2(gross*(1-WORK_TAX)))+'</b></div><div class="pl">Výplatní den<b>'+nextMon.toLocaleDateString('cs-CZ',{weekday:'short',day:'numeric',month:'numeric'})+'</b></div></div><div class="prog" style="margin-top:12px"><i style="width:'+n/WORK_MAX*100+'%"></i></div><p class="mute sm" style="margin:10px 0 0">Výplata chodí jednou týdně v pondělí z fondu Banky. Z hrubé mzdy se strhne daň 15 %.'+(pend.length?' <b>Minulý týden ('+kc(pend.reduce((t,p)=>t+p.pay,0))+' hrubého) čeká na vyplacení</b> – pošle ho fond Banky, jakmile má banku otevřenou majitel, Banka nebo vývojář'+(bank&&bank.bal<pend.reduce((t,p)=>t+p.pay,0)?' a ve fondu bude dost peněz':'')+'.':'')+'</p></section>';
+ if(!j)return head+'<div class="g2">'+Object.entries(JOBS).map(([k,v])=>'<section class="glass box"><div style="font-size:36px">'+v.e+'</div><h3 style="margin:6px 0 4px">'+v.n+'</h3><p class="mute sm">'+v.d+'</p><div class="kv"><span>Mzda za směnu (hrubá)</span><b>'+kc(v.pay)+'</b></div><button class="cta" style="margin-top:10px" data-act="jobStart" data-v="'+k+'" '+(n>=WORK_MAX?'disabled':'')+'>'+I('brief')+(n>=WORK_MAX?'Dnes hotovo':'Začít směnu')+'</button></section>').join('')+
+  '<section class="glass box"><h3>Výplatní pásky</h3>'+(slips.map((s,i)=>'<div style="border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px"><div class="sec" style="margin:0 0 6px"><b>Týden '+s.wk+' · '+s.n+' směn</b><small class="mute">vyplaceno '+new Date(s.at).toLocaleDateString('cs-CZ')+'</small></div>'+Object.entries(s.jobs||{}).map(([k,c])=>'<div class="kv"><span>'+JOBS[k].e+' '+JOBS[k].n+' · '+c+'×</span><b>'+kc(c*JOBS[k].pay)+'</b></div>').join('')+'<div class="kv"><span>Hrubá mzda</span><b>'+kc(s.gross)+'</b></div><div class="kv"><span>Daň 15 %</span><b class="neg">−'+kc(s.tax)+'</b></div><div class="kv"><span><b>Čistá mzda (přišla na účet)</b></span><b class="pos">'+kc(s.net)+'</b></div></div>').join('')||'<div class="emp">První výplatní páska přijde v pondělí po první odpracované směně.</div>')+'</section></div>';
+ var job=JOBS[j.k],body='';
+ if(j.k==='ucetni')body='<p class="mute sm">'+job.d+'</p><table style="width:100%;border-collapse:collapse;font-size:15px">'+j.t.items.map(i=>'<tr><td style="padding:6px 0">'+esc(i.n)+'</td><td style="text-align:center">'+i.q+' ks</td><td style="text-align:right">'+i.p+' Sh/ks</td></tr>').join('')+'</table><label class="field" style="margin-top:12px">Celkem (Sh)<input id="nbjob" inputmode="decimal" placeholder="0" autocomplete="off"></label>';
+ else if(j.k==='prog')body='<p class="sm"><b>'+esc(j.t.q)+'</b> Na kterém řádku je chyba?</p><div style="font-family:ui-monospace,Consolas,monospace;font-size:14px;background:var(--input);border:1px solid var(--line);border-radius:12px;padding:8px">'+j.t.code.map((l,i)=>'<label style="display:flex;gap:10px;align-items:center;padding:6px;border-radius:8px;cursor:pointer"><input type="radio" name="nbline" id="nbline'+i+'" value="'+i+'" style="width:auto"><span class="mute">'+(i+1)+'</span><span style="white-space:pre">'+esc(l)+'</span></label>').join('')+'</div>';
+ else body='<p class="mute sm">Podezřelé je: částka nad 5 000 Sh, platba na neznámý účet, platba v noci (0–5 h) a zpráva, která chce PIN nebo heslo.</p>'+j.t.tx.map((t,i)=>'<label class="kv" style="cursor:pointer"><span><b>'+kc(t.amt)+' → '+esc(t.to)+'</b><small class="mute" style="display:block">'+String(t.h).padStart(2,'0')+':'+String(t.mi).padStart(2,'0')+' · „'+esc(t.why)+'“</small></span><input type="checkbox" class="nbsus" id="nbsus'+i+'" style="width:22px;height:22px"></label>').join('');
+ return head+'<section class="glass box"><div class="sec"><h3>'+job.e+' '+job.n+' · směna '+(n+1)+'/'+WORK_MAX+'</h3><span class="role">'+kc(job.pay)+'</span></div>'+body+'<div class="r2" style="margin-top:14px"><button class="gbtn" data-act="jobCancel">Zrušit</button><button class="cta" data-act="jobSubmit">'+I('check')+'Odevzdat</button></div></section>'};
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='nbjob'){e.preventDefault();A.jobSubmit()}});
+
 render(true);
 })();
 
