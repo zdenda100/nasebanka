@@ -8,8 +8,8 @@ service cloud.firestore {
     function role(r) { return signedIn() && myRole() == r; }
     // Banka umí to samé co majitel, vývojář skoro všechno
     function staff() { return admin() || (signedIn() && myRole() in ['banka', 'vyvojar']); }
-    // registrace schvaluje Banka, majitel, zástupce, vývojář a grafik
-    function approver() { return admin() || (signedIn() && myRole() in ['banka', 'vyvojar', 'zastupce', 'grafik']); }
+    // registrace schvaluje Banka, majitel, úředník, zástupce, vývojář a grafik
+    function approver() { return admin() || (signedIn() && myRole() in ['banka', 'vyvojar', 'zastupce', 'grafik', 'urednik']); }
     match /accounts/{u} {
       allow read: if signedIn();
       allow create: if (request.resource.data.get('card','klasik') != 'casino_ace' || (admin() && request.auth.uid == u)) && (admin() || (signedIn() && request.auth.uid == u && request.resource.data.role == 'zakaznik'));
@@ -19,6 +19,10 @@ service cloud.firestore {
             && request.resource.data.get('pending', false) == resource.data.get('pending', false)
             && request.resource.data.get('blocked', false) == resource.data.get('blocked', false))
         || (deputy() && resource.data.role != 'majitel' && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['bal','tx','sav','savAt','blocked','blockWhy']))
+        // úředník Banky smí u cizího účtu jen schválit/zamítnout velkou platbu (nbx.pendPay)
+        || (role('urednik') && request.auth.uid != u
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nbx'])
+            && request.resource.data.nbx.diff(resource.data.nbx).affectedKeys().hasOnly(['pendPay']))
         // spolumajitel firmy smí měnit jen firmu (ne název, logo, barvu a spolumajitele)
         || (signedIn() && request.auth.uid != u
             && resource.data.get('nbx', {}).get('firm', {}).get('co', []).hasAny([request.auth.uid])
