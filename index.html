@@ -529,6 +529,8 @@ html.hc{--mute:#cfd3e6;--line:rgba(255,255,255,.35)}
 /* výběr reakce: vybrané emoji je vidět */
 #nb label.rx{cursor:pointer;border:2px solid transparent}
 #nb label.rx:has(input:checked){border-color:var(--a2);background:var(--glow)}
+
+#nbbn a .bnl{max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
 </style>
 </head>
 <body>
@@ -1672,8 +1674,8 @@ function navs(){var r=route(),u=vis('nba')?$('nba').textContent:'',b=u?'<span cl
  var cu=chatUnread(),cb=cu?'<span class="nbdg">'+cu+'</span>':'',bd=k=>k==='oznameni'?b:k==='zpravy'?cb:'';
  $('nbside').innerHTML=sideHtml(r,bd);var sq=$('nbsideq');if(sq&&st.sideQ){sq.value=st.sideQ;sideFilter(st.sideQ);if(st.sideFocus){sq.focus();sq.setSelectionRange(sq.value.length,sq.value.length)}}
  var more=!['ucet','burza','platby','kasino'].includes(r);
- $('nbbn').innerHTML='<a data-go="ucet" class="'+(r==='ucet'?'on':'')+'">'+I('home')+'Účet</a><a data-go="burza" class="'+(r==='burza'?'on':'')+'">'+I('chart')+'Burza</a><a data-go="platby" aria-label="Platby"><span class="fab">'+I('send')+'</span></a><a data-go="kasino" class="'+(r==='kasino'?'on':'')+'">'+I('dice')+'Kasino</a><a data-act="more" class="'+(more?'on':'')+'">'+I('menu')+'Více'+b+'</a>';
- (function(){var g=[[]],T=['Peníze a hry','Lidé a škola','Správa banky'];navList().forEach(n=>{if(!n){g.push([]);return}if(!['ucet','burza','platby','kasino'].includes(n[0]))g[g.length-1].push(n)});$('nbsg').innerHTML=g.filter(x=>x.length).map((x,i)=>'<div class="sgh">'+(T[i]||'Další')+'</div>'+x.map(n=>'<a data-go="'+n[0]+'">'+I(n[2])+'<span>'+n[1]+'</span>'+bd(n[0])+'</a>').join('')).join('')})();
+ var bn=bnSlots(),nl=navList().filter(Boolean),nm=k=>nl.find(n=>n[0]===k)||['ucet','Účet','home'],bt=k=>{var n=nm(k);return '<a data-go="'+n[0]+'" class="'+(r===n[0]?'on':'')+'">'+I(n[2])+'<span class="bnl">'+n[1].split(' ')[0]+'</span>'+bd(n[0])+'</a>'};more=!bn.includes(r)&&r!=='platby';$('nbbn').innerHTML=bt(bn[0])+bt(bn[1])+'<a data-go="platby" aria-label="Platby"><span class="fab">'+I('send')+'</span></a>'+bt(bn[2])+'<a data-act="more" class="'+(more?'on':'')+'">'+I('menu')+'Více'+b+'</a>';
+ (function(){var g=[[]],T=['Peníze a hry','Lidé a škola','Správa banky'];navList().forEach(n=>{if(!n){g.push([]);return}if(!['platby',...bnSlots()].includes(n[0]))g[g.length-1].push(n)});$('nbsg').innerHTML=g.filter(x=>x.length).map((x,i)=>'<div class="sgh">'+(T[i]||'Další')+'</div>'+x.map(n=>'<a data-go="'+n[0]+'">'+I(n[2])+'<span>'+n[1]+'</span>'+bd(n[0])+'</a>').join('')).join('')})();
 }
 
 /* ---------- stránky ---------- */
@@ -3054,6 +3056,21 @@ document.addEventListener('click',e=>{var c=e.target.closest&&e.target.closest('
 /* nová verze banky i když je stránka dlouho otevřená (mobil) */
 let verLm=Date.parse(document.lastModified)||0;setInterval(()=>{if(location.protocol!=='https:'||document.hidden)return;fetch(location.pathname.replace(/[^/]*$/,'')+'index.html?nocache='+Date.now(),{method:'HEAD',cache:'no-store'}).then(r=>{var lm=Date.parse(r.headers.get('last-modified')||'');if(lm&&verLm&&lm-verLm>5000){verLm=lm;var t=document.activeElement;if(t&&/INPUT|TEXTAREA|SELECT/.test(t.tagName)){toast('Je tu nová verze banky – obnov stránku, až dopíšeš.');return}toast('Načítám novou verzi banky…');setTimeout(()=>location.replace(location.pathname+'?v='+lm+location.hash),1200)}}).catch(()=>{})},3*6e4);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&location.protocol==='https:')fetch(location.pathname.replace(/[^/]*$/,'')+'index.html?nocache='+Date.now(),{method:'HEAD',cache:'no-store'}).then(r=>{var lm=Date.parse(r.headers.get('last-modified')||'');if(lm&&verLm&&lm-verLm>5000)location.replace(location.pathname+'?v='+lm+location.hash)}).catch(()=>{})});
+
+/* ===================== VLASTNÍ ZKRATKY NA ÚČTU A SPODNÍ LIŠTA ===================== */
+const QK_DEF=null;
+const qkList=()=>{var q=NBX().qk;return Array.isArray(q)&&q.length?q:null};
+function bnSlots(){var b=NBX().bn,nl=navList().filter(Boolean).map(n=>n[0]);var d=['ucet','burza','kasino'];if(!Array.isArray(b)||b.length!==3)return d;return b.map((k,i)=>nl.includes(k)?k:d[i])}
+{const u1=P.ucet;P.ucet=()=>{var h=u1(),q=qkList();if(!q)return h;var nl=navList().filter(Boolean),btn=q.map(k=>nl.find(n=>n[0]===k)).filter(Boolean).map((n,i)=>'<button class="qb'+(i===0?' p':'')+'" data-go="'+n[0]+'"><span>'+I(n[2])+'</span>'+n[1]+'</button>').join('');return h.replace(/<div class="qa2">[\s\S]*?<\/div><\/section>/,'<div class="qa2">'+btn+'<button class="qb" data-act="qkEdit" title="Upravit zkratky"><span>'+I('cog')+'</span>Upravit</button></div></section>')}}
+Object.assign(A,{
+ async qkEdit(){var nl=navList().filter(n=>n&&n[0]!=='ucet'),cur=qkList()||['platby','pujcky','kasino','burza','krypto'];var v=await formModal('Zkratky na Účtu','<p class="mute sm">Vyber až 6 stránek, které chceš mít na Účtu hned po ruce. Pořadí je podle toho, jak je zaškrtneš.</p><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;max-height:340px;overflow:auto">'+nl.map(n=>'<label class="kv" style="cursor:pointer;margin:0;padding:8px 10px;border:1px solid var(--line);border-radius:12px"><span style="display:flex;gap:8px;align-items:center">'+I(n[2])+n[1]+'</span><input type="checkbox" class="nbqk" value="'+n[0]+'" '+(cur.includes(n[0])?'checked':'')+' style="width:auto"></label>').join('')+'</div>','Uložit');if(!v)return;
+  var picked=[...document.querySelectorAll('#nbfb .nbqk:checked')].map(i=>i.value),ordered=[...cur.filter(k=>picked.includes(k)),...picked.filter(k=>!cur.includes(k))].slice(0,6);if(!ordered.length)return toast('Vyber aspoň jednu zkratku.',false);await saveX({qk:ordered});toast('Zkratky uloženy.')},
+ async qkReset(){await saveX({qk:null});toast('Zkratky vráceny na výchozí.')},
+ async bnSave(){var v=[0,1,2].map(i=>($('nbbn'+i)||{}).value);if(v.some(x=>!x))return;if(new Set(v).size<3)return toast('Každé místo musí mít jinou stránku.',false);await saveX({bn:v});toast('Spodní lišta uložena.');render(true)},
+ async bnReset(){await saveX({bn:null});toast('Spodní lišta vrácena na výchozí.');render(true)}
+});
+{const ns=P.nastaveni;P.nastaveni=()=>{var h=ns(),nl=navList().filter(Boolean),q=qkList(),bn=bnSlots(),sel=(i)=>'<select id="nbbn'+i+'" style="width:100%;padding:10px;border-radius:12px;border:1px solid var(--line);background:var(--input);color:var(--ink)">'+nl.filter(n=>n[0]!=='platby').map(n=>'<option value="'+n[0]+'" '+(bn[i]===n[0]?'selected':'')+'>'+n[1]+'</option>').join('')+'</select>';
+ return afterTop(h,'<section class="glass box"><div class="sec"><h3>'+I('home')+' Zkratky a lišta</h3></div><div class="g2" style="gap:16px"><div><h4 style="margin:0 0 6px">Zkratky na Účtu</h4><p class="mute sm" style="margin:0 0 8px">'+(q?q.map(k=>(nl.find(n=>n[0]===k)||[0,k])[1]).join(' · '):'Výchozí: Poslat, Spořit, Kasino, Investice, Půjčky')+'</p><div class="r2"><button class="cta" data-act="qkEdit">Vybrat zkratky</button>'+(q?'<button class="gbtn" data-act="qkReset">Výchozí</button>':'')+'</div></div><div><h4 style="margin:0 0 6px">Spodní lišta na telefonu</h4><p class="mute sm" style="margin:0 0 8px">Uprostřed zůstane tlačítko Platby a vpravo Více.</p><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">'+sel(0)+sel(1)+sel(2)+'</div><div class="r2" style="margin-top:8px"><button class="cta" data-act="bnSave">Uložit lištu</button><button class="gbtn" data-act="bnReset">Výchozí</button></div></div></div></section>')}}
 
 render(true);
 })();
