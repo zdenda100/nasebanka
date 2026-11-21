@@ -58,6 +58,17 @@ service cloud.firestore {
     match /staffNotes/{u} {
       allow read, write: if admin() || (signedIn() && myRole() in ['banka', 'vyvojar', 'zastupce', 'urednik']);
     }
+    // podepsané smlouvy z pobočky – zákazník vidí svoje, vedení všechny; nikdo je nepřepíše
+    match /contracts/{id} {
+      allow read: if signedIn() && (resource.data.uid == request.auth.uid || approver());
+      allow create: if approver() && request.resource.data.by == request.auth.uid
+        && request.resource.data.sig is string && request.resource.data.sig.size() < 300000;
+      allow delete: if admin();
+    }
+    // vlastní šablony smluv
+    match /contractTpl/{id} {
+      allow read, write: if approver();
+    }
     match /requests/{u} {
       allow read: if staff();
       allow write: if signedIn() && request.auth.uid == u;
