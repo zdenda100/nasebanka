@@ -3201,6 +3201,27 @@ let apprBusy=false;setInterval(async()=>{if(apprBusy||!uid||dOn())return;var tod
 /* Platby: stav schválené platby */
 {const pp2=P.platby;P.platby=()=>{var h=pp2(),l=(NBX().pendPay||[]).filter(p=>p.st==='appr'||(p.st==='fail'&&p.at>Date.now()-3*864e5));if(!l.length)return h;return afterTop(h,'<section class="glass box"><h3>Schválené velké platby</h3>'+l.map(p=>'<div class="trow"><div class="ic">'+I(p.st==='fail'?'x':'check')+'</div><div class="m"><b>'+kc(p.a)+' → '+esc(nameOfId(p.to))+'</b><small>'+(p.st==='fail'?'neodeslána – nebylo dost peněz':'schváleno ('+esc(p.byName||'úředník')+'), odesílá se…')+'</small></div></div>').join('')+'</section>')}}
 
+/* ===================== PROFIL: BIO + BAREVNÉ ŠTÍTKY ROLÍ ===================== */
+document.head.insertAdjacentHTML('beforeend','<style>'+
+'#nb .role.k-majitel{background:linear-gradient(135deg,#fde68a,#f59e0b);color:#3b2600;box-shadow:0 0 12px rgba(245,158,11,.45)}'+
+'#nb .role.k-grafik{background:rgba(239,68,68,.18);color:#ef4444}'+
+'#nb .role.k-vyvojar{background:rgba(34,197,94,.18);color:#22c55e}'+
+'#nb .role.k-zastupce{background:rgba(59,130,246,.18);color:#3b82f6}'+
+'#nb .role.k-zakaznik{background:rgba(148,163,184,.18);color:#94a3b8}'+
+'#nb .role.k-urednik{background:rgba(168,85,247,.18);color:#a855f7}'+
+'#nb .role.k-banka{background:rgba(34,211,238,.18);color:#06b6d4}'+
+'#nb .role.big{font-size:13px;padding:4px 12px;border-radius:9px;margin:6px 0 0}'+
+'#nb .bio{white-space:pre-wrap;word-break:break-word;margin:0;line-height:1.5}'+
+'</style>');
+const roleTag=(r,big)=>{r=r||'zakaznik';return '<span class="role k-'+esc(r)+(big?' big':'')+'">'+(r==='majitel'?'👑 ':'')+esc(lbl(r))+'</span>'};
+A.bioEdit=async()=>{var v=await formModal('Moje bio','<label class="field">Napiš něco o sobě (uvidí to ostatní)<textarea name="b" rows="4" maxlength="200" style="width:100%;padding:11px;border-radius:12px;border:1px solid var(--line);background:var(--input);color:var(--ink);font:inherit">'+esc(NBX().bio||'')+'</textarea></label><p class="mute sm" style="margin:0">Nejvýš 200 znaků.</p>','Uložit');if(!v)return;await saveX({bio:String(v.b||'').trim().slice(0,200)});toast('Bio uloženo.')};
+{const pf=P.profil;P.profil=()=>{var h=pf(),id=st.prof&&accts.some(a=>a.id===st.prof)?st.prof:uid,a=accts.find(x=>x.id===id)||me(),x=id===uid?NBX():(a.nbx||{}),role=id===uid?myRole:a.role;if(id===uid&&isAdmin)role='majitel';
+ /* štítek role pod jménem */
+ var mk='<p>'+esc(a.name||'')+(a.role&&a.role!=='zakaznik'?' · '+lbl(a.role):'')+'</p>';h=h.replace(mk,'<p>'+esc(a.name||'')+'</p>'+roleTag(role,true));
+ /* bio */
+ var bio=x.bio||'',sec='<section class="glass box"><div class="sec"><h3>Bio</h3>'+(id===uid?'<button class="gbtn sm" data-act="bioEdit">'+(bio?'Upravit':'Přidat bio')+'</button>':'')+'</div>'+(bio?'<p class="bio">'+esc(bio)+'</p>':'<div class="emp">'+(id===uid?'Zatím nemáš bio. Napiš něco o sobě.':'Zatím bez bia.')+'</div>')+'</section>';
+ var i=h.indexOf('<div class="g2">');return i<0?h+sec:h.slice(0,i)+sec+h.slice(i)}}
+
 render(true);
 })();
 
