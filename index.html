@@ -3005,6 +3005,33 @@ document.addEventListener('keydown',e=>{if(e.target.id==='nbsideq'&&e.key==='Ent
 
 document.addEventListener('input',e=>{if(e.target.id==='nbloginq'){st.loginQ=e.target.value;render(true)}});
 
+/* ===================== VLASTNICTVÍ BANKY ===================== */
+const canBankBuy=()=>isAdmin||['banka','vyvojar'].includes(myRole);
+function bankOwn(){var b=bankAcct();if(!b)return null;var x=b.id===uid?NBX():(b.nbx||{}),m=reOwners(),props=Object.entries(m).filter(([,q])=>q.a.id===b.id).map(([pid,q])=>({p:PLOTS.find(z=>z.id===pid),o:q.o})),now=Date.now();
+ var inv=Object.entries(b.investPositions||{}).map(([id,h])=>{var a=INVEST_ASSETS.find(z=>z.id===id);return a&&h.qty?{n:a.name,q:h.qty,v:r2(h.qty*investPrice(a,now))}:null}).filter(Boolean);
+ var cr=Object.entries(x.crypto||{}).map(([id,h])=>{var c=CRY.find(z=>z.id===id);return c&&h.qty?{n:c.name,q:h.qty,v:r2(h.qty*cPrice(c,now))}:null}).filter(Boolean);
+ var fs=Object.entries(x.fshares||{}).filter(([,q])=>q>0).map(([oid,q])=>{var a=accts.find(z=>z.id===oid),f=a&&firmOf(a);return f?{n:f.n,q,v:r2(q*fPrice(f,oid))}:null}).filter(Boolean);
+ var hkc=x.hkc||0;return {b,x,props,inv,cr,fs,hkc,hkv:r2(hkc*hp(hkSup()))}}
+Object.assign(A,{
+ async bankBuyPlot(b){if(!canBankBuy())return;var bank=bankAcct();if(!bank)return toast('Banka zatím nemá účet.',false);var p=PLOTS.find(q=>q.id===b.dataset.v);if(reOwners()[p.id])return toast('Nemovitost už někomu patří.',false);var price=reValue(p,null);if(!await askModal('Koupit '+p.street+' '+p.no+' ('+RE_T[p.t][0]+') pro Banku za '+kc(price)+' z fondu Banky?','Koupě pro Banku'))return;
+  try{await firebaseTransaction(fdb,async tr=>{var br=fdoc(fdb,'accounts',bank.id),bs=await tr.get(br);var o=bs.data();if((o.bal||0)<price)throw Error('Ve fondu Banky je jen '+kc(o.bal||0)+'.');var nx=Object.assign({},o.nbx||{});nx.props=Object.assign({},nx.props||{},{[p.id]:{at:Date.now(),bought:price,lvl:0,rk:weekK(),by:uid}});tr.update(br,{bal:r2(o.bal-price),tx:txlog(o,'Koupě nemovitosti '+p.street+' '+p.no,-price),nbx:nx})});alog('Banka koupila '+p.street+' '+p.no+' za '+kc(price));toast('Banka teď vlastní '+p.street+' '+p.no+'.')}catch(e){toast(errt(e),false)}render(true)},
+ async bankRent(){if(!canBankBuy())return;var own=bankOwn();if(!own)return;var due=own.props.filter(q=>q.o.rk!==weekK()&&!q.o.ten);if(!due.length)return toast('Nájem za tento týden už je vybraný (nebo Banka nic nevlastní).',false);var sum=r2(due.reduce((t,q)=>t+reRent(q.p,q.o),0));
+  try{await firebaseTransaction(fdb,async tr=>{var br=fdoc(fdb,'accounts',own.b.id),bs=await tr.get(br),o=bs.data(),nx=Object.assign({},o.nbx||{}),ps=Object.assign({},nx.props||{});due.forEach(q=>{if(ps[q.p.id])ps[q.p.id]=Object.assign({},ps[q.p.id],{rk:weekK()})});nx.props=ps;tr.update(br,{bal:r2((o.bal||0)+sum),tx:txlog(o,'Nájem z nemovitostí Banky ('+due.length+')',sum),nbx:nx})});toast('Do fondu Banky přišel nájem '+kc(sum)+'.')}catch(e){toast(errt(e),false)}render(true)}
+});
+/* stránka Banka: přehled vlastnictví */
+{const pb=P.banka;P.banka=()=>{var h=pb(),own=bankOwn();if(!own)return h;var propV=r2(own.props.reduce((t,q)=>t+reValue(q.p,q.o),0)),rent=r2(own.props.reduce((t,q)=>t+(q.o.ten?q.o.tenP||0:reRent(q.p,q.o)),0)),invV=r2(own.inv.reduce((t,q)=>t+q.v,0)),crV=r2(own.cr.reduce((t,q)=>t+q.v,0)),fsV=r2(own.fs.reduce((t,q)=>t+q.v,0)),tot=r2(propV+invV+crV+fsV+own.hkv),cnt={};own.props.forEach(q=>{var t=plotType(q.p,q.o);cnt[t]=(cnt[t]||0)+1});var dueN=own.props.filter(q=>q.o.rk!==weekK()&&!q.o.ten).length;
+ var row=(ic,n,s,v)=>'<div class="trow"><div class="ic">'+ic+'</div><div class="m"><b>'+n+'</b><small>'+s+'</small></div><b>'+kc(v)+'</b></div>';
+ var sec='<section class="glass box"><div class="sec"><h3>'+I('vault')+' Vlastnictví Banky</h3><span class="role">'+kc(tot)+'</span></div><div class="pls"><div class="pl">Nemovitosti<b>'+own.props.length+'</b></div><div class="pl">Obchody<b>'+(cnt.obchod||0)+'</b></div><div class="pl">Byty<b>'+(cnt.byt||0)+'</b></div><div class="pl">Domy<b>'+(cnt.dum||0)+'</b></div><div class="pl">Pozemky<b>'+(cnt.pozemek||0)+'</b></div><div class="pl">Nájem/týden<b>'+f0(rent)+'</b></div></div>'+
+  (canBankBuy()?'<div class="r2" style="margin:12px 0 4px"><button class="cta" data-act="bankRent" '+(dueN?'':'disabled')+'>'+(dueN?'Vybrat nájem do fondu ('+dueN+')':'Nájem za týden vybrán')+'</button><button class="gbtn" data-act="goRe">'+I('house')+'Koupit nemovitost pro Banku</button></div>':'')+
+  '<h4 style="margin:14px 0 6px">Nemovitosti</h4>'+(own.props.map(q=>row(RE_T[plotType(q.p,q.o)][1],esc(q.p.street+' '+q.p.no),RE_T[plotType(q.p,q.o)][0]+(q.o.lvl?' · úroveň '+q.o.lvl:'')+' · nájem '+f0(q.o.ten?q.o.tenP:reRent(q.p,q.o))+'/týden'+(q.o.ten?' · pronajato '+esc(nameOfId(q.o.ten)):''),reValue(q.p,q.o))).join('')||'<div class="emp">Banka zatím nevlastní žádné nemovitosti.</div>')+
+  (own.inv.length?'<h4 style="margin:14px 0 6px">Akcie</h4>'+own.inv.map(q=>row(I('chart'),esc(q.n),q.q+' ks',q.v)).join(''):'')+
+  (own.fs.length?'<h4 style="margin:14px 0 6px">Akcie firem spolužáků</h4>'+own.fs.map(q=>row(I('building'),esc(q.n),q.q+' ks',q.v)).join(''):'')+
+  (own.cr.length||own.hkc?'<h4 style="margin:14px 0 6px">Krypto</h4>'+own.cr.map(q=>row(I('coin'),esc(q.n),q.q+' ks',q.v)).join('')+(own.hkc?row(I('coin'),'HokaidoCoin',own.hkc+' HKC',own.hkv):''):'')+'</section>';
+ var i=h.indexOf('<div class="g2">');return i<0?h+sec:h.slice(0,i)+sec+h.slice(i)}}
+A.goRe=()=>go('nemovitosti');
+/* Nemovitosti: u volné parcely tlačítko Koupit pro Banku */
+{const pn=P.nemovitosti;P.nemovitosti=()=>{var h=pn();if(!canBankBuy()||!bankAcct()||!st.prop)return h;var p=PLOTS.find(q=>q.id===st.prop);if(!p||reOwners()[p.id])return h;var mk='data-act="reBuy" data-v="'+p.id+'">';var i=h.indexOf(mk);if(i<0)return h;var e=h.indexOf('</button>',i)+9;return h.slice(0,e)+'<button class="gbtn" style="margin-top:8px" data-act="bankBuyPlot" data-v="'+p.id+'">'+I('vault')+'Koupit pro Banku (z fondu '+f0(bankAcct().bal||0)+')</button>'+h.slice(e)}}
+
 render(true);
 })();
 
