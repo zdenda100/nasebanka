@@ -3223,6 +3223,14 @@ A.bioEdit=async()=>{var v=await formModal('Moje bio','<label class="field">Napi�
  var bio=x.bio||'',sec='<section class="glass box"><div class="sec"><h3>Bio</h3>'+(id===uid?'<button class="gbtn sm" data-act="bioEdit">'+(bio?'Upravit':'Přidat bio')+'</button>':'')+'</div>'+(bio?'<p class="bio">'+esc(bio)+'</p>':'<div class="emp">'+(id===uid?'Zatím nemáš bio. Napiš něco o sobě.':'Zatím bez bia.')+'</div>')+'</section>';
  var i=h.indexOf('<div class="g2">');return i<0?h+sec:h.slice(0,i)+sec+h.slice(i)}}
 
+/* ===================== ŠTÍTEK SE ZKRATKOU FIRMY ===================== */
+const firmAbbr=n=>{n=String(n||'').trim();var w=n.split(/[\s\-_.&]+/).filter(Boolean);if(w.length>1)return w.slice(0,4).map(x=>x[0]).join('').toUpperCase();var caps=n.match(/[A-ZÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ]/g);if(caps&&caps.length>1)return caps.slice(0,4).join('');return n.slice(0,3).toUpperCase()};
+const inkFor=c=>{var m=/^#?([0-9a-f]{6})$/i.exec(String(c||''));if(!m)return '#fff';var v=parseInt(m[1],16),r=v>>16&255,g=v>>8&255,b=v&255;return (r*299+g*587+b*114)/1000>150?'#111':'#fff'};
+const firmTag=id=>{var q=allFirms().find(x=>x.a.id===id);if(!q)return '';var f=q.f,bg=f.color||'#64748b';return '<span class="role ftag" title="Vlastní firmu '+esc(f.n)+'" style="background:'+esc(bg)+';color:'+inkFor(bg)+';margin-left:6px">'+esc(f.emoji||'')+' '+esc(f.zk||firmAbbr(f.n))+'</span>'};
+document.head.insertAdjacentHTML('beforeend','<style>#nb .role.ftag{font-weight:800;letter-spacing:.5px;box-shadow:0 0 10px rgba(0,0,0,.25)}</style>');
+{const pf2=P.profil;P.profil=()=>{var h=pf2(),id=st.prof&&accts.some(a=>a.id===st.prof)?st.prof:uid,t=firmTag(id);if(!t)return h;var i=h.indexOf('<span class="role k-');if(i<0)return h;var e=h.indexOf('</span>',i)+7;return h.slice(0,e)+t.replace('margin-left:6px','margin-left:6px;font-size:13px;padding:4px 12px;border-radius:9px')+h.slice(e)}}
+{const tm2=P.tym;P.tym=()=>{var h=tm2();allFirms().forEach(q=>{var a=q.a;if(!a.name)return;var i=h.indexOf('<b>'+esc(a.name));if(i<0)return;var j=h.indexOf('<span class="role k-',i);if(j<0||j-i>400)return;var e=h.indexOf('</span>',j)+7;h=h.slice(0,e)+firmTag(a.id)+h.slice(e)});return h}}
+
 render(true);
 })();
 
